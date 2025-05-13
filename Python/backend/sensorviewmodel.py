@@ -8,10 +8,10 @@ class SensorViewModel(QAbstractListModel):
     def __init__(self):
         super().__init__()
         self._sensors = [
-            {"name": "IMU", "value": 0.0},
-            {"name": "Speed", "value": 0.0},
-            {"name": "Camera", "value": 0.0},
-            {"name": "GPS", "value": 0.0},
+            {"name": "Roll", "value": 0.0},
+            {"name": "Pitch", "value": 0.0},
+            {"name": "Yaw", "value": 0.0},
+            {"name": "GPS", "value": 0.0, },
             {"name": "VTX", "value": 0.0},
             {"name": "Analog Output", "value": 0.0},
             {"name": "Gimbal", "value": 0.0},
@@ -40,14 +40,15 @@ class SensorViewModel(QAbstractListModel):
             return sensor["value"]
         elif role == self.FormattedValueRole:
             try:
-                formatted = f"{float(sensor['value']):.2f}"
+                formatted = f"{float(sensor['value']):.2f}" if sensor['value'] is not None else "—"
                 print(f"[SensorViewModel] formatted value: {formatted}")
                 return formatted
             except (ValueError, TypeError) as e:
                 print(f"[SensorViewModel] Error formatting value: {e}")
-                return "—"
+                return "—"  # Rückgabe eines sicheren Fallback-Werts
 
         return None
+
 
 
 

@@ -10,6 +10,7 @@ qt6_add_resources(${CMAKE_PROJECT_NAME} MainResource
     PREFIX "/qt/qml"
     VERSION 1.0
     FILES 
+        ".vscode/PythonImportHelper-v2-Completion.json"
         "Python/.vscode/PythonImportHelper-v2-Completion.json"
 )
 

@@ -26,7 +26,7 @@ ListView {
     model: logger.logs
 
     highlight: Rectangle {
-        width: view.width
+        width: logview.width
         height: 120
         color: "#343434"
         radius: 4

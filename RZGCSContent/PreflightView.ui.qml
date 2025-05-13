@@ -74,7 +74,7 @@ Item {
 
             Connections {
                 target: serialConnector
-                function onAvailablePortsChanged(ports) {
+                function onAvailable_ports_changed(ports) {
                     portSelector.model = ports
                 }
 
@@ -97,6 +97,8 @@ Item {
             id: autopilot
             x: 0
             y: 107
+            width: 82
+            height: 32
 
             model: ["ArduPilot", "Betaflight"]
         }
@@ -105,15 +107,32 @@ Item {
             id: button
             x: 143
             y: 48
+            width: 92
+            height: 32
             text: qsTr("Connect")
 
             Connections {
                 target: button
                 function onClicked() {
-                    serialConnector.connect_to_port(
+                    console.log("🟢 Button geklickt") // ← Debug
+                    serialConnector.connect_to_serial(
                                 portSelector.currentText,
                                 parseInt(baurate.currentText),
                                 autopilot.currentText)
+                }
+            }
+        }
+
+        Button {
+            id: disconnect
+            x: 143
+            y: 98
+            text: qsTr("Disconnect")
+
+            Connections {
+                target: disconnect
+                function onClicked() {
+                    serialConnector.disconnect()
                 }
             }
         }
@@ -121,23 +140,21 @@ Item {
 
     View3D {
         id: view3D
-        x: 469
-        y: 70
         anchors.left: parent.left
         anchors.right: parent.horizontalCenter
         anchors.top: parent.top
         anchors.bottom: parent.verticalCenter
-
-        anchors.leftMargin: 1088
-        anchors.rightMargin: -631
+        anchors.leftMargin: 948
+        anchors.rightMargin: -491
         anchors.topMargin: 289
         anchors.bottomMargin: 44
         environment: sceneEnvironment
         camera: camera
+
         SceneEnvironment {
             id: sceneEnvironment
             backgroundMode: SceneEnvironment.Color
-            clearColor: "#100b0b" // Deine Wunschfarbe
+            clearColor: "#100b0b"
             antialiasingQuality: SceneEnvironment.High
             antialiasingMode: SceneEnvironment.MSAA
         }
@@ -145,7 +162,7 @@ Item {
         PerspectiveCamera {
             id: camera
             position: Qt.vector3d(300, 200, 300)
-            eulerRotation: Qt.vector3d(-30, 45, 0) // ✅ manuelle Ausrichtung
+            eulerRotation: Qt.vector3d(-30, 45, 0)
         }
 
         DirectionalLight {
@@ -157,32 +174,31 @@ Item {
         Node {
             id: node
 
-            // Resources
-
-            // Nodes:
             Node {
                 id: view3d
                 objectName: "ROOT"
+
                 Model {
                     id: cube
                     objectName: "Cube"
                     source: "Assets/meshes/cube_mesh.mesh"
                     materials: [material_material]
                 }
+
                 Model {
                     id: mk4_v2_10
                     objectName: "mk4_v2_10"
-                    rotation: Qt.quaternion(0.99984, -0.017862, 0, 0)
-                    scale: Qt.vector3d(0.5, 0.5, 0.5)
                     source: "Assets/meshes/mk4_v2_10_mesh.mesh"
+                    scale: Qt.vector3d(0.5, 0.5, 0.5)
                     materials: [default_MTL_material]
 
-                    NumberAnimation on eulerRotation.z {
-                        from: 0
-                        to: 360
-                        duration: 5000
-                        loops: Animation.Infinite
-                    }
+                    // ✨ Eigene Properties für Drehwinkel
+                    property real rollDeg: 0
+                    property real pitchDeg: 0
+                    property real yawDeg: 0
+
+                    // ✨ Drohnenrotation über Roll, Pitch, Yaw
+                    eulerRotation: Qt.vector3d(rollDeg, yawDeg, pitchDeg)
                 }
             }
 
@@ -207,9 +223,19 @@ Item {
                     alphaMode: PrincipledMaterial.Opaque
                 }
             }
-
-            // Animations:
         }
+
+        // ✨ Verbindung zum Python-Signal, das Attitude-Werte liefert
+        Connections {
+            target: serialConnector
+            onAttitude_msg: (roll, pitch, yaw) => {
+                                mk4_v2_10.rollDeg = roll * 180 / Math.PI
+                                mk4_v2_10.pitchDeg = pitch * 180 / Math.PI
+                                mk4_v2_10.yawDeg = yaw * 180 / Math.PI
+                            }
+        }
+
+        // Optional: Anzeigen der Werte für Debugging
     }
 
     View3D {
@@ -236,8 +262,10 @@ Item {
 
         PerspectiveCamera {
             id: camera1
-            position: Qt.vector3d(0, -300, 0)
-            eulerRotation: Qt.vector3d(90, 0, 0)
+            position: Qt.vector3d(
+                          0, 0,
+                          500) // Kamera steht vor dem Modell auf der Z-Achse
+            eulerRotation: Qt.vector3d(0, 0, 0)
         }
 
         DirectionalLight {
@@ -265,12 +293,13 @@ Item {
                     rotation: Qt.quaternion(0.99984, -0.017862, 0, 0)
                     objectName: "mk4_v2_10"
                     materials: [default_MTL_material1]
-                    NumberAnimation on eulerRotation.y {
-                        from: 0
-                        to: 360
-                        duration: 5000
-                        loops: Animation.Infinite
-                    }
+                    // ✨ Eigene Properties für Drehwinkel
+                    property real rollDeg: 0
+                    property real pitchDeg: 0
+                    property real yawDeg: 0
+
+                    // ✨ Drohnenrotation über Roll, Pitch, Yaw
+                    eulerRotation: Qt.vector3d(rollDeg, yawDeg, pitchDeg)
                 }
             }
 
@@ -295,6 +324,28 @@ Item {
                 }
             }
         }
+        Connections {
+            target: serialConnector
+            onAttitude_msg: (roll, pitch, yaw) => {
+                                mk4_v2_11.rollDeg = roll * 180 / Math.PI
+                                mk4_v2_11.pitchDeg = pitch * 180 / Math.PI
+                                mk4_v2_11.yawDeg = yaw * 180 / Math.PI
+                            }
+        }
+
+        Text {
+            y: 168
+
+            anchors.leftMargin: 296
+            anchors.topMargin: 188
+            anchors.left: parent.left
+            color: "white"
+            text: `Roll: ${mk4_v2_10.rollDeg.toFixed(
+                      2)}°, Pitch: ${mk4_v2_10.pitchDeg.toFixed(
+                      2)}°, Yaw: ${mk4_v2_10.yawDeg.toFixed(2)}°`
+            font.pixelSize: 14
+        }
+
         camera: camera1
     }
 
@@ -305,12 +356,33 @@ Item {
         width: 767
         height: 263
     }
+
+    Button {
+        id: loadsensor
+        x: 861
+        y: 524
+        text: qsTr("Load Sensor")
+
+        Connections {
+            target: loadsensor
+            function onClicked() {
+                sensorModel.update_sensor("GPS", Math.random() * 100)
+            }
+        }
+    }
+
+    Connections {
+        target: preflightview
+        function onActiveFocusChanged() {
+            console.log("clicked")
+        }
+    }
 }
 
 /*##^##
 Designer {
     D{i:0;matPrevEnvDoc:"SkyBox";matPrevEnvValueDoc:"preview_studio";matPrevModelDoc:"#Sphere"}
-D{i:11;cameraSpeed3d:25;cameraSpeed3dMultiplier:1}D{i:23;cameraSpeed3d:25;cameraSpeed3dMultiplier:1}
+D{i:13;cameraSpeed3d:25;cameraSpeed3dMultiplier:1}D{i:25;cameraSpeed3d:25;cameraSpeed3dMultiplier:1}
 }
 ##^##*/
 
