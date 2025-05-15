@@ -26,6 +26,9 @@ qt6_add_qml_module(RZGCSContent
         "SensorView.ui.qml"
         "LogsListModel.qml"
         "Assets/Untitled.qml"
+    RESOURCES
+        "Icon/images.png"
+        "Icon/png-clipart-gps-satellite-blocks-computer-icons-gps-symbol-angle-logo.png"
 )
 
 

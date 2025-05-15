@@ -1,5 +1,3 @@
-
-
 /*
 This is a UI file (.ui.qml) that is intended to be edited in Qt Design Studio only.
 It is supposed to be strictly declarative and only uses a subset of QML. If you edit
@@ -12,7 +10,6 @@ import QtQuick3D 6.8
 import QtQuick3D.Helpers 6.8
 import QtQuick3D.AssetUtils
 import QtQuick.Window
-import QtQuick.Studio.Components
 
 Item {
     id: preflightview
@@ -43,8 +40,40 @@ Item {
         anchors.topMargin: -25
         anchors.bottomMargin: 9
     }
-    LogsList {
 
+    // Clear-Button für Logs
+    Button {
+        id: clearLogsButton
+        text: qsTr("Clear Logs")
+        x: 250
+        y: 25
+        width: 100
+        height: 30
+        
+        onClicked: {
+            if (logger) {
+                logger.clear()
+            }
+        }
+    }
+
+    // Test-Button für Logs
+    Button {
+        id: testLogButton
+        text: qsTr("Test Log")
+        x: 360
+        y: 25
+        width: 100
+        height: 30
+        
+        onClicked: {
+            if (logger) {
+                logger.info("Test log message " + new Date().toLocaleTimeString())
+            }
+        }
+    }
+
+    LogsList {
         id: logslist
         width: 373
 
@@ -84,6 +113,16 @@ Item {
                 }
             }
         }
+
+        ComboBox {
+            id: connectorType
+            x: 88
+            y: 0
+            width: 82
+            height: 32
+            model: ["MAVLink", "MAVSDK"]
+        }
+
         ComboBox {
             id: baurate
             x: 0
@@ -118,7 +157,8 @@ Item {
                     serialConnector.connect_to_serial(
                                 portSelector.currentText,
                                 parseInt(baurate.currentText),
-                                autopilot.currentText)
+                                autopilot.currentText,
+                                connectorType.currentText)
                 }
             }
         }

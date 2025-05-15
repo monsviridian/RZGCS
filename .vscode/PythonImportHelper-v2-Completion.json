@@ -1,5 +1,271 @@
 [
     {
+        "label": "BaseSettings",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "Field",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "BaseModel",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "BaseModel",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Literal",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Union",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "ABC",
+        "importPath": "abc",
+        "description": "abc",
+        "isExtraImport": true,
+        "detail": "abc",
+        "documentation": {}
+    },
+    {
+        "label": "abstractmethod",
+        "importPath": "abc",
+        "description": "abc",
+        "isExtraImport": true,
+        "detail": "abc",
+        "documentation": {}
+    },
+    {
+        "label": "ABC",
+        "importPath": "abc",
+        "description": "abc",
+        "isExtraImport": true,
+        "detail": "abc",
+        "documentation": {}
+    },
+    {
+        "label": "abstractmethod",
+        "importPath": "abc",
+        "description": "abc",
+        "isExtraImport": true,
+        "detail": "abc",
+        "documentation": {}
+    },
+    {
+        "label": "QObject",
+        "importPath": "PySide6.QtCore",
+        "description": "PySide6.QtCore",
+        "isExtraImport": true,
+        "detail": "PySide6.QtCore",
+        "documentation": {}
+    },
+    {
+        "label": "Signal",
+        "importPath": "PySide6.QtCore",
+        "description": "PySide6.QtCore",
+        "isExtraImport": true,
+        "detail": "PySide6.QtCore",
+        "documentation": {}
+    },
+    {
         "label": "QObject",
         "importPath": "PySide6.QtCore",
         "description": "PySide6.QtCore",
@@ -48,7 +314,23 @@
         "documentation": {}
     },
     {
+        "label": "QObject",
+        "importPath": "PySide6.QtCore",
+        "description": "PySide6.QtCore",
+        "isExtraImport": true,
+        "detail": "PySide6.QtCore",
+        "documentation": {}
+    },
+    {
         "label": "Signal",
+        "importPath": "PySide6.QtCore",
+        "description": "PySide6.QtCore",
+        "isExtraImport": true,
+        "detail": "PySide6.QtCore",
+        "documentation": {}
+    },
+    {
+        "label": "QTimer",
         "importPath": "PySide6.QtCore",
         "description": "PySide6.QtCore",
         "isExtraImport": true,
@@ -72,15 +354,7 @@
         "documentation": {}
     },
     {
-        "label": "Slot",
-        "importPath": "PySide6.QtCore",
-        "description": "PySide6.QtCore",
-        "isExtraImport": true,
-        "detail": "PySide6.QtCore",
-        "documentation": {}
-    },
-    {
-        "label": "QThread",
+        "label": "QTimer",
         "importPath": "PySide6.QtCore",
         "description": "PySide6.QtCore",
         "isExtraImport": true,
@@ -144,6 +418,30 @@
         "documentation": {}
     },
     {
+        "label": "QTimer",
+        "importPath": "PySide6.QtCore",
+        "description": "PySide6.QtCore",
+        "isExtraImport": true,
+        "detail": "PySide6.QtCore",
+        "documentation": {}
+    },
+    {
+        "label": "QEventLoop",
+        "importPath": "PySide6.QtCore",
+        "description": "PySide6.QtCore",
+        "isExtraImport": true,
+        "detail": "PySide6.QtCore",
+        "documentation": {}
+    },
+    {
+        "label": "Qt",
+        "importPath": "PySide6.QtCore",
+        "description": "PySide6.QtCore",
+        "isExtraImport": true,
+        "detail": "PySide6.QtCore",
+        "documentation": {}
+    },
+    {
         "label": "QUrl",
         "importPath": "PySide6.QtCore",
         "description": "PySide6.QtCore",
@@ -153,19 +451,19 @@
     },
     {
         "label": "datetime",
-        "kind": 6,
-        "isExtraImport": true,
         "importPath": "datetime",
         "description": "datetime",
+        "isExtraImport": true,
         "detail": "datetime",
         "documentation": {}
     },
     {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
+        "label": "logging",
+        "kind": 6,
         "isExtraImport": true,
-        "detail": "datetime",
+        "importPath": "logging",
+        "description": "logging",
+        "detail": "logging",
         "documentation": {}
     },
     {
@@ -174,6 +472,31 @@
         "description": "fastapi",
         "isExtraImport": true,
         "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "HTTPException",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "CORSMiddleware",
+        "importPath": "fastapi.middleware.cors",
+        "description": "fastapi.middleware.cors",
+        "isExtraImport": true,
+        "detail": "fastapi.middleware.cors",
+        "documentation": {}
+    },
+    {
+        "label": "uvicorn",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "uvicorn",
+        "description": "uvicorn",
+        "detail": "uvicorn",
         "documentation": {}
     },
     {
@@ -217,69 +540,11 @@
         "documentation": {}
     },
     {
-        "label": "BaseModel",
-        "importPath": "pydantic",
-        "description": "pydantic",
-        "isExtraImport": true,
-        "detail": "pydantic",
-        "documentation": {}
-    },
-    {
-        "label": "BaseModel",
-        "importPath": "pydantic",
-        "description": "pydantic",
-        "isExtraImport": true,
-        "detail": "pydantic",
-        "documentation": {}
-    },
-    {
         "label": "MavsdkConnector",
         "importPath": "mavsdk_connector",
         "description": "mavsdk_connector",
         "isExtraImport": true,
         "detail": "mavsdk_connector",
-        "documentation": {}
-    },
-    {
-        "label": "threading",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "threading",
-        "description": "threading",
-        "detail": "threading",
-        "documentation": {}
-    },
-    {
-        "label": "mavutil",
-        "importPath": "pymavlink",
-        "description": "pymavlink",
-        "isExtraImport": true,
-        "detail": "pymavlink",
-        "documentation": {}
-    },
-    {
-        "label": "mavutil",
-        "importPath": "pymavlink",
-        "description": "pymavlink",
-        "isExtraImport": true,
-        "detail": "pymavlink",
-        "documentation": {}
-    },
-    {
-        "label": "asyncio",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "asyncio",
-        "description": "asyncio",
-        "detail": "asyncio",
-        "documentation": {}
-    },
-    {
-        "label": "System",
-        "importPath": "mavsdk",
-        "description": "mavsdk",
-        "isExtraImport": true,
-        "detail": "mavsdk",
         "documentation": {}
     },
     {
@@ -292,12 +557,129 @@
         "documentation": {}
     },
     {
-        "label": "os",
+        "label": "asyncio",
         "kind": 6,
         "isExtraImport": true,
-        "importPath": "os",
-        "description": "os",
-        "detail": "os",
+        "importPath": "asyncio",
+        "description": "asyncio",
+        "detail": "asyncio",
+        "documentation": {}
+    },
+    {
+        "label": "create_connector",
+        "importPath": "mavlink_connector",
+        "description": "mavlink_connector",
+        "isExtraImport": true,
+        "detail": "mavlink_connector",
+        "documentation": {}
+    },
+    {
+        "label": "ConnectorType",
+        "importPath": "mavlink_connector",
+        "description": "mavlink_connector",
+        "isExtraImport": true,
+        "detail": "mavlink_connector",
+        "documentation": {}
+    },
+    {
+        "label": "threading,",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "threading.",
+        "description": "threading.",
+        "detail": "threading.",
+        "documentation": {}
+    },
+    {
+        "label": "Enum",
+        "importPath": "enum",
+        "description": "enum",
+        "isExtraImport": true,
+        "detail": "enum",
+        "documentation": {}
+    },
+    {
+        "label": "pathlib",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "mavutil",
+        "importPath": "pymavlink",
+        "description": "pymavlink",
+        "isExtraImport": true,
+        "detail": "pymavlink",
+        "documentation": {}
+    },
+    {
+        "label": "mavutil",
+        "importPath": "pymavlink",
+        "description": "pymavlink",
+        "isExtraImport": true,
+        "detail": "pymavlink",
+        "documentation": {}
+    },
+    {
+        "label": "ardupilotmega",
+        "importPath": "pymavlink.dialects.v20",
+        "description": "pymavlink.dialects.v20",
+        "isExtraImport": true,
+        "detail": "pymavlink.dialects.v20",
+        "documentation": {}
+    },
+    {
+        "label": "ardupilotmega",
+        "importPath": "pymavlink.dialects.v20",
+        "description": "pymavlink.dialects.v20",
+        "isExtraImport": true,
+        "detail": "pymavlink.dialects.v20",
+        "documentation": {}
+    },
+    {
+        "label": "serial",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "serial",
+        "description": "serial",
+        "detail": "serial",
+        "documentation": {}
+    },
+    {
+        "label": "math",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "math",
+        "description": "math",
+        "detail": "math",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "defaultdict",
+        "importPath": "collections",
+        "description": "collections",
+        "isExtraImport": true,
+        "detail": "collections",
         "documentation": {}
     },
     {
@@ -310,7 +692,40 @@
         "documentation": {}
     },
     {
-        "label": "MAVLinkConnector",
+        "label": "asyncio.events",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "asyncio.events",
+        "description": "asyncio.events",
+        "detail": "asyncio.events",
+        "documentation": {}
+    },
+    {
+        "label": "ThreadPoolExecutor",
+        "importPath": "concurrent.futures",
+        "description": "concurrent.futures",
+        "isExtraImport": true,
+        "detail": "concurrent.futures",
+        "documentation": {}
+    },
+    {
+        "label": "DroneConnectorBase",
+        "importPath": "backend.mavlink_connector",
+        "description": "backend.mavlink_connector",
+        "isExtraImport": true,
+        "detail": "backend.mavlink_connector",
+        "documentation": {}
+    },
+    {
+        "label": "ConnectorType",
+        "importPath": "backend.mavlink_connector",
+        "description": "backend.mavlink_connector",
+        "isExtraImport": true,
+        "detail": "backend.mavlink_connector",
+        "documentation": {}
+    },
+    {
+        "label": "create_connector",
         "importPath": "backend.mavlink_connector",
         "description": "backend.mavlink_connector",
         "isExtraImport": true,
@@ -334,11 +749,36 @@
         "documentation": {}
     },
     {
-        "label": "Path",
-        "importPath": "pathlib",
-        "description": "pathlib",
+        "label": "pytest",
+        "kind": 6,
         "isExtraImport": true,
-        "detail": "pathlib",
+        "importPath": "pytest",
+        "description": "pytest",
+        "detail": "pytest",
+        "documentation": {}
+    },
+    {
+        "label": "SensorViewModel",
+        "importPath": "backend.sensorviewmodel",
+        "description": "backend.sensorviewmodel",
+        "isExtraImport": true,
+        "detail": "backend.sensorviewmodel",
+        "documentation": {}
+    },
+    {
+        "label": "SensorViewModel",
+        "importPath": "backend.sensorviewmodel",
+        "description": "backend.sensorviewmodel",
+        "isExtraImport": true,
+        "detail": "backend.sensorviewmodel",
+        "documentation": {}
+    },
+    {
+        "label": "SensorException",
+        "importPath": "backend.exceptions",
+        "description": "backend.exceptions",
+        "isExtraImport": true,
+        "detail": "backend.exceptions",
         "documentation": {}
     },
     {
@@ -382,14 +822,6 @@
         "documentation": {}
     },
     {
-        "label": "SensorViewModel",
-        "importPath": "backend.sensorviewmodel",
-        "description": "backend.sensorviewmodel",
-        "isExtraImport": true,
-        "detail": "backend.sensorviewmodel",
-        "documentation": {}
-    },
-    {
         "label": "url",
         "kind": 5,
         "importPath": "Python.autogen.settings",
@@ -408,12 +840,93 @@
         "documentation": {}
     },
     {
+        "label": "DroneSettings",
+        "kind": 6,
+        "importPath": "Python.backend.config",
+        "description": "Python.backend.config",
+        "peekOfCode": "class DroneSettings(BaseSettings):\n    \"\"\"\n    Konfigurationseinstellungen für die Drohnensteuerung.\n    Verwendet Pydantic für Validierung und Umgebungsvariablen.\n    \"\"\"\n    # Verbindungseinstellungen\n    default_port: str = Field(\"COM8\", description=\"Standard serieller Port\")\n    default_baudrate: int = Field(57600, description=\"Standard Baudrate\")\n    connection_timeout: float = Field(5.0, description=\"Verbindungs-Timeout in Sekunden\")\n    # Sensor-Einstellungen",
+        "detail": "Python.backend.config",
+        "documentation": {}
+    },
+    {
+        "label": "DroneConnectorMeta",
+        "kind": 6,
+        "importPath": "Python.backend.drone_connector_base",
+        "description": "Python.backend.drone_connector_base",
+        "peekOfCode": "class DroneConnectorMeta(type(QObject), type(ABC)):\n    pass\nclass DroneConnectorBase(QObject, ABC, metaclass=DroneConnectorMeta):\n    \"\"\"Base class for drone connectors\"\"\"\n    # Common signals for all connector implementations\n    log_received = Signal(str)  # Logging messages\n    gps_msg = Signal(float, float)  # Latitude, Longitude\n    attitude_msg = Signal(float, float, float)  # Roll, Pitch, Yaw\n    sensor_data = Signal(str, float)  # Sensor name, value\n    connection_status = Signal(bool)  # Connection status",
+        "detail": "Python.backend.drone_connector_base",
+        "documentation": {}
+    },
+    {
+        "label": "DroneConnectorBase",
+        "kind": 6,
+        "importPath": "Python.backend.drone_connector_base",
+        "description": "Python.backend.drone_connector_base",
+        "peekOfCode": "class DroneConnectorBase(QObject, ABC, metaclass=DroneConnectorMeta):\n    \"\"\"Base class for drone connectors\"\"\"\n    # Common signals for all connector implementations\n    log_received = Signal(str)  # Logging messages\n    gps_msg = Signal(float, float)  # Latitude, Longitude\n    attitude_msg = Signal(float, float, float)  # Roll, Pitch, Yaw\n    sensor_data = Signal(str, float)  # Sensor name, value\n    connection_status = Signal(bool)  # Connection status\n    def __init__(self):\n        \"\"\"Initializes the base class\"\"\"",
+        "detail": "Python.backend.drone_connector_base",
+        "documentation": {}
+    },
+    {
+        "label": "DroneException",
+        "kind": 6,
+        "importPath": "Python.backend.exceptions",
+        "description": "Python.backend.exceptions",
+        "peekOfCode": "class DroneException(Exception):\n    \"\"\"Basis-Exception für alle drohnenbezogenen Fehler\"\"\"\n    def __init__(self, message: str, error_code: Optional[int] = None):\n        self.message = message\n        self.error_code = error_code\n        super().__init__(self.message)\nclass ConnectionException(DroneException):\n    \"\"\"Exception für Verbindungsfehler\"\"\"\n    pass\nclass SensorException(DroneException):",
+        "detail": "Python.backend.exceptions",
+        "documentation": {}
+    },
+    {
+        "label": "ConnectionException",
+        "kind": 6,
+        "importPath": "Python.backend.exceptions",
+        "description": "Python.backend.exceptions",
+        "peekOfCode": "class ConnectionException(DroneException):\n    \"\"\"Exception für Verbindungsfehler\"\"\"\n    pass\nclass SensorException(DroneException):\n    \"\"\"Exception für Sensorfehler\"\"\"\n    pass\nclass MotorException(DroneException):\n    \"\"\"Exception für Motorfehler\"\"\"\n    pass\nclass CalibrationException(DroneException):",
+        "detail": "Python.backend.exceptions",
+        "documentation": {}
+    },
+    {
+        "label": "SensorException",
+        "kind": 6,
+        "importPath": "Python.backend.exceptions",
+        "description": "Python.backend.exceptions",
+        "peekOfCode": "class SensorException(DroneException):\n    \"\"\"Exception für Sensorfehler\"\"\"\n    pass\nclass MotorException(DroneException):\n    \"\"\"Exception für Motorfehler\"\"\"\n    pass\nclass CalibrationException(DroneException):\n    \"\"\"Exception für Kalibrierungsfehler\"\"\"\n    pass",
+        "detail": "Python.backend.exceptions",
+        "documentation": {}
+    },
+    {
+        "label": "MotorException",
+        "kind": 6,
+        "importPath": "Python.backend.exceptions",
+        "description": "Python.backend.exceptions",
+        "peekOfCode": "class MotorException(DroneException):\n    \"\"\"Exception für Motorfehler\"\"\"\n    pass\nclass CalibrationException(DroneException):\n    \"\"\"Exception für Kalibrierungsfehler\"\"\"\n    pass",
+        "detail": "Python.backend.exceptions",
+        "documentation": {}
+    },
+    {
+        "label": "CalibrationException",
+        "kind": 6,
+        "importPath": "Python.backend.exceptions",
+        "description": "Python.backend.exceptions",
+        "peekOfCode": "class CalibrationException(DroneException):\n    \"\"\"Exception für Kalibrierungsfehler\"\"\"\n    pass",
+        "detail": "Python.backend.exceptions",
+        "documentation": {}
+    },
+    {
         "label": "Logger",
         "kind": 6,
         "importPath": "Python.backend.logger",
         "description": "Python.backend.logger",
-        "peekOfCode": "class Logger(QObject):\n    logAdded = Signal(str)\n    def __init__(self, parent=None):\n        super().__init__(parent)\n        self._logs = QStringListModel()\n    @Slot(str)\n    def add_log(self, message: str):\n        # Zeitstempel hinzufügen\n        timestamp = datetime.datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\")\n        log_message = f\"[{timestamp}] {message}\"",
+        "peekOfCode": "class Logger(QObject):\n    \"\"\"\n    Erweiterter Logger mit Qt-Integration und Datei-Logging.\n    Signals:\n        logAdded: Signal wird bei neuem Log-Eintrag emittiert\n        errorOccurred: Signal wird bei Fehlern emittiert\n        logsChanged: Signal wird bei Änderung der Logs emittiert\n    \"\"\"\n    logAdded = Signal(str)\n    errorOccurred = Signal(str)",
         "detail": "Python.backend.logger",
+        "documentation": {}
+    },
+    {
+        "label": "DroneBackend",
+        "kind": 6,
+        "importPath": "Python.backend.main",
+        "description": "Python.backend.main",
+        "peekOfCode": "class DroneBackend(QObject):\n    def __init__(self):\n        super().__init__()\n        self.connector = None\n        self.logger = Logger()\n        self.motor_controller = MotorController(None)  # Wird später initialisiert\n    async def connect_drone(self, data: ConnectRequest) -> dict:\n        \"\"\"Verbindet mit der Drohne über den gewählten Connector\"\"\"\n        try:\n            # Bestehende Verbindung trennen",
+        "detail": "Python.backend.main",
         "documentation": {}
     },
     {
@@ -421,25 +934,16 @@
         "kind": 6,
         "importPath": "Python.backend.main",
         "description": "Python.backend.main",
-        "peekOfCode": "class ConnectRequest(BaseModel):\n    port: str\n    baudrate: int\n    autopilot: str\n@app.post(\"/serial/connect\")\nasync def connect_serial(req: ConnectRequest):\n    if req.autopilot.lower() == \"ardupilot\":\n        await mavsdk.connect(port=req.port, baudrate=req.baudrate)\n        return {\"status\": \"connected\"} if mavsdk.is_connected() else {\"status\": \"failed\"}\n    else:",
+        "peekOfCode": "class ConnectRequest(BaseModel):\n    connection_type: Literal[\"mavsdk\", \"mavlink\"]\n    # Gemeinsame Parameter\n    autopilot: str = \"ardupilot\"\n    # MAVSDK Parameter\n    connection_string: Optional[str] = \"udp://:14540\"\n    # MAVLink Parameter\n    port: Optional[str] = None\n    baudrate: Optional[int] = 57600\n@app.post(\"/connect\")",
         "detail": "Python.backend.main",
         "documentation": {}
     },
     {
-        "label": "connect_to_flight_controller",
+        "label": "get_status",
         "kind": 2,
         "importPath": "Python.backend.main",
         "description": "Python.backend.main",
-        "peekOfCode": "def connect_to_flight_controller(data: ConnectRequest):\n    success = serial_handler.connect(data.port, data.baudrate)\n    return {\"connected\": success}\n@app.post(\"/motor/test\")\ndef test_motor(data: MotorTestRequest):\n    motor_controller.test_motor(data.motor_id, data.throttle)\n    return {\"status\": \"running\"}\n@app.get(\"/logs\")\ndef get_logs():\n    return logger.read_logs()",
-        "detail": "Python.backend.main",
-        "documentation": {}
-    },
-    {
-        "label": "test_motor",
-        "kind": 2,
-        "importPath": "Python.backend.main",
-        "description": "Python.backend.main",
-        "peekOfCode": "def test_motor(data: MotorTestRequest):\n    motor_controller.test_motor(data.motor_id, data.throttle)\n    return {\"status\": \"running\"}\n@app.get(\"/logs\")\ndef get_logs():\n    return logger.read_logs()\n@app.get(\"/parameters\")\ndef get_parameters():\n    return serial_handler.read_parameters()\nclass ConnectRequest(BaseModel):",
+        "peekOfCode": "def get_status():\n    \"\"\"Gibt den aktuellen Verbindungsstatus zurück\"\"\"\n    return {\n        \"connected\": drone_backend.connector is not None,\n        \"connector_type\": drone_backend.connector.__class__.__name__ if drone_backend.connector else None\n    }\n@app.get(\"/logs\")\ndef get_logs():\n    \"\"\"Gibt die aktuellen Logs zurück\"\"\"\n    return drone_backend.logger.read_logs()",
         "detail": "Python.backend.main",
         "documentation": {}
     },
@@ -448,7 +952,16 @@
         "kind": 2,
         "importPath": "Python.backend.main",
         "description": "Python.backend.main",
-        "peekOfCode": "def get_logs():\n    return logger.read_logs()\n@app.get(\"/parameters\")\ndef get_parameters():\n    return serial_handler.read_parameters()\nclass ConnectRequest(BaseModel):\n    port: str\n    baudrate: int\n    autopilot: str\n@app.post(\"/serial/connect\")",
+        "peekOfCode": "def get_logs():\n    \"\"\"Gibt die aktuellen Logs zurück\"\"\"\n    return drone_backend.logger.read_logs()\n@app.post(\"/motor/test\")\ndef test_motor(data: MotorTestRequest):\n    motor_controller.test_motor(data.motor_id, data.throttle)\n    return {\"status\": \"running\"}\n@app.get(\"/parameters\")\ndef get_parameters():\n    return serial_handler.read_parameters()",
+        "detail": "Python.backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "test_motor",
+        "kind": 2,
+        "importPath": "Python.backend.main",
+        "description": "Python.backend.main",
+        "peekOfCode": "def test_motor(data: MotorTestRequest):\n    motor_controller.test_motor(data.motor_id, data.throttle)\n    return {\"status\": \"running\"}\n@app.get(\"/parameters\")\ndef get_parameters():\n    return serial_handler.read_parameters()\n@app.on_event(\"startup\")\nasync def startup_event():\n    \"\"\"Wird beim Start des Servers ausgeführt\"\"\"\n    global drone_backend",
         "detail": "Python.backend.main",
         "documentation": {}
     },
@@ -457,7 +970,16 @@
         "kind": 2,
         "importPath": "Python.backend.main",
         "description": "Python.backend.main",
-        "peekOfCode": "def get_parameters():\n    return serial_handler.read_parameters()\nclass ConnectRequest(BaseModel):\n    port: str\n    baudrate: int\n    autopilot: str\n@app.post(\"/serial/connect\")\nasync def connect_serial(req: ConnectRequest):\n    if req.autopilot.lower() == \"ardupilot\":\n        await mavsdk.connect(port=req.port, baudrate=req.baudrate)",
+        "peekOfCode": "def get_parameters():\n    return serial_handler.read_parameters()\n@app.on_event(\"startup\")\nasync def startup_event():\n    \"\"\"Wird beim Start des Servers ausgeführt\"\"\"\n    global drone_backend\n    drone_backend = DroneBackend()\ndef start_server(host: str = \"127.0.0.1\", port: int = 8000):\n    \"\"\"Startet den FastAPI Server\"\"\"\n    uvicorn.run(app, host=host, port=port)",
+        "detail": "Python.backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "start_server",
+        "kind": 2,
+        "importPath": "Python.backend.main",
+        "description": "Python.backend.main",
+        "peekOfCode": "def start_server(host: str = \"127.0.0.1\", port: int = 8000):\n    \"\"\"Startet den FastAPI Server\"\"\"\n    uvicorn.run(app, host=host, port=port)\nif __name__ == \"__main__\":\n    start_server()",
         "detail": "Python.backend.main",
         "documentation": {}
     },
@@ -466,7 +988,7 @@
         "kind": 5,
         "importPath": "Python.backend.main",
         "description": "Python.backend.main",
-        "peekOfCode": "app = FastAPI()\nserial_handler = SerialConnector()\nmotor_controller = MotorController(serial_handler)\nlogger = Logger()\nmavsdk = MavsdkConnector()\n@app.post(\"/connect\")\ndef connect_to_flight_controller(data: ConnectRequest):\n    success = serial_handler.connect(data.port, data.baudrate)\n    return {\"connected\": success}\n@app.post(\"/motor/test\")",
+        "peekOfCode": "app = FastAPI()\nserial_handler = SerialConnector()\nmotor_controller = MotorController(serial_handler)\nlogger = Logger()\nmavsdk = MavsdkConnector()\n# CORS für Frontend-Zugriff erlauben\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"],\n    allow_credentials=True,",
         "detail": "Python.backend.main",
         "documentation": {}
     },
@@ -475,7 +997,7 @@
         "kind": 5,
         "importPath": "Python.backend.main",
         "description": "Python.backend.main",
-        "peekOfCode": "serial_handler = SerialConnector()\nmotor_controller = MotorController(serial_handler)\nlogger = Logger()\nmavsdk = MavsdkConnector()\n@app.post(\"/connect\")\ndef connect_to_flight_controller(data: ConnectRequest):\n    success = serial_handler.connect(data.port, data.baudrate)\n    return {\"connected\": success}\n@app.post(\"/motor/test\")\ndef test_motor(data: MotorTestRequest):",
+        "peekOfCode": "serial_handler = SerialConnector()\nmotor_controller = MotorController(serial_handler)\nlogger = Logger()\nmavsdk = MavsdkConnector()\n# CORS für Frontend-Zugriff erlauben\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"],\n    allow_credentials=True,\n    allow_methods=[\"*\"],",
         "detail": "Python.backend.main",
         "documentation": {}
     },
@@ -484,7 +1006,7 @@
         "kind": 5,
         "importPath": "Python.backend.main",
         "description": "Python.backend.main",
-        "peekOfCode": "motor_controller = MotorController(serial_handler)\nlogger = Logger()\nmavsdk = MavsdkConnector()\n@app.post(\"/connect\")\ndef connect_to_flight_controller(data: ConnectRequest):\n    success = serial_handler.connect(data.port, data.baudrate)\n    return {\"connected\": success}\n@app.post(\"/motor/test\")\ndef test_motor(data: MotorTestRequest):\n    motor_controller.test_motor(data.motor_id, data.throttle)",
+        "peekOfCode": "motor_controller = MotorController(serial_handler)\nlogger = Logger()\nmavsdk = MavsdkConnector()\n# CORS für Frontend-Zugriff erlauben\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"],\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],",
         "detail": "Python.backend.main",
         "documentation": {}
     },
@@ -493,7 +1015,7 @@
         "kind": 5,
         "importPath": "Python.backend.main",
         "description": "Python.backend.main",
-        "peekOfCode": "logger = Logger()\nmavsdk = MavsdkConnector()\n@app.post(\"/connect\")\ndef connect_to_flight_controller(data: ConnectRequest):\n    success = serial_handler.connect(data.port, data.baudrate)\n    return {\"connected\": success}\n@app.post(\"/motor/test\")\ndef test_motor(data: MotorTestRequest):\n    motor_controller.test_motor(data.motor_id, data.throttle)\n    return {\"status\": \"running\"}",
+        "peekOfCode": "logger = Logger()\nmavsdk = MavsdkConnector()\n# CORS für Frontend-Zugriff erlauben\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"],\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)",
         "detail": "Python.backend.main",
         "documentation": {}
     },
@@ -502,8 +1024,53 @@
         "kind": 5,
         "importPath": "Python.backend.main",
         "description": "Python.backend.main",
-        "peekOfCode": "mavsdk = MavsdkConnector()\n@app.post(\"/connect\")\ndef connect_to_flight_controller(data: ConnectRequest):\n    success = serial_handler.connect(data.port, data.baudrate)\n    return {\"connected\": success}\n@app.post(\"/motor/test\")\ndef test_motor(data: MotorTestRequest):\n    motor_controller.test_motor(data.motor_id, data.throttle)\n    return {\"status\": \"running\"}\n@app.get(\"/logs\")",
+        "peekOfCode": "mavsdk = MavsdkConnector()\n# CORS für Frontend-Zugriff erlauben\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"],\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\n# Globale Instanz des DroneBackend",
         "detail": "Python.backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "drone_backend",
+        "kind": 5,
+        "importPath": "Python.backend.main",
+        "description": "Python.backend.main",
+        "peekOfCode": "drone_backend = None\nclass DroneBackend(QObject):\n    def __init__(self):\n        super().__init__()\n        self.connector = None\n        self.logger = Logger()\n        self.motor_controller = MotorController(None)  # Wird später initialisiert\n    async def connect_drone(self, data: ConnectRequest) -> dict:\n        \"\"\"Verbindet mit der Drohne über den gewählten Connector\"\"\"\n        try:",
+        "detail": "Python.backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "ConnectorType",
+        "kind": 6,
+        "importPath": "Python.backend.mavlink_connector",
+        "description": "Python.backend.mavlink_connector",
+        "peekOfCode": "class ConnectorType(Enum):\n    PYMAVLINK = \"pymavlink\"\n    MAVSDK = \"mavsdk\"\ndef get_mavsdk_server_path() -> str:\n    \"\"\"Ermittelt den Pfad zum MAVSDK-Server basierend auf dem Betriebssystem\"\"\"\n    # Basis-Pfad zum Projekt-Ordner\n    base_path = pathlib.Path(__file__).parent.parent.parent\n    mavsdk_path = base_path / \"mavsdk_server\"\n    if sys.platform == \"win32\":\n        server_path = mavsdk_path / \"windows\" / \"mavsdk-server.exe\"",
+        "detail": "Python.backend.mavlink_connector",
+        "documentation": {}
+    },
+    {
+        "label": "DroneConnectorMeta",
+        "kind": 6,
+        "importPath": "Python.backend.mavlink_connector",
+        "description": "Python.backend.mavlink_connector",
+        "peekOfCode": "class DroneConnectorMeta(type(QObject), type(ABC)):\n    pass\nclass DroneConnectorBase(QObject, ABC, metaclass=DroneConnectorMeta):\n    \"\"\"Basis-Klasse für Drohnen-Verbindungen\"\"\"\n    # Gemeinsame Signals für alle Connector-Implementierungen\n    log_received = Signal(str)  # Logging-Nachrichten\n    gps_msg = Signal(float, float)  # Latitude, Longitude\n    attitude_msg = Signal(float, float, float)  # Roll, Pitch, Yaw\n    sensor_data = Signal(str, float)  # Sensor-Name, Wert\n    connection_status = Signal(bool)  # Verbindungsstatus",
+        "detail": "Python.backend.mavlink_connector",
+        "documentation": {}
+    },
+    {
+        "label": "DroneConnectorBase",
+        "kind": 6,
+        "importPath": "Python.backend.mavlink_connector",
+        "description": "Python.backend.mavlink_connector",
+        "peekOfCode": "class DroneConnectorBase(QObject, ABC, metaclass=DroneConnectorMeta):\n    \"\"\"Basis-Klasse für Drohnen-Verbindungen\"\"\"\n    # Gemeinsame Signals für alle Connector-Implementierungen\n    log_received = Signal(str)  # Logging-Nachrichten\n    gps_msg = Signal(float, float)  # Latitude, Longitude\n    attitude_msg = Signal(float, float, float)  # Roll, Pitch, Yaw\n    sensor_data = Signal(str, float)  # Sensor-Name, Wert\n    connection_status = Signal(bool)  # Verbindungsstatus\n    def __init__(self):\n        \"\"\"Initialisiert die Basisklasse\"\"\"",
+        "detail": "Python.backend.mavlink_connector",
+        "documentation": {}
+    },
+    {
+        "label": "MAVSDKConnector",
+        "kind": 6,
+        "importPath": "Python.backend.mavlink_connector",
+        "description": "Python.backend.mavlink_connector",
+        "peekOfCode": "class MAVSDKConnector(DroneConnectorBase):\n    \"\"\"MAVSDK-basierte Implementierung\"\"\"\n    def __init__(self, connection_string: str):\n        \"\"\"Initialisiert den MAVSDK-Connector\"\"\"\n        super().__init__()\n        self.connection_string = connection_string\n        self.mavsdk_server_process = None\n        self.drone = None\n        self._reconnect_task = None\n        self._connection_check_interval = 5  # Sekunden zwischen Verbindungsprüfungen",
+        "detail": "Python.backend.mavlink_connector",
         "documentation": {}
     },
     {
@@ -511,17 +1078,35 @@
         "kind": 6,
         "importPath": "Python.backend.mavlink_connector",
         "description": "Python.backend.mavlink_connector",
-        "peekOfCode": "class MAVLinkConnector(QObject):\n    log_received = Signal(str)\n    gps_msg = Signal(float, float)\n    attitude_msg = Signal(float, float, float)\n    sensor_data = Signal(str, float)  # NEU\n    def __init__(self, port, baudrate):\n        super().__init__()\n        self.port = port\n        self.baudrate = baudrate\n        self.master = None",
+        "peekOfCode": "class MAVLinkConnector(QObject):\n    \"\"\"MAVLink connection to the drone\"\"\"\n    # Signals\n    log_received = Signal(str)  # Logging messages\n    gps_msg = Signal(float, float)  # Latitude, Longitude\n    attitude_msg = Signal(float, float, float)  # Roll, Pitch, Yaw\n    sensor_data = Signal(str, float)  # Sensor name, value\n    connection_status = Signal(bool)  # Connection status\n    def __init__(self, port: str, baudrate: int):\n        super().__init__()",
         "detail": "Python.backend.mavlink_connector",
         "documentation": {}
     },
     {
-        "label": "MAVSDKConnector",
+        "label": "get_mavsdk_server_path",
+        "kind": 2,
+        "importPath": "Python.backend.mavlink_connector",
+        "description": "Python.backend.mavlink_connector",
+        "peekOfCode": "def get_mavsdk_server_path() -> str:\n    \"\"\"Ermittelt den Pfad zum MAVSDK-Server basierend auf dem Betriebssystem\"\"\"\n    # Basis-Pfad zum Projekt-Ordner\n    base_path = pathlib.Path(__file__).parent.parent.parent\n    mavsdk_path = base_path / \"mavsdk_server\"\n    if sys.platform == \"win32\":\n        server_path = mavsdk_path / \"windows\" / \"mavsdk-server.exe\"\n    elif sys.platform == \"darwin\":  # macOS\n        server_path = mavsdk_path / \"mac\" / \"mavsdk-server\"\n    else:  # Linux",
+        "detail": "Python.backend.mavlink_connector",
+        "documentation": {}
+    },
+    {
+        "label": "create_connector",
+        "kind": 2,
+        "importPath": "Python.backend.mavlink_connector",
+        "description": "Python.backend.mavlink_connector",
+        "peekOfCode": "def create_connector(connector_type: ConnectorType, **kwargs) -> DroneConnectorBase:\n    \"\"\"Factory-Methode für Connector-Erstellung\"\"\"\n    try:\n        if connector_type == ConnectorType.MAVSDK:\n            if 'connection_string' not in kwargs:\n                raise ValueError(\"connection_string ist erforderlich für MAVSDK\")\n            return MAVSDKConnector(kwargs['connection_string'])\n        else:  # PYMAVLINK\n            if 'port' not in kwargs or 'baudrate' not in kwargs:\n                raise ValueError(\"port und baudrate sind erforderlich für MAVLink\")",
+        "detail": "Python.backend.mavlink_connector",
+        "documentation": {}
+    },
+    {
+        "label": "MAVLinkProtocol",
         "kind": 6,
-        "importPath": "Python.backend.mavsdk_connector",
-        "description": "Python.backend.mavsdk_connector",
-        "peekOfCode": "class MAVSDKConnector(QObject):\n    connected_changed = Signal(bool)\n    telemetry_updated = Signal(float, float, float)  # latitude, longitude, altitude\n    gps_status_changed = Signal(bool)\n    calibration_status_changed = Signal(bool)\n    status_message_received = Signal(str)\n    def __init__(self, logger: Logger, sensor: SensorViewModel):\n        super().__init__()\n        self.logger = logger\n        self.sensor = sensor",
-        "detail": "Python.backend.mavsdk_connector",
+        "importPath": "Python.backend.mavlink_protocol",
+        "description": "Python.backend.mavlink_protocol",
+        "peekOfCode": "class MAVLinkProtocol(QObject):\n    \"\"\"\n    Handles low-level MAVLink communication.\n    Similar to QGroundControl's MAVLinkProtocol implementation.\n    \"\"\"\n    # Signals\n    message_received = Signal(object)  # Emitted when a MAVLink message is received\n    connection_status_changed = Signal(bool)  # True if connected\n    protocol_status_changed = Signal(str)  # Status message\n    error_occurred = Signal(str)  # Error message",
+        "detail": "Python.backend.mavlink_protocol",
         "documentation": {}
     },
     {
@@ -556,7 +1141,7 @@
         "kind": 6,
         "importPath": "Python.backend.sensorviewmodel",
         "description": "Python.backend.sensorviewmodel",
-        "peekOfCode": "class SensorViewModel(QAbstractListModel):\n    NameRole = Qt.UserRole + 1\n    ValueRole = Qt.UserRole + 2\n    FormattedValueRole = Qt.UserRole + 3  # ✅ Neue Rolle für formatierten Text\n    def __init__(self):\n        super().__init__()\n        self._sensors = [\n            {\"name\": \"Roll\", \"value\": 0.0},\n            {\"name\": \"Pitch\", \"value\": 0.0},\n            {\"name\": \"Yaw\", \"value\": 0.0},",
+        "peekOfCode": "class SensorViewModel(QAbstractListModel):\n    \"\"\"\n    Ein Model zur Verwaltung und Anzeige von Sensordaten in einer Qt-Anwendung.\n    Attributes:\n        NameRole (int): Role für den Sensornamen\n        ValueRole (int): Role für den Sensorwert\n        FormattedValueRole (int): Role für den formatierten Sensorwert\n    \"\"\"\n    NameRole = Qt.UserRole + 1\n    ValueRole = Qt.UserRole + 2",
         "detail": "Python.backend.sensorviewmodel",
         "documentation": {}
     },
@@ -565,7 +1150,7 @@
         "kind": 6,
         "importPath": "Python.backend.serial_connector",
         "description": "Python.backend.serial_connector",
-        "peekOfCode": "class SerialConnector(QObject):\n    available_ports_changed = Signal(list)\n    connection_successful = Signal()\n    gps_msg = Signal(float, float)\n    attitude_msg = Signal(float, float, float)\n    def __init__(self, sensor_model: SensorViewModel, logger: Logger):\n        super().__init__()\n        self.sensor_model = sensor_model\n        self.logger = logger  # ⬅️ Logger speichern\n        self.ardupilot_reader = None",
+        "peekOfCode": "class SerialConnector(QObject):\n    \"\"\"\n    Verwaltet die serielle Verbindung zur Drohne und koordiniert die Sensordatenübertragung.\n    Signals:\n        available_ports_changed: Emittiert wenn sich die verfügbaren Ports ändern\n        connection_successful: Emittiert bei erfolgreicher Verbindung\n        gps_msg: Emittiert GPS-Daten\n        attitude_msg: Emittiert Lagedaten\n        connection_state_changed: Emittiert Änderungen des Verbindungsstatus\n        critical_message: Emittiert kritische Fehlermeldungen",
         "detail": "Python.backend.serial_connector",
         "documentation": {}
     },
@@ -574,8 +1159,80 @@
         "kind": 5,
         "importPath": "Python.backend.serial_connector",
         "description": "Python.backend.serial_connector",
-        "peekOfCode": "os.environ[\"QT_QUICK_CONTROLS_STYLE\"] = \"Fusion\"\n# backend/serial_connector.py\nfrom backend.logger import Logger  # ⬅️ Logger importieren\nclass SerialConnector(QObject):\n    available_ports_changed = Signal(list)\n    connection_successful = Signal()\n    gps_msg = Signal(float, float)\n    attitude_msg = Signal(float, float, float)\n    def __init__(self, sensor_model: SensorViewModel, logger: Logger):\n        super().__init__()",
+        "peekOfCode": "os.environ[\"QT_QUICK_CONTROLS_STYLE\"] = \"Fusion\"\nclass SerialConnector(QObject):\n    \"\"\"\n    Verwaltet die serielle Verbindung zur Drohne und koordiniert die Sensordatenübertragung.\n    Signals:\n        available_ports_changed: Emittiert wenn sich die verfügbaren Ports ändern\n        connection_successful: Emittiert bei erfolgreicher Verbindung\n        gps_msg: Emittiert GPS-Daten\n        attitude_msg: Emittiert Lagedaten\n        connection_state_changed: Emittiert Änderungen des Verbindungsstatus",
         "detail": "Python.backend.serial_connector",
+        "documentation": {}
+    },
+    {
+        "label": "model",
+        "kind": 2,
+        "importPath": "Python.tests.test_sensorviewmodel",
+        "description": "Python.tests.test_sensorviewmodel",
+        "peekOfCode": "def model():\n    \"\"\"Fixture für ein frisches SensorViewModel für jeden Test.\"\"\"\n    return SensorViewModel()\ndef test_initial_sensor_count(model):\n    \"\"\"Test, dass die initiale Anzahl der Sensoren korrekt ist.\"\"\"\n    assert model.rowCount() == 13  # Anzahl der vordefinierten Sensoren\ndef test_sensor_roles(model):\n    \"\"\"Test, dass alle Rollen korrekt definiert sind.\"\"\"\n    roles = model.roleNames()\n    assert roles[model.NameRole] == b\"name\"",
+        "detail": "Python.tests.test_sensorviewmodel",
+        "documentation": {}
+    },
+    {
+        "label": "test_initial_sensor_count",
+        "kind": 2,
+        "importPath": "Python.tests.test_sensorviewmodel",
+        "description": "Python.tests.test_sensorviewmodel",
+        "peekOfCode": "def test_initial_sensor_count(model):\n    \"\"\"Test, dass die initiale Anzahl der Sensoren korrekt ist.\"\"\"\n    assert model.rowCount() == 13  # Anzahl der vordefinierten Sensoren\ndef test_sensor_roles(model):\n    \"\"\"Test, dass alle Rollen korrekt definiert sind.\"\"\"\n    roles = model.roleNames()\n    assert roles[model.NameRole] == b\"name\"\n    assert roles[model.ValueRole] == b\"value\"\n    assert roles[model.FormattedValueRole] == b\"formattedValue\"\ndef test_sensor_data_access(model):",
+        "detail": "Python.tests.test_sensorviewmodel",
+        "documentation": {}
+    },
+    {
+        "label": "test_sensor_roles",
+        "kind": 2,
+        "importPath": "Python.tests.test_sensorviewmodel",
+        "description": "Python.tests.test_sensorviewmodel",
+        "peekOfCode": "def test_sensor_roles(model):\n    \"\"\"Test, dass alle Rollen korrekt definiert sind.\"\"\"\n    roles = model.roleNames()\n    assert roles[model.NameRole] == b\"name\"\n    assert roles[model.ValueRole] == b\"value\"\n    assert roles[model.FormattedValueRole] == b\"formattedValue\"\ndef test_sensor_data_access(model):\n    \"\"\"Test des Zugriffs auf Sensordaten.\"\"\"\n    index = model.index(0)  # Erster Sensor (Roll)\n    # Test Sensor Name",
+        "detail": "Python.tests.test_sensorviewmodel",
+        "documentation": {}
+    },
+    {
+        "label": "test_sensor_data_access",
+        "kind": 2,
+        "importPath": "Python.tests.test_sensorviewmodel",
+        "description": "Python.tests.test_sensorviewmodel",
+        "peekOfCode": "def test_sensor_data_access(model):\n    \"\"\"Test des Zugriffs auf Sensordaten.\"\"\"\n    index = model.index(0)  # Erster Sensor (Roll)\n    # Test Sensor Name\n    name = model.data(index, model.NameRole)\n    assert name == \"Roll\"\n    # Test Sensor Value\n    value = model.data(index, model.ValueRole)\n    assert value == 0.0\n    # Test Formatted Value",
+        "detail": "Python.tests.test_sensorviewmodel",
+        "documentation": {}
+    },
+    {
+        "label": "test_update_sensor",
+        "kind": 2,
+        "importPath": "Python.tests.test_sensorviewmodel",
+        "description": "Python.tests.test_sensorviewmodel",
+        "peekOfCode": "def test_update_sensor(model):\n    \"\"\"Test der Sensor-Aktualisierung.\"\"\"\n    model.update_sensor(\"Roll\", 45.123)\n    index = model.index(0)\n    value = model.data(index, model.ValueRole)\n    formatted = model.data(index, model.FormattedValueRole)\n    assert value == 45.123\n    assert formatted == \"45.12\"\ndef test_invalid_sensor_update(model):\n    \"\"\"Test, dass eine Exception bei ungültigem Sensor geworfen wird.\"\"\"",
+        "detail": "Python.tests.test_sensorviewmodel",
+        "documentation": {}
+    },
+    {
+        "label": "test_invalid_sensor_update",
+        "kind": 2,
+        "importPath": "Python.tests.test_sensorviewmodel",
+        "description": "Python.tests.test_sensorviewmodel",
+        "peekOfCode": "def test_invalid_sensor_update(model):\n    \"\"\"Test, dass eine Exception bei ungültigem Sensor geworfen wird.\"\"\"\n    with pytest.raises(SensorException):\n        model.update_sensor(\"NonExistentSensor\", 0.0)\ndef test_invalid_index(model):\n    \"\"\"Test des Verhaltens bei ungültigem Index.\"\"\"\n    invalid_index = model.index(999)  # Index außerhalb des gültigen Bereichs\n    assert model.data(invalid_index, model.NameRole) is None\ndef test_formatted_value_with_invalid_data(model):\n    \"\"\"Test der Formatierung bei ungültigen Daten.\"\"\"",
+        "detail": "Python.tests.test_sensorviewmodel",
+        "documentation": {}
+    },
+    {
+        "label": "test_invalid_index",
+        "kind": 2,
+        "importPath": "Python.tests.test_sensorviewmodel",
+        "description": "Python.tests.test_sensorviewmodel",
+        "peekOfCode": "def test_invalid_index(model):\n    \"\"\"Test des Verhaltens bei ungültigem Index.\"\"\"\n    invalid_index = model.index(999)  # Index außerhalb des gültigen Bereichs\n    assert model.data(invalid_index, model.NameRole) is None\ndef test_formatted_value_with_invalid_data(model):\n    \"\"\"Test der Formatierung bei ungültigen Daten.\"\"\"\n    # Simuliere ungültige Daten (würde in der Praxis nicht vorkommen)\n    model._sensors[0][\"value\"] = \"invalid\"\n    index = model.index(0)\n    formatted = model.data(index, model.FormattedValueRole)",
+        "detail": "Python.tests.test_sensorviewmodel",
+        "documentation": {}
+    },
+    {
+        "label": "test_formatted_value_with_invalid_data",
+        "kind": 2,
+        "importPath": "Python.tests.test_sensorviewmodel",
+        "description": "Python.tests.test_sensorviewmodel",
+        "peekOfCode": "def test_formatted_value_with_invalid_data(model):\n    \"\"\"Test der Formatierung bei ungültigen Daten.\"\"\"\n    # Simuliere ungültige Daten (würde in der Praxis nicht vorkommen)\n    model._sensors[0][\"value\"] = \"invalid\"\n    index = model.index(0)\n    formatted = model.data(index, model.FormattedValueRole)\n    assert formatted == \"—\"  # Erwartetes Verhalten bei Formatierungsfehler",
+        "detail": "Python.tests.test_sensorviewmodel",
         "documentation": {}
     }
 ]
