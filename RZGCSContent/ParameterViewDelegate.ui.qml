@@ -6,50 +6,63 @@ Check out https://doc.qt.io/qtcreator/creator-quick-ui-forms.html for details on
 */
 
 import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
-Item {
+Rectangle {
     id: delegate
-    width: ListView.view.width
-    height: 140
+    color: "#2d2d2d"
+    radius: 4
 
-    Rectangle {
-        id: rectangle
-        color: "#bdbdbd"
+    // Define constants locally
+    readonly property color textColor: "#ffffff"
+    readonly property color labelColor: "#88a4bf"
+    readonly property int textSize: Math.max(10, height * 0.3)
+    readonly property int labelSize: Math.max(8, height * 0.25)
+
+    // Safe model data access
+    property string paramName: model && model.name ? model.name : ""
+    property string paramValue: model && model.value ? model.value : "0"
+    property string paramUnit: model && model.unit ? model.unit : ""
+
+    RowLayout {
         anchors.fill: parent
-        anchors.margins: 12
-        visible: true
-        radius: 4
+        anchors.margins: Math.max(5, parent.height * 0.1)
+        spacing: Math.max(5, parent.width * 0.01)
+
+        // Parameter name
+        Label {
+            text: paramName
+            color: labelColor
+            font.pixelSize: labelSize
+            Layout.preferredWidth: parent.width * 0.4
+            elide: Text.ElideRight
+        }
+
+        // Parameter value
+        Label {
+            text: paramValue
+            color: textColor
+            font.pixelSize: textSize
+            Layout.preferredWidth: parent.width * 0.3
+            horizontalAlignment: Text.AlignRight
+        }
+
+        // Parameter unit
+        Label {
+            text: paramUnit
+            color: labelColor
+            font.pixelSize: labelSize
+            Layout.preferredWidth: parent.width * 0.2
+            visible: paramUnit !== ""
+        }
     }
 
-    Text {
-        id: label
-        color: "#343434"
-        anchors.top: parent.top
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        font.family: Constants.largeFont.family
-        text: name
-        anchors.margins: 24
-    }
+    // Hover effect
     MouseArea {
         anchors.fill: parent
-        onClicked: delegate.ListView.view.currentIndex = index
+        hoverEnabled: true
+        onEntered: parent.color = "#3d3d3d"
+        onExited: parent.color = "#2d2d2d"
     }
-    states: [
-        State {
-            name: "Highlighted"
-
-            when: delegate.ListView.isCurrentItem
-            PropertyChanges {
-                target: label
-                color: "#efefef"
-                anchors.topMargin: 52
-            }
-
-            PropertyChanges {
-                target: rectangle
-                visible: false
-            }
-        }
-    ]
 }

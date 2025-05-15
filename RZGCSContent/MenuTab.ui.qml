@@ -22,7 +22,8 @@ Item {
 
                 anchors.fill: parent
 
-
+                Layout.fillWidth: true
+                Layout.fillHeight: true
                 color: "black"
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom

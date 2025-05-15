@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls 6.8
 
 Item {
     id: delegate
@@ -7,54 +8,48 @@ Item {
 
     Rectangle {
         id: rectangle
-        color: "#bdbdbd"
+        color: "#2d2d2d"
         anchors.fill: parent
         anchors.margins: 12
         visible: true
         radius: 4
+        border.color: delegate.GridView.isCurrentItem ? "#0d52a4" : "#3d3d3d"
+        border.width: delegate.GridView.isCurrentItem ? 2 : 1
     }
 
-    Text {
-        id: label
-        color: "#343434"
-        anchors.top: parent.top
-        anchors.horizontalCenter: parent.horizontalCenter
+    Column {
+        anchors.fill: parent
+        anchors.margins: 12
+        spacing: 8
 
-        text: model.name
-        anchors.margins: 24
+        Text {
+            id: label
+            color: "#ffffff"
+            text: model.name
+            font.pixelSize: 14
+            font.bold: true
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+
+        Text {
+            id: valueLabel
+            color: "#ffffff"
+            text: {
+                if (model.name === "GPS") {
+                    return "Lat: " + model.latitude.toFixed(6) + "\nLon: " + model.longitude.toFixed(6)
+                } else {
+                    return model.formattedValue
+                }
+            }
+            font.pixelSize: 12
+            anchors.horizontalCenter: parent.horizontalCenter
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+        }
     }
-    Text {
-        id: valueLabel
-        x: 21
-        y: 90
-        width: 98
-        height: 22
-        anchors.bottom: parent.bottom
-        text: model.formattedValue // <- Hier wird der Sensorwert angezeigt
-        color: "#202020"
-        font.pixelSize: 16
-        anchors.margins: 24
-    }
+
     MouseArea {
         anchors.fill: parent
         onClicked: delegate.GridView.view.currentIndex = index
     }
-
-    states: [
-        State {
-            name: "Highlighted"
-
-            when: delegate.GridView.isCurrentItem
-            PropertyChanges {
-                target: label
-                color: "#efefef"
-                anchors.topMargin: 52
-            }
-
-            PropertyChanges {
-                target: rectangle
-                visible: false
-            }
-        }
-    ]
 }

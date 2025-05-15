@@ -7,110 +7,138 @@ Check out https://doc.qt.io/qtcreator/creator-quick-ui-forms.html for details on
 
 import QtQuick
 import QtQuick.Controls
-import QtLocation 6.8
- import QtPositioning 6.8
+import QtQuick.Layouts
+import QtLocation
+import QtPositioning
 import QtQuick3D 6.8
 
+Rectangle {
+    id: flightView
+    color: "#1d1d1d"
+    clip: true
 
+    // Initialize map plugin
+    Plugin {
+        id: mapPlugin
+        name: "osm"
+        PluginParameter {
+            name: "osm.mapping.custom.host"
+            value: "https://tile.openstreetmap.org/"
+        }
+    }
 
-
-
-    Item {
-    id: flightview
-    width: 1920
-    height: 1080
-
-    Rectangle {
-        id: maprectangle
-        color: "black"
+    ColumnLayout {
         anchors.fill: parent
+        anchors.margins: Math.max(5, parent.width * 0.005)
+        spacing: Math.max(5, parent.height * 0.005)
 
-        Item {
-            x: 0
-            y: 0
-            width: 1271
-            height: 712
+        // Header
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.preferredHeight: Math.max(25, parent.height * 0.03)
+            spacing: Math.max(5, parent.width * 0.005)
 
-
-
-
-            Plugin {
-                id: osmFreePlugin
-                name: "osm"
-                PluginParameter {
-                    name: "osm.mapping.custom.host"
-                    value: "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                }
-                PluginParameter {
-                    name: "osm.mapping.custom.tileSize"
-                    value: "256"
-                }
-                PluginParameter {
-                    name: "osm.mapping.custom.minimumLevel"
-                    value: "2"
-                }
-                PluginParameter {
-                    name: "osm.mapping.custom.maximumLevel"
-                    value: "19"
-                }
+            Label {
+                text: "Flugkarte"
+                font.pixelSize: Math.max(10, parent.height * 0.015)
+                color: "white"
             }
 
-
-            Map {
-                id: map1
-                anchors.fill: parent
-                plugin: osmFreePlugin
-                center {
-                           // The Qt Company in Oslo
-                    latitude: 48.1351
-                    longitude: 11.5820
-                }  // München Beispiel
-                zoomLevel: 14
-                // Routenanzeige
-                        MapRoute {
-                            id: routeItem
-                            route: routeModel
-                            line.color: "blue"
-                            line.width: 4
-                        }
-                        RouteModel {
-                                id: routeModel
-                                plugin: mapPlugin
-                                query: routeQuery
-                            }
-                        RouteQuery {
-                                id: routeQuery
-                                waypoints: [
-
-                                ]
-                            }
-
-                // Marker für aktuelle GPS-Position
-                MapQuickItem {
-                    id: gpsMarker
-                    anchorPoint.x: 12
-                    anchorPoint.y: 12
-                    coordinate {
-                        // The Qt Company in Oslo
-                 latitude: 48.1351
-                 longitude: 11.5820
-             }  // München Beispie
-                    sourceItem: Rectangle {
-                        width: 24
-                        height: 24
-                        color: "red"
-                        radius: 12
-                        border.width: 2
-                        border.color: "white"
-                    }
-                }
-            }
-
+            Item { Layout.fillWidth: true }
         }
 
+        // Map view
+        Map {
+            id: map
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.preferredHeight: parent.height * 0.7
+            plugin: mapPlugin
+            center: QtPositioning.coordinate(51.1657, 10.4515)
+            zoomLevel: 14
 
+            // Add drone position marker
+            MapQuickItem {
+                id: droneMarker
+                coordinate: QtPositioning.coordinate(51.1657, 10.4515)
+                anchorPoint.x: image.width / 2
+                anchorPoint.y: image.height / 2
+                sourceItem: Image {
+                    id: image
+                    source: "qrc:/images/drone_marker.png"
+                    width: 32
+                    height: 32
+                }
+            }
+        }
 
+        // Control Panel
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: Math.max(100, parent.height * 0.25)
+            color: "#2d2d2d"
+            radius: 4
 
+            GridLayout {
+                anchors.fill: parent
+                anchors.margins: Math.max(5, parent.height * 0.05)
+                columns: 4
+                rowSpacing: Math.max(5, parent.height * 0.05)
+                columnSpacing: Math.max(5, parent.width * 0.01)
+
+                // Left side controls
+                Button {
+                    text: "Prearm"
+                    Layout.preferredHeight: Math.max(30, parent.height * 0.3)
+                    font.pixelSize: Math.max(10, parent.height * 0.15)
+                }
+
+                Button {
+                    text: "Set Position"
+                    Layout.preferredHeight: Math.max(30, parent.height * 0.3)
+                    font.pixelSize: Math.max(10, parent.height * 0.15)
+                }
+
+                // Center controls
+                TextField {
+                    placeholderText: "Send Mission Plan"
+                    Layout.preferredHeight: Math.max(30, parent.height * 0.3)
+                    font.pixelSize: Math.max(10, parent.height * 0.15)
+                    Layout.columnSpan: 2
+                }
+
+                // Right side controls
+                Button {
+                    text: "Reset"
+                    Layout.preferredHeight: Math.max(30, parent.height * 0.3)
+                    font.pixelSize: Math.max(10, parent.height * 0.15)
+                }
+
+                ComboBox {
+                    Layout.preferredHeight: Math.max(30, parent.height * 0.3)
+                    font.pixelSize: Math.max(10, parent.height * 0.15)
+                    Layout.columnSpan: 2
+                }
+
+                // Bottom row
+                Switch {
+                    text: "Arm"
+                    Layout.preferredHeight: Math.max(30, parent.height * 0.3)
+                    font.pixelSize: Math.max(10, parent.height * 0.15)
+                }
+
+                Switch {
+                    text: "Disarm"
+                    Layout.preferredHeight: Math.max(30, parent.height * 0.3)
+                    font.pixelSize: Math.max(10, parent.height * 0.15)
+                }
+
+                Slider {
+                    Layout.preferredHeight: Math.max(30, parent.height * 0.3)
+                    Layout.columnSpan: 2
+                }
+            }
+        }
     }
 
     Rectangle {
@@ -208,7 +236,4 @@ import QtQuick3D 6.8
     Item {
         id: __materialLibrary__
     }
-
-
-
 }
