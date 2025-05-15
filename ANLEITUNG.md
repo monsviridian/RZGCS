@@ -1,64 +1,97 @@
-# RZGCS - Installations- und Bedienungsanleitung
+# RZGCS Installation and Usage Guide
 
 ## Installation
 
-1. **Python installieren**
-   - Besuchen Sie [python.org](https://www.python.org/downloads/)
-   - Laden Sie die neueste Python-Version für Mac herunter
-   - Führen Sie den Installer aus und folgen Sie den Anweisungen
+### Windows
+1. Install Python 3.10 or newer from [python.org](https://www.python.org/downloads/)
+2. Install Qt 6.8 or newer from [qt.io](https://www.qt.io/download)
+3. Open a terminal in the project directory and run:
+   ```
+   pip install -r requirements.txt
+   ```
 
-2. **Software herunterladen**
-   - Laden Sie die neueste Version von RZGCS herunter
-   - Entpacken Sie die ZIP-Datei in einen Ordner Ihrer Wahl
+### Mac
+1. Install Python 3.10 or newer from [python.org](https://www.python.org/downloads/)
+2. Install Qt 6.8 or newer from [qt.io](https://www.qt.io/download)
+3. Open Terminal and run:
+   ```
+   chmod +x install_mac.sh
+   ./install_mac.sh
+   ```
 
-3. **Abhängigkeiten installieren**
-   - Öffnen Sie das Terminal (über Spotlight-Suche oder Programme/Dienstprogramme)
-   - Navigieren Sie zum RZGCS-Ordner:
-     ```bash
-     cd /Pfad/zu/RZGCS
-     ```
-   - Führen Sie das Installationsskript aus:
-     ```bash
-     ./install_mac.sh
-     ```
+## Starting the Application
 
-## Starten der Software
+### Windows
+1. Open a terminal in the project directory
+2. Run:
+   ```
+   python main.py
+   ```
 
-1. **Einfacher Start**
-   - Doppelklicken Sie auf die Datei `start_mac.command` im RZGCS-Ordner
-   - Die Software startet automatisch
+### Mac
+1. Open Terminal
+2. Navigate to the project directory
+3. Run:
+   ```
+   python3 main.py
+   ```
 
-2. **Manueller Start**
-   - Öffnen Sie das Terminal
-   - Navigieren Sie zum RZGCS-Ordner
-   - Führen Sie aus:
-     ```bash
-     python main.py
-     ```
+## Using the Application
 
-## Verwendung
+### Connection
+1. Click on "Connect" in the top menu
+2. Select the correct COM port (Windows) or device (Mac)
+3. Click "Connect"
 
-1. **Verbindung herstellen**
-   - Wählen Sie den richtigen COM-Port aus
-   - Klicken Sie auf "Verbinden"
+### Flight Control
+1. Use the "Flight" tab to view the map
+2. The drone's position is shown on the map
+3. Use the control panel to:
+   - Prearm the drone
+   - Set position
+   - Arm/Disarm
+   - Send mission plans
 
-2. **Drohne steuern**
-   - Die Sensordaten werden automatisch angezeigt
-   - Logs zeigen den Status der Drohne
-   - Wichtige Warnungen werden rot hervorgehoben
+### Sensors
+1. Use the "Sensors" tab to view:
+   - GPS status
+   - Battery level
+   - Altitude
+   - Speed
+   - Heading
+   - Flight mode
 
-## Fehlerbehebung
+### Parameters
+1. Use the "Parameters" tab to:
+   - View all parameters
+   - Change parameter values
+   - Save parameters
 
-Falls die Software nicht startet:
-1. Prüfen Sie, ob Python korrekt installiert ist
-2. Führen Sie das Installationsskript erneut aus
-3. Starten Sie den Computer neu
+### Logs
+1. Use the "Logs" tab to view:
+   - Connection status
+   - Error messages
+   - System messages
+   - Flight data
 
-Bei weiteren Problemen kontaktieren Sie bitte den Support.
+## Troubleshooting
 
-## Systemanforderungen
+### Connection Issues
+- Check if the correct port is selected
+- Ensure the drone is powered on
+- Try reconnecting
 
-- macOS 10.15 oder neuer
-- Python 3.8 oder neuer
-- 4GB RAM
-- 500MB freier Speicherplatz 
+### Display Issues
+- Check if Qt is properly installed
+- Ensure all dependencies are installed
+- Try restarting the application
+
+### Other Issues
+- Check the logs for error messages
+- Ensure all requirements are met
+- Try reinstalling the application
+
+## Support
+For support, please contact:
+- Email: support@rzgcs.com
+- Phone: +49 123 456789 
