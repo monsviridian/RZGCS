@@ -112,5 +112,4 @@ python main.py
 MIT License (see LICENSE file)
 
 ## Authors
-- Original: fuckheinerkleinehack
-- English documentation: AI-assisted 
+- Original: joel-rz
