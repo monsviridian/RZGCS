@@ -39,10 +39,51 @@ pip install pytest black mypy flake8
 ```bash
 python main.py
 ```
-
 - Select the correct COM port and baudrate (usually 115200)
 - Click 'Connect'
 - Use the tabs: Preflight, Parameter, Sensoren, Flug
+
+---
+
+## macOS Specific Instructions
+
+1. **Install Python 3.9+**
+   - Download from [python.org](https://www.python.org/downloads/macos/)
+   - During installation, make sure to add Python to your PATH.
+
+2. **(Optional) Install Homebrew for easier package management**
+   ```bash
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip3 install -r requirements.txt
+   ```
+
+4. **Connect your flight controller**
+   - Plug in via USB.
+   - Find the port name with:
+     ```bash
+     ls /dev/tty.*
+     ```
+   - Typical names: `/dev/tty.usbserial-xxxx` or `/dev/tty.usbmodemxxxx`
+
+5. **Run the app**
+   ```bash
+   python3 main.py
+   ```
+   - Select the correct port and baudrate (115200).
+   - Click 'Connect'.
+
+6. **Troubleshooting**
+   - If you get permission errors, run:
+     ```bash
+     sudo chmod 666 /dev/tty.usbserial-xxxx
+     ```
+   - If you see "No module named ...", check your Python version and virtual environment.
+
+---
 
 ## Folder Structure
 - `Python/backend/` — All Python backend logic (serial, MAVLink, models)
