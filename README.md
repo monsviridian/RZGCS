@@ -11,30 +11,38 @@ RZGCS is a modern, cross-platform ground control station for drones and vehicles
 - Modular tabbed UI: Preflight, Parameter, Sensor, Flight
 - Modern, dark-themed interface
 
-## Requirements
-- Python 3.9+
-- PySide6
-- pymavlink
-- (Optional) pytest for tests
+## Installation
 
-Install dependencies:
+### 1. Install Python 3.9 or newer
+- [Download Python](https://www.python.org/downloads/)
+- Make sure to check "Add Python to PATH" during installation.
+
+### 2. Clone this repository
+```bash
+git clone https://github.com/monsviridian/RZGCS.git
+cd RZGCS
+```
+
+### 3. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-## Usage
-1. **Connect your flight controller** via USB/serial.
-2. **Start the application:**
-   ```bash
-   python main.py
-   ```
-3. **Select the correct COM port and baudrate** (usually 115200).
-4. **Click 'Connect'.**
-5. Use the tabs:
-   - **Preflight:** Connection, status, and basic controls
-   - **Parameter:** Load and view all FC parameters in a table
-   - **Sensoren:** Live sensor grid (GPS, attitude, battery, etc.)
-   - **Flug:** (Flight) - for future flight controls/visualization
+### 4. (Optional) Install additional tools for development
+```bash
+pip install pytest black mypy flake8
+```
+
+## Running the Application
+
+### Windows, Linux, or Mac
+```bash
+python main.py
+```
+
+- Select the correct COM port and baudrate (usually 115200)
+- Click 'Connect'
+- Use the tabs: Preflight, Parameter, Sensoren, Flug
 
 ## Folder Structure
 - `Python/backend/` — All Python backend logic (serial, MAVLink, models)
