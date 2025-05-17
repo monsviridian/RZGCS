@@ -1,142 +1,67 @@
-# RZGCS - Drone Control System
+# RZGCS (Raspberry Ground Control Station)
 
-Eine benutzerfreundliche Drohnen-Steuerungssoftware für Mac.
-
-## Installation
-
-1. **Python installieren**
-   - Besuchen Sie [python.org](https://www.python.org/downloads/)
-   - Laden Sie die neueste Python-Version für Mac herunter
-   - Führen Sie den Installer aus und folgen Sie den Anweisungen
-
-2. **Software herunterladen**
-   - Laden Sie die neueste Version von RZGCS herunter
-   - Entpacken Sie die ZIP-Datei in einen Ordner Ihrer Wahl
-
-3. **Abhängigkeiten installieren**
-   - Öffnen Sie das Terminal (über Spotlight-Suche oder Programme/Dienstprogramme)
-   - Navigieren Sie zum RZGCS-Ordner:
-     ```bash
-     cd /Pfad/zu/RZGCS
-     ```
-   - Führen Sie das Installationsskript aus:
-     ```bash
-     ./install_mac.sh
-     ```
-
-## Starten der Software
-
-1. **Einfacher Start**
-   - Doppelklicken Sie auf die Datei `start_mac.command` im RZGCS-Ordner
-   - Die Software startet automatisch
-
-2. **Manueller Start**
-   - Öffnen Sie das Terminal
-   - Navigieren Sie zum RZGCS-Ordner
-   - Führen Sie aus:
-     ```bash
-     python main.py
-     ```
-
-## Verwendung
-
-1. **Verbindung herstellen**
-   - Wählen Sie den richtigen COM-Port aus
-   - Klicken Sie auf "Verbinden"
-
-2. **Drohne steuern**
-   - Die Sensordaten werden automatisch angezeigt
-   - Logs zeigen den Status der Drohne
-   - Wichtige Warnungen werden rot hervorgehoben
-
-## Fehlerbehebung
-
-Falls die Software nicht startet:
-1. Prüfen Sie, ob Python korrekt installiert ist
-2. Führen Sie das Installationsskript erneut aus
-3. Starten Sie den Computer neu
-
-Bei weiteren Problemen kontaktieren Sie bitte den Support.
-
-## Systemanforderungen
-
-- macOS 10.15 oder neuer
-- Python 3.8 oder neuer
-- 4GB RAM
-- 500MB freier Speicherplatz
+## Overview
+RZGCS is a modern, cross-platform ground control station for drones and vehicles using MAVLink (e.g. ArduPilot, PX4). It features a clean Qt/QML-based UI, live telemetry, parameter management, and sensor visualization.
 
 ## Features
+- Serial MAVLink connection to flight controllers (ArduPilot, PX4, etc.)
+- Live sensor data grid (GPS, attitude, battery, airspeed, etc.)
+- Parameter table (Mission Planner style) with FC parameter loading
+- Log view for connection and flight status
+- Modular tabbed UI: Preflight, Parameter, Sensor, Flight
+- Modern, dark-themed interface
 
-- Echtzeit-Sensorüberwachung
-- MAVLink-Protokoll-Integration
-- Konfigurierbares Logging-System
-- Motorsteuerung und -tests
-- Benutzerfreundliche QML-Oberfläche
+## Requirements
+- Python 3.9+
+- PySide6
+- pymavlink
+- (Optional) pytest for tests
 
-## Entwicklung
-
-### Codequalität
-
-Das Projekt verwendet:
-- Black für Codeformatierung
-- MyPy für statische Typüberprüfung
-- Flake8 für Linting
-
-Ausführen der Qualitätschecks:
+Install dependencies:
 ```bash
-black Python/
-mypy Python/
-flake8 Python/
+pip install -r requirements.txt
 ```
 
-### Tests
+## Usage
+1. **Connect your flight controller** via USB/serial.
+2. **Start the application:**
+   ```bash
+   python main.py
+   ```
+3. **Select the correct COM port and baudrate** (usually 115200).
+4. **Click 'Connect'.**
+5. Use the tabs:
+   - **Preflight:** Connection, status, and basic controls
+   - **Parameter:** Load and view all FC parameters in a table
+   - **Sensoren:** Live sensor grid (GPS, attitude, battery, etc.)
+   - **Flug:** (Flight) - for future flight controls/visualization
 
-Tests ausführen:
-```bash
-pytest Python/tests/
-```
+## Folder Structure
+- `Python/backend/` — All Python backend logic (serial, MAVLink, models)
+- `RZGCSContent/` — All QML UI files
+- `main.py` — Application entry point
+- `requirements.txt` — Python dependencies
 
-## Projektstruktur
+## Parameter Table
+- Click "Parameter vom FC laden" in the Parameter tab to fetch all parameters from the connected flight controller.
+- The table displays: Name, Value, Default, Unit, Options, Description.
+- (Default, Unit, Options, Description are placeholders unless you add metadata.)
 
-```
-.
-├── Python/
-│   ├── backend/
-│   │   ├── sensorviewmodel.py   # Sensor-Datenmodell
-│   │   ├── serial_connector.py  # Serielle Kommunikation
-│   │   ├── mavsdk_connector.py # MAVLink-Integration
-│   │   └── logger.py           # Logging-System
-│   └── tests/
-│       └── test_sensorviewmodel.py
-├── App/                        # QML-Frontend
-└── requirements.txt
-```
+## Development
+- All QML UI is in `RZGCSContent/`.
+- Backend is modular and testable (see `Python/tests/`).
+- To run tests:
+  ```bash
+  pytest Python/tests/
+  ```
 
-## Konfiguration
+## Cleaning Up
+- Unused files, build folders, and bytecode caches are regularly cleaned.
+- Only keep `requirements.txt` (not `requirement.txt`).
 
-Die Anwendung kann über Umgebungsvariablen oder `config.json` konfiguriert werden:
+## License
+MIT License (see LICENSE file)
 
-- `DRONE_DEFAULT_PORT`: Serieller Port (Standard: COM8)
-- `DRONE_DEFAULT_BAUDRATE`: Baudrate (Standard: 57600)
-- `DRONE_LOG_LEVEL`: Log-Level (DEBUG, INFO, WARNING, ERROR)
-
-## Fehlerbehandlung
-
-Das System verwendet benutzerdefinierte Exceptions für verschiedene Fehlerszenarien:
-
-- `ConnectionException`: Verbindungsprobleme
-- `SensorException`: Sensorfehler
-- `MotorException`: Motorfehler
-- `CalibrationException`: Kalibrierungsfehler
-
-## Beitragen
-
-1. Fork erstellen
-2. Feature Branch erstellen (`git checkout -b feature/AmazingFeature`)
-3. Änderungen committen (`git commit -m 'Add some AmazingFeature'`)
-4. Branch pushen (`git push origin feature/AmazingFeature`)
-5. Pull Request erstellen
-
-## Lizenz
-
-Dieses Projekt ist unter der MIT-Lizenz lizenziert. 
+## Authors
+- Original: fuckheinerkleinehack
+- English documentation: AI-assisted 
