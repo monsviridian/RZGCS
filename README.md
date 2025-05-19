@@ -1,115 +1,142 @@
-# RZGCS (Raspberry Ground Control Station)
+# RZGCS - Drone Control System
 
-## Overview
-RZGCS is a modern, cross-platform ground control station for drones and vehicles using MAVLink (e.g. ArduPilot, PX4). It features a clean Qt/QML-based UI, live telemetry, parameter management, and sensor visualization.
-
-## Features
-- Serial MAVLink connection to flight controllers (ArduPilot, PX4, etc.)
-- Live sensor data grid (GPS, attitude, battery, airspeed, etc.)
-- Parameter table (Mission Planner style) with FC parameter loading
-- Log view for connection and flight status
-- Modular tabbed UI: Preflight, Parameter, Sensor, Flight
-- Modern, dark-themed interface
+Eine benutzerfreundliche Drohnen-Steuerungssoftware für Mac.
 
 ## Installation
 
-### 1. Install Python 3.9 or newer
-- [Download Python](https://www.python.org/downloads/)
-- Make sure to check "Add Python to PATH" during installation.
+1. **Python installieren**
+   - Besuchen Sie [python.org](https://www.python.org/downloads/)
+   - Laden Sie die neueste Python-Version für Mac herunter
+   - Führen Sie den Installer aus und folgen Sie den Anweisungen
 
-### 2. Clone this repository
-```bash
-git clone https://github.com/monsviridian/RZGCS.git
-cd RZGCS
-```
+2. **Software herunterladen**
+   - Laden Sie die neueste Version von RZGCS herunter
+   - Entpacken Sie die ZIP-Datei in einen Ordner Ihrer Wahl
 
-### 3. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 4. (Optional) Install additional tools for development
-```bash
-pip install pytest black mypy flake8
-```
-
-## Running the Application
-
-### Windows, Linux, or Mac
-```bash
-python main.py
-```
-- Select the correct COM port and baudrate (usually 115200)
-- Click 'Connect'
-- Use the tabs: Preflight, Parameter, Sensoren, Flug
-
----
-
-## macOS Specific Instructions
-
-1. **Install Python 3.9+**
-   - Download from [python.org](https://www.python.org/downloads/macos/)
-   - During installation, make sure to add Python to your PATH.
-
-2. **(Optional) Install Homebrew for easier package management**
-   ```bash
-   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip3 install -r requirements.txt
-   ```
-
-4. **Connect your flight controller**
-   - Plug in via USB.
-   - Find the port name with:
+3. **Abhängigkeiten installieren**
+   - Öffnen Sie das Terminal (über Spotlight-Suche oder Programme/Dienstprogramme)
+   - Navigieren Sie zum RZGCS-Ordner:
      ```bash
-     ls /dev/tty.*
+     cd /Pfad/zu/RZGCS
      ```
-   - Typical names: `/dev/tty.usbserial-xxxx` or `/dev/tty.usbmodemxxxx`
-
-5. **Run the app**
-   ```bash
-   python3 main.py
-   ```
-   - Select the correct port and baudrate (115200).
-   - Click 'Connect'.
-
-6. **Troubleshooting**
-   - If you get permission errors, run:
+   - Führen Sie das Installationsskript aus:
      ```bash
-     sudo chmod 666 /dev/tty.usbserial-xxxx
+     ./install_mac.sh
      ```
-   - If you see "No module named ...", check your Python version and virtual environment.
 
----
+## Starten der Software
 
-## Folder Structure
-- `Python/backend/` — All Python backend logic (serial, MAVLink, models)
-- `RZGCSContent/` — All QML UI files
-- `main.py` — Application entry point
-- `requirements.txt` — Python dependencies
+1. **Einfacher Start**
+   - Doppelklicken Sie auf die Datei `start_mac.command` im RZGCS-Ordner
+   - Die Software startet automatisch
 
-## Parameter Table
-- Click "Parameter vom FC laden" in the Parameter tab to fetch all parameters from the connected flight controller.
-- The table displays: Name, Value, Default, Unit, Options, Description.
-- (Default, Unit, Options, Description are placeholders unless you add metadata.)
+2. **Manueller Start**
+   - Öffnen Sie das Terminal
+   - Navigieren Sie zum RZGCS-Ordner
+   - Führen Sie aus:
+     ```bash
+     python main.py
+     ```
 
-## Development
-- All QML UI is in `RZGCSContent/`.
-- Backend is modular and testable (see `Python/tests/`).
-- To run tests:
-  ```bash
-  pytest Python/tests/
-  ```
+## Verwendung
 
-## Cleaning Up
-- Unused files, build folders, and bytecode caches are regularly cleaned.
-- Only keep `requirements.txt` (not `requirement.txt`).
+1. **Verbindung herstellen**
+   - Wählen Sie den richtigen COM-Port aus
+   - Klicken Sie auf "Verbinden"
 
-## License
-MIT License (see LICENSE file)
+2. **Drohne steuern**
+   - Die Sensordaten werden automatisch angezeigt
+   - Logs zeigen den Status der Drohne
+   - Wichtige Warnungen werden rot hervorgehoben
 
-## Authors
-- Original: joel-rz
+## Fehlerbehebung
+
+Falls die Software nicht startet:
+1. Prüfen Sie, ob Python korrekt installiert ist
+2. Führen Sie das Installationsskript erneut aus
+3. Starten Sie den Computer neu
+
+Bei weiteren Problemen kontaktieren Sie bitte den Support.
+
+## Systemanforderungen
+
+- macOS 10.15 oder neuer
+- Python 3.8 oder neuer
+- 4GB RAM
+- 500MB freier Speicherplatz
+
+## Features
+
+- Echtzeit-Sensorüberwachung
+- MAVLink-Protokoll-Integration
+- Konfigurierbares Logging-System
+- Motorsteuerung und -tests
+- Benutzerfreundliche QML-Oberfläche
+
+## Entwicklung
+
+### Codequalität
+
+Das Projekt verwendet:
+- Black für Codeformatierung
+- MyPy für statische Typüberprüfung
+- Flake8 für Linting
+
+Ausführen der Qualitätschecks:
+```bash
+black Python/
+mypy Python/
+flake8 Python/
+```
+
+### Tests
+
+Tests ausführen:
+```bash
+pytest Python/tests/
+```
+
+## Projektstruktur
+
+```
+.
+├── Python/
+│   ├── backend/
+│   │   ├── sensorviewmodel.py   # Sensor-Datenmodell
+│   │   ├── serial_connector.py  # Serielle Kommunikation
+│   │   ├── mavsdk_connector.py # MAVLink-Integration
+│   │   └── logger.py           # Logging-System
+│   └── tests/
+│       └── test_sensorviewmodel.py
+├── App/                        # QML-Frontend
+└── requirements.txt
+```
+
+## Konfiguration
+
+Die Anwendung kann über Umgebungsvariablen oder `config.json` konfiguriert werden:
+
+- `DRONE_DEFAULT_PORT`: Serieller Port (Standard: COM8)
+- `DRONE_DEFAULT_BAUDRATE`: Baudrate (Standard: 57600)
+- `DRONE_LOG_LEVEL`: Log-Level (DEBUG, INFO, WARNING, ERROR)
+
+## Fehlerbehandlung
+
+Das System verwendet benutzerdefinierte Exceptions für verschiedene Fehlerszenarien:
+
+- `ConnectionException`: Verbindungsprobleme
+- `SensorException`: Sensorfehler
+- `MotorException`: Motorfehler
+- `CalibrationException`: Kalibrierungsfehler
+
+## Beitragen
+
+1. Fork erstellen
+2. Feature Branch erstellen (`git checkout -b feature/AmazingFeature`)
+3. Änderungen committen (`git commit -m 'Add some AmazingFeature'`)
+4. Branch pushen (`git push origin feature/AmazingFeature`)
+5. Pull Request erstellen
+
+## Lizenz
+
+Dieses Projekt ist unter der MIT-Lizenz lizenziert. 

@@ -1,69 +1,56 @@
-"""
-Base class for drone connectors
-"""
-
-from abc import ABC, abstractmethod
 from PySide6.QtCore import QObject, Signal
+from abc import ABC, ABCMeta, abstractmethod
+from typing import Dict, Any, Optional
 
-# Create a common metaclass that inherits from both QObject and ABC metaclasses
-class DroneConnectorMeta(type(QObject), type(ABC)):
+class DroneConnectorMeta(type(QObject), ABCMeta):
+    """Metaclass that combines QObject and ABCMeta"""
     pass
 
 class DroneConnectorBase(QObject, ABC, metaclass=DroneConnectorMeta):
-    """Base class for drone connectors"""
+    """Basis-Klasse für Drohnen-Verbindungen"""
     
-    # Common signals for all connector implementations
-    log_received = Signal(str)  # Logging messages
-    gps_msg = Signal(float, float)  # Latitude, Longitude
-    attitude_msg = Signal(float, float, float)  # Roll, Pitch, Yaw
-    sensor_data = Signal(str, float)  # Sensor name, value
-    connection_status = Signal(bool)  # Connection status
+    # Signale für UI-Updates
+    log_received = Signal(str)
+    gps_msg = Signal(float, float)
+    attitude_msg = Signal(float, float, float)
+    sensor_data = Signal(str, float)
+    connection_status = Signal(bool)
     
     def __init__(self):
-        """Initializes the base class"""
+        """Initialisiert die Basisklasse"""
         super().__init__()
         self.running = False
-        self.debug = False
-        
+        self.debug = True
+        self._is_connecting = False
+
     @abstractmethod
-    async def connect_to_drone(self) -> bool:
+    def connect_to_drone(self) -> bool:
         """
-        Establishes connection to the drone.
-        
+        Stellt eine Verbindung zur Drohne her.
         Returns:
-            bool: True if connection was successful
+            bool: True wenn die Verbindung erfolgreich war, False sonst
         """
         pass
-        
+
     @abstractmethod
-    async def disconnect_from_drone(self) -> None:
-        """Disconnects from the drone"""
+    def disconnect_from_drone(self):
+        """Trennt die Verbindung zur Drohne"""
         pass
-        
+
     @abstractmethod
-    async def start_monitoring(self) -> None:
-        """Starts monitoring the drone data"""
+    def start_monitoring(self):
+        """Startet das Monitoring der Drohnendaten"""
         pass
-        
+
     @abstractmethod
-    def stop(self) -> None:
-        """Stops the connection"""
+    def stop(self):
+        """Beendet die Verbindung synchron"""
         pass
-        
-    def _log_info(self, message: str) -> None:
-        """Logs an info message"""
-        if self.debug:
-            print(f"[{self.__class__.__name__}] {message}")
+
+    def _emit_log(self, message: str):
+        """Sendet eine Log-Nachricht"""
         self.log_received.emit(message)
-        
-    def _log_error(self, message: str) -> None:
-        """Logs an error message"""
-        print(f"[{self.__class__.__name__}] ❌ {message}")
-        self.log_received.emit(f"❌ {message}")
-        
-    def _update_connection_status(self, connected: bool) -> None:
-        """Updates the connection status"""
+
+    def _emit_connection_status(self, connected: bool):
+        """Aktualisiert den Verbindungsstatus"""
         self.connection_status.emit(connected)
-        if self.debug:
-            status = "✅ Connected" if connected else "❌ Disconnected"
-            self._log_info(status) 

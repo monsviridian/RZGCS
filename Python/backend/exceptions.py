@@ -21,4 +21,12 @@ class MotorException(DroneException):
 
 class CalibrationException(DroneException):
     """Exception für Kalibrierungsfehler"""
+    pass
+
+class ConnectionTimeoutError(Exception):
+    """Raised when a connection attempt times out."""
+    pass
+
+class ConnectionError(Exception):
+    """Raised when a connection attempt fails."""
     pass 

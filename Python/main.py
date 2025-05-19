@@ -1,35 +1,51 @@
 # main.py
 
-import os
 import sys
 from pathlib import Path
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import QObject, Slot, QUrl
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 
-from autogen.settings import url, import_paths
 from backend.logger import Logger
 from backend.serial_connector import SerialConnector
 from backend.sensorviewmodel import SensorViewModel
+from backend.parameter_model import ParameterTableModel
 
-if __name__ == '__main__':
+class Backend(QObject):
+    def __init__(self):
+        super().__init__()
+        self.logger = Logger()
+        self.sensor_model = SensorViewModel()
+        self.parameter_model = ParameterTableModel()
+        self.serial_connector = SerialConnector(self.sensor_model, self.logger, self.parameter_model)
+        # Set simulator as port
+        self.serial_connector.setPort("Simulator")
+        # Set baudrate (not used for simulator, but required)
+        self.serial_connector.setBaudRate(57600)
+
+def main():
     app = QGuiApplication(sys.argv)
+    
+    # Create backend
+    backend = Backend()
+    
+    # Create QML engine
     engine = QQmlApplicationEngine()
 
-    logger = Logger()
-    sensor_model = SensorViewModel()
-    serial_connector = SerialConnector(sensor_model, logger)
+    # Expose Python objects to QML
+    engine.rootContext().setContextProperty("logger", backend.logger)
+    engine.rootContext().setContextProperty("serialConnector", backend.serial_connector)
+    engine.rootContext().setContextProperty("sensorModel", backend.sensor_model)
+    engine.rootContext().setContextProperty("parameterModel", backend.parameter_model)
 
-    engine.rootContext().setContextProperty("sensorModel", sensor_model)
-    engine.rootContext().setContextProperty("serialConnector", serial_connector)
-    engine.rootContext().setContextProperty("logger", logger)
-
-    app_dir = Path(__file__).parent.parent
-    engine.addImportPath(os.fspath(app_dir))
-    for path in import_paths:
-        engine.addImportPath(os.fspath(app_dir / path))
-
-    engine.load(os.fspath(app_dir / url))
+    # Load main QML file
+    qml_file = Path(__file__).parent.parent / "RZGCSContent" / "App.qml"
+    engine.load(QUrl.fromLocalFile(str(qml_file)))
+    
     if not engine.rootObjects():
         sys.exit(-1)
-    sys.exit(app.exec())
+        
+    return app.exec()
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -5,52 +5,30 @@ this file manually, you might introduce QML code that is not supported by Qt Des
 Check out https://doc.qt.io/qtcreator/creator-quick-ui-forms.html for details on .ui.qml files.
 */
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick.Controls 6.8
 
-Rectangle {
+Item {
     id: delegate
-    color: "#2d2d2d"
-    radius: 4
+    width: parent.width
+    height: logText.height + 4
 
-    // Extract log level from the message
-    property string logLevel: {
-        if (modelData.includes("[ERROR]")) return "error"
-        if (modelData.includes("[WARNING]")) return "warning"
-        if (modelData.includes("[DEBUG]")) return "debug"
-        return "info"
-    }
-
-    // Set color based on log level
-    property color textColor: {
-        switch(logLevel) {
-            case "error": return "#ff6b6b"
-            case "warning": return "#ffd93d"
-            case "debug": return "#6b8aff"
-            default: return "#ffffff"
-        }
-    }
-
-    RowLayout {
+    Rectangle {
         anchors.fill: parent
-        anchors.margins: Math.max(5, parent.height * 0.1)
-        spacing: Math.max(5, parent.width * 0.01)
-
-        Label {
-            text: modelData
-            color: textColor
-            font.pixelSize: Math.max(12, parent.height * 0.4)
-            font.family: "Consolas, Monaco, monospace"
-            elide: Text.ElideRight
-            Layout.fillWidth: true
-        }
+        color: index % 2 === 0 ? "#2d2d2d" : "#252525"
     }
 
-    // Hover effect
-    MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
-        onEntered: parent.color = "#3d3d3d"
-        onExited: parent.color = "#2d2d2d"
+    Text {
+        id: logText
+        text: modelData
+        color: "white"
+        font.family: "Consolas, 'Courier New', monospace"
+        font.pixelSize: 12
+        wrapMode: Text.WordWrap
+        width: parent.width - 10
+        anchors {
+            left: parent.left
+            leftMargin: 5
+            verticalCenter: parent.verticalCenter
+        }
     }
 }

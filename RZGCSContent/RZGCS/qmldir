@@ -1,0 +1,11 @@
+module RZGCS
+Screen01 1.0 Screen01.ui.qml
+MenuTab 1.0 MenuTab.ui.qml
+PreflightView 1.0 PreflightView.ui.qml
+LogsList 1.0 LogsList.ui.qml
+LogsListDelegate 1.0 LogsListDelegate.ui.qml
+SensorView 1.0 SensorView.ui.qml
+SensorViewDelegate 1.0 SensorViewDelegate.ui.qml
+ParameterView 1.0 ParameterView.ui.qml
+ParameterViewDelegate 1.0 ParameterViewDelegate.ui.qml
+FlightView 1.0 FlightView.ui.qml 

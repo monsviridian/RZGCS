@@ -25,7 +25,7 @@ Item {
         Text {
             id: label
             color: "#ffffff"
-            text: model.name
+            text: model ? (model.name || "Unknown") : "Unknown"
             font.pixelSize: 14
             font.bold: true
             anchors.horizontalCenter: parent.horizontalCenter
@@ -34,13 +34,7 @@ Item {
         Text {
             id: valueLabel
             color: "#ffffff"
-            text: {
-                if (model.name === "GPS") {
-                    return "Lat: " + model.latitude.toFixed(6) + "\nLon: " + model.longitude.toFixed(6)
-                } else {
-                    return model.formattedValue
-                }
-            }
+            text: model ? (model.formattedValue || "N/A") : "N/A"
             font.pixelSize: 12
             anchors.horizontalCenter: parent.horizontalCenter
             horizontalAlignment: Text.AlignHCenter
