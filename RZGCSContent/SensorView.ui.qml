@@ -5,46 +5,131 @@ this file manually, you might introduce QML code that is not supported by Qt Des
 Check out https://doc.qt.io/qtcreator/creator-quick-ui-forms.html for details on .ui.qml files.
 */
 import QtQuick
-import QtQuick.Controls 6.8
+import QtQuick.Controls
+import QtQuick.Layouts
 
-GridView {
-    id: sensorgrid
-    width: 420
-    height: 420
+Item {
+    id: root
+    width: 800
+    height: 600
+    
+    // Schwarzer Hintergrund für den gesamten Tab
+    Rectangle {
+        anchors.fill: parent
+        color: "#000000" // Schwarz
+    }
 
-    cellWidth: 140
-    cellHeight: 140
-
-    children: [
+    ColumnLayout {
+        anchors.fill: parent
+        spacing: 10
+        
         Rectangle {
-            color: "#1d1d1d"
-            anchors.fill: parent
-            z: -1
+            Layout.fillWidth: true
+            height: 40
+            color: "#0d52a4"
+            radius: 5
+            
+            RowLayout {
+                anchors.fill: parent
+                anchors.margins: 5
+                spacing: 10
+                
+                Text {
+                    text: qsTr("Sensor Data")
+                    color: "white"
+                    font.pixelSize: 18
+                    font.bold: true
+                    Layout.fillWidth: true
+                }
+                
+                Text {
+                    id: updateTime
+                    text: "Letzte Aktualisierung: " + new Date().toLocaleTimeString()
+                    color: "white"
+                    font.pixelSize: 12
+                }
+                
+                Timer {
+                    interval: 500  // Schnellere Aktualisierung: 0.5s statt 1s
+                    running: true
+                    repeat: true
+                    onTriggered: {
+                        updateTime.text = "Letzte Aktualisierung: " + new Date().toLocaleTimeString()
+                        // Workaround, um das SensorModel zu "triggern"
+                        sensorgrid.model = null
+                        sensorgrid.model = sensorModel
+                    }
+                }
+            }
         }
-    ]
+        
+        // Sensor Grid
+        GridView {
+            id: sensorgrid
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            clip: true
+            cellWidth: 200
+            cellHeight: 100
 
-    model: sensorModel
+            model: sensorModel
 
-    highlight: Rectangle {
-        width: 120
-        height: 120
-        color: "#343434"
-        radius: 4
-        border.color: "#0d52a4"
-        border.width: 8
-    }
+            delegate: Rectangle {
+                width: sensorgrid.cellWidth - 10
+                height: sensorgrid.cellHeight - 10
+                color: "#1d1d1d"
+                radius: 5
+                border.color: "#0d52a4"
+                border.width: 1
 
-    delegate: SensorViewDelegate {}
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: 5
+                    spacing: 2
 
-    // Add a scroll indicator
-    ScrollBar.vertical: ScrollBar {
-        active: true
-        policy: ScrollBar.AsNeeded
-    }
+                    Text {
+                        text: model.name
+                        color: "#ffffff"
+                        font.pixelSize: 14
+                        font.bold: true
+                        Layout.fillWidth: true
+                    }
 
-    // Add a scroll indicator
-    ScrollBar.horizontal: ScrollBar {
-        active: true
-        policy: ScrollBar.AsNeeded
+                    Text {
+                        text: model.value + " " + model.unit
+                        color: "#00ff00"
+                        font.pixelSize: 20
+                        font.bold: true
+                        Layout.fillWidth: true
+                    }
+                    
+                    // Fortschrittsbalken für Werte, die Prozent darstellen
+                    Rectangle {
+                        visible: model.unit === "%"
+                        Layout.fillWidth: true
+                        height: 5
+                        color: "#333333"
+                        radius: 2
+                        
+                        Rectangle {
+                            width: parent.width * (model.value / 100)
+                            height: parent.height
+                            color: model.value > 20 ? "#00ff00" : "#ff0000"
+                            radius: 2
+                        }
+                    }
+                }
+            }
+
+            ScrollBar.vertical: ScrollBar {
+                active: true
+                policy: ScrollBar.AsNeeded
+            }
+
+            ScrollBar.horizontal: ScrollBar {
+                active: true
+                policy: ScrollBar.AsNeeded
+            }
+        }
     }
 }

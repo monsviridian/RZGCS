@@ -13,7 +13,7 @@ ListView {
     width: 420
     height: 200
     clip: true
-    spacing: 2
+    spacing: 0
 
     // Connect to the logger from Python backend
     model: logger ? logger.logs : []
@@ -37,9 +37,22 @@ ListView {
     // Listen for log changes from Python
     Connections {
         target: logger
-        function onLogsChanged() {
-            // Scroll to bottom (newest logs)
+        function onLogAdded(log) {
+            console.log("New log added:", log)
+            logsList.model = logger.logs
+            // Scroll to bottom
+            logsList.positionViewAtEnd()
+        }
+    }
+
+    // Update model when logger is available
+    Component.onCompleted: {
+        if (logger) {
+            console.log("LogsList initialized with logger")
+            model = logger.logs
             positionViewAtEnd()
+        } else {
+            console.log("No logger available")
         }
     }
 }

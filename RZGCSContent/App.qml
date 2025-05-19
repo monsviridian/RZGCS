@@ -1,17 +1,20 @@
 import QtQuick
-import RZGCS
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Window
+import "./"
 
 Window {
-
-    width: mainScreen.width
-    height: mainScreen.height
-
+    id: window
     visible: true
     title: "RZGCS"
+    width: 800
+    height: 600
+    minimumWidth: 800
+    minimumHeight: 600
 
     Screen01 {
-        id: mainScreen
+        anchors.fill: parent
     }
-
 }
 
