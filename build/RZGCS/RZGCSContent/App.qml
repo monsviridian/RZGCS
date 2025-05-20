@@ -2,9 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
-
-// Lokale Komponenten importieren
-import "./" as RZGCS
+import "./"
 
 Window {
     id: window
@@ -15,7 +13,7 @@ Window {
     minimumWidth: 800
     minimumHeight: 600
 
-    RZGCS.Screen01 {
+    Screen01 {
         anchors.fill: parent
     }
 }

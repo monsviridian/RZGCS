@@ -11,11 +11,18 @@ import QtQuick.Layouts
 import QtLocation
 import QtPositioning
 import QtQuick3D 6.8
+import "./"
 
 Rectangle {
     id: flightView
     color: "#1d1d1d"
     clip: true
+    
+    // Signal für Kartentyp-Änderung
+    signal mapTypeChanged(int mapType)
+    
+    // Signal zum Öffnen der externen 3D-Karte
+    signal openExternalMap()
 
     // Initialize map plugin
     Plugin {
@@ -50,6 +57,55 @@ Rectangle {
                     font.bold: true
                     color: "white"
                 }
+                
+                // Kartentyp umschalten
+                Button {
+                    id: switchViewButton
+                    text: mapStack.currentIndex === 0 ? "3D-Karte" : "2D-Karte"
+                    font.pixelSize: 12
+                    Layout.preferredHeight: 30
+                    background: Rectangle {
+                        color: "#2a82da"
+                        radius: 4
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: "white"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    onClicked: {
+                        mapStack.currentIndex = mapStack.currentIndex === 0 ? 1 : 0
+                        
+                        // Signal an Python-Backend senden
+                        flightView.mapTypeChanged(mapStack.currentIndex)
+                    }
+                }
+                
+                // Separate 3D-Karte öffnen
+                Button {
+                    id: open3DMapButton
+                    text: "3D-Karte extern öffnen"
+                    font.pixelSize: 12
+                    font.bold: true
+                    Layout.preferredHeight: 30
+                    background: Rectangle {
+                        color: "#38b764"
+                        radius: 4
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: "white"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    onClicked: {
+                        // Signal zum Öffnen der externen 3D-Karte senden
+                        flightView.openExternalMap()
+                    }
+                }
 
                 Item { Layout.fillWidth: true }
                 
@@ -72,99 +128,160 @@ Rectangle {
             border.width: 1
             radius: 5
             
-            Map {
-                id: map
+            // Stack für 2D und 3D-Karten
+            StackLayout {
+                id: mapStack
                 anchors.fill: parent
                 anchors.margins: 2
-                plugin: mapPlugin
-                center: QtPositioning.coordinate(51.1657, 10.4515)
-                zoomLevel: 14
+                currentIndex: 1  // Standard: 3D-Karte
+                
+                // 2D-Karte
+                Map {
+                    id: map
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    plugin: mapPlugin
+                    center: QtPositioning.coordinate(51.1657, 10.4515)
+                    zoomLevel: 14
 
-                // Add drone position marker
-                MapQuickItem {
-                    id: droneMarker
-                    coordinate: QtPositioning.coordinate(51.1657, 10.4515)
-                    anchorPoint.x: sourceItem.width / 2
-                    anchorPoint.y: sourceItem.height / 2
-                    sourceItem: Rectangle {
-                        width: 40
-                        height: 40
-                        color: "transparent"
-                        
-                        Image {
-                            id: droneImage
-                            anchors.centerIn: parent
-                            source: "images/drone_marker.svg"
-                            width: 32
-                            height: 32
-                            smooth: true
-                            mipmap: true
-                        }
-                        
-                        // Pulsierender Kreis für bessere Sichtbarkeit
-                        Rectangle {
-                            id: pulseCircle
-                            anchors.centerIn: parent
-                            width: 32
-                            height: 32
-                            radius: width / 2
-                            color: "#3300ff00"
-                            border.width: 2
-                            border.color: "#80ff00"
-                            z: -1
+                    // Add drone position marker
+                    MapQuickItem {
+                        id: droneMarker
+                        coordinate: QtPositioning.coordinate(51.1657, 10.4515)
+                        anchorPoint.x: sourceItem.width / 2
+                        anchorPoint.y: sourceItem.height / 2
+                        sourceItem: Rectangle {
+                            width: 40
+                            height: 40
+                            color: "transparent"
                             
-                            SequentialAnimation on scale {
-                                loops: Animation.Infinite
-                                NumberAnimation { from: 0.8; to: 1.5; duration: 1000; easing.type: Easing.OutQuad }
-                                NumberAnimation { from: 1.5; to: 0.8; duration: 1000; easing.type: Easing.InQuad }
+                            Image {
+                                id: droneImage
+                                anchors.centerIn: parent
+                                source: "images/drone_marker.svg"
+                                width: 32
+                                height: 32
+                                smooth: true
+                                mipmap: true
+                            }
+                            
+                            // Pulsierender Kreis für bessere Sichtbarkeit
+                            Rectangle {
+                                id: pulseCircle
+                                anchors.centerIn: parent
+                                width: 32
+                                height: 32
+                                radius: width / 2
+                                color: "#3300ff00"
+                                border.width: 2
+                                border.color: "#80ff00"
+                                z: -1
+                                
+                                SequentialAnimation on scale {
+                                    loops: Animation.Infinite
+                                    NumberAnimation { from: 0.8; to: 1.5; duration: 1000; easing.type: Easing.OutQuad }
+                                    NumberAnimation { from: 1.5; to: 0.8; duration: 1000; easing.type: Easing.InQuad }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Kartensteuerung
+                    MapItemView {
+                        model: waypointsModel
+                        delegate: waypointDelegate
+                    }
+                    
+                    // Wegpunkte-Modell
+                    ListModel {
+                        id: waypointsModel
+                        // Beispielwegpunkte werden später durch echte Daten ersetzt
+                    }
+                    
+                    // Template für Wegpunkte
+                    Component {
+                        id: waypointDelegate
+                        MapQuickItem {
+                            coordinate: QtPositioning.coordinate(model.lat, model.lon)
+                            anchorPoint.x: 16
+                            anchorPoint.y: 16
+                            sourceItem: Column {
+                                spacing: 2
+                                
+                                // Wegpunktmarkierung
+                                Rectangle {
+                                    width: 32
+                                    height: 32
+                                    radius: width / 2
+                                    color: "#80ffffff"
+                                    border.width: 2
+                                    border.color: "#3c78d8"
+                                    
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: model.id
+                                        font.pixelSize: 14
+                                        font.bold: true
+                                        color: "#3c78d8"
+                                    }
+                                }
+                                
+                                // Wegpunktbeschriftung
+                                Rectangle {
+                                    width: waypointLabel.width + 10
+                                    height: waypointLabel.height + 6
+                                    color: "#80ffffff"
+                                    radius: 3
+                                    
+                                    Text {
+                                        id: waypointLabel
+                                        anchors.centerIn: parent
+                                        text: "WP" + model.id
+                                        font.pixelSize: 12
+                                        color: "black"
+                                        font.bold: true
+                                    }
+                                }
+                                
+                                // Höhenangabe
+                                Rectangle {
+                                    width: altLabel.width + 10
+                                    height: altLabel.height + 6
+                                    color: "#3c78d8"
+                                    radius: 3
+                                    
+                                    Text {
+                                        id: altLabel
+                                        anchors.centerIn: parent
+                                        text: model.alt + "m"
+                                        font.pixelSize: 10
+                                        color: "white"
+                                        z: 1
+                                    }
+                                }
                             }
                         }
                     }
                 }
                 
-                // Kartensteuerung
-                MapItemView {
-                    model: waypointsModel
-                    delegate: waypointDelegate
-                }
-                
-                // Wegpunkte-Modell
-                ListModel {
-                    id: waypointsModel
-                    // Beispielwegpunkte werden später durch echte Daten ersetzt
-                }
-                
-                // Template für Wegpunkte
-                Component {
-                    id: waypointDelegate
-                    MapQuickItem {
-                        coordinate: QtPositioning.coordinate(model.lat, model.lon)
-                        anchorPoint.x: 16
-                        anchorPoint.y: 16
-                        sourceItem: Rectangle {
-                            width: 32
-                            height: 32
-                            color: "transparent"
-                            
-                            Text {
-                                anchors.centerIn: parent
-                                text: model.index + 1
-                                color: "white"
-                                font.bold: true
-                                font.pixelSize: 12
-                                z: 2
-                            }
-                            
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: 24
-                                height: 24
-                                radius: width / 2
-                                color: "#e67e22"
-                                border.color: "white"
-                                border.width: 2
-                                z: 1
-                            }
+                // 3D-Karte
+                Item {
+                    id: map3DContainer
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    
+                    // Dieses Item wird zur Laufzeit durch ein QWidget ersetzt,
+                    // das die 3D-Karte enthält
+                    Rectangle {
+                        id: mapContainer  // Diese ID wird vom FlightViewController verwendet
+                        anchors.fill: parent
+                        color: "#222222"
+                        
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Cesium 3D-Karte wird geladen..."
+                            color: "#aaaaaa"
+                            font.pixelSize: 18
                         }
                     }
                 }
@@ -197,13 +314,13 @@ Rectangle {
                         Layout.preferredHeight: 36
                         font.pixelSize: 14
                         background: Rectangle {
-                            color: parent.pressed ? "#333333" : "#444444"
+                            color: "#444444"
                             border.color: "#555555"
                             radius: 4
                         }
                         contentItem: Text {
-                            text: parent.text
-                            font: parent.font
+                            text: prearmButton.text
+                            font: prearmButton.font
                             color: "white"
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
@@ -217,13 +334,13 @@ Rectangle {
                         Layout.preferredHeight: 36
                         font.pixelSize: 14
                         background: Rectangle {
-                            color: parent.pressed ? "#333333" : "#444444"
+                            color: "#444444"
                             border.color: "#555555"
                             radius: 4
                         }
                         contentItem: Text {
-                            text: parent.text
-                            font: parent.font
+                            text: resetButton.text
+                            font: resetButton.font
                             color: "white"
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
@@ -233,78 +350,66 @@ Rectangle {
                 
                 // Mittlere Steuerelemente
                 ColumnLayout {
-                    Layout.fillWidth: true
+                    Layout.preferredWidth: 160
                     spacing: 10
                     
                     Button {
-                        id: positionButton
-                        text: "Set Position"
-                        Layout.fillWidth: true
+                        id: takeoffButton
+                        text: "Start"
+                        Layout.preferredWidth: 160
                         Layout.preferredHeight: 36
                         font.pixelSize: 14
                         background: Rectangle {
-                            color: parent.pressed ? "#333333" : "#444444"
+                            color: "#444444"
                             border.color: "#555555"
                             radius: 4
                         }
                         contentItem: Text {
-                            text: parent.text
-                            font: parent.font
+                            text: takeoffButton.text
+                            font: takeoffButton.font
                             color: "white"
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
                     }
                     
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 10
-                        
-                        TextField {
-                            id: missionField
-                            Layout.fillWidth: true
-                            placeholderText: "Send Mission Plan"
-                            font.pixelSize: 14
-                            height: 36
-                            color: "white"
-                            background: Rectangle {
-                                color: "#1a1a1a"
-                                border.color: "#555555"
-                                radius: 4
-                            }
+                    Button {
+                        id: landButton
+                        text: "Landen"
+                        Layout.preferredWidth: 160
+                        Layout.preferredHeight: 36
+                        font.pixelSize: 14
+                        background: Rectangle {
+                            color: "#444444"
+                            border.color: "#555555"
+                            radius: 4
                         }
-                        
-                        Slider {
-                            id: speedSlider
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 36
-                            from: 0
-                            to: 100
-                            value: 50
-                            stepSize: 5
-                            background: Rectangle {
-                                x: speedSlider.leftPadding
-                                y: speedSlider.topPadding + speedSlider.availableHeight / 2 - height / 2
-                                width: speedSlider.availableWidth
-                                height: 4
-                                radius: 2
-                                color: "#1a1a1a"
-                                Rectangle {
-                                    width: speedSlider.visualPosition * parent.width
-                                    height: parent.height
-                                    color: "#80ff00"
-                                    radius: 2
-                                }
-                            }
-                            handle: Rectangle {
-                                x: speedSlider.leftPadding + speedSlider.visualPosition * (speedSlider.availableWidth - width)
-                                y: speedSlider.topPadding + speedSlider.availableHeight / 2 - height / 2
-                                width: 16
-                                height: 16
-                                radius: 8
-                                color: speedSlider.pressed ? "#f0f0f0" : "#f6f6f6"
-                                border.color: "#555555"
-                            }
+                        contentItem: Text {
+                            text: landButton.text
+                            font: landButton.font
+                            color: "white"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
+                    
+                    Button {
+                        id: rtlButton
+                        text: "Return to Launch"
+                        Layout.preferredWidth: 160
+                        Layout.preferredHeight: 36
+                        font.pixelSize: 14
+                        background: Rectangle {
+                            color: "#444444"
+                            border.color: "#555555"
+                            radius: 4
+                        }
+                        contentItem: Text {
+                            text: rtlButton.text
+                            font: rtlButton.font
+                            color: "white"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
                         }
                     }
                 }
