@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>RZGCS - 3D Flight Map (Local Version)</title>
+    <style>
+        html, body { 
+            width: 100%; 
+            height: 100%; 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2c5b52;
+            color: white;
+        }
+        #mapContainer {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .control-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background-color: rgba(42, 42, 42, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+        }
+        .drone-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            background-color: rgba(42, 42, 42, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+            min-width: 200px;
+        }
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+        }
+        .data-row .label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .data-row .value {
+            font-family: monospace;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 2px 2px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #drone {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: #ff3030;
+            border: 3px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.9);
+            z-index: 1000;
+            animation: pulse 1.5s infinite alternate;
+        }
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                box-shadow: 0 0 15px rgba(255, 255, 255, 0.9);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.2);
+                box-shadow: 0 0 25px rgba(255, 255, 255, 1);
+            }
+        }
+        .map-background {
+            width: 100%;
+            height: 100%;
+            background-color: #4d8d82;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(255, 255, 255, 0.3) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle, rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="mapContainer">
+        <div class="map-background"></div>
+        <div class="grid-overlay"></div>
+        
+        <div id="drone">
+            <div style="position: absolute; top: -25px; left: 15px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 3px 8px; border-radius: 10px; font-size: 12px; white-space: nowrap;">RZGCS Drone</div>
+        </div>
+        
+        <!-- Status-Overlay -->
+        <div style="position: absolute; top: 10px; right: 10px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 5px 10px; border-radius: 5px; font-size: 14px;">
+            Status: <span style="color: #80ff00;">Aktiv</span>
+        </div>
+        
+        <div class="control-panel">
+            <button id="follow-drone">Drohne folgen</button>
+            <button id="top-view">Draufsicht</button>
+            <button id="show-path">Flugpfad anzeigen</button>
+        </div>
+        
+        <div class="drone-info">
+            <div class="data-row">
+                <span class="label">Breitengrad:</span>
+                <span class="value" id="latitude">51.505600</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Längengrad:</span>
+                <span class="value" id="longitude">7.452400</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Höhe:</span>
+                <span class="value" id="altitude">100.0 m</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Geschwindigkeit:</span>
+                <span class="value" id="speed">0.0 m/s</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Akku:</span>
+                <span class="value" id="battery">100%</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Einfache Drohnen-Simulation für den Test
+        let drone = document.getElementById('drone');
+        let latitude = 51.5056;
+        let longitude = 7.4524;
+        let altitude = 100;
+        let speed = 0;
+        let battery = 100;
+        
+        // Positioniere die Drohne initial
+        drone.style.left = '50%';
+        drone.style.top = '50%';
+        
+        // UI-Elemente aktualisieren
+        document.getElementById('latitude').textContent = latitude.toFixed(6);
+        document.getElementById('longitude').textContent = longitude.toFixed(6);
+        document.getElementById('altitude').textContent = altitude.toFixed(1) + ' m';
+        document.getElementById('speed').textContent = speed.toFixed(1) + ' m/s';
+        document.getElementById('battery').textContent = battery + '%';
+        
+        // Kommunikation mit Qt
+        function sendToQt(message) {
+            if (window.qt && window.qt.webChannelTransport) {
+                console.log("Sende Nachricht an Qt:", message);
+                // Wenn verfügbar, sende Nachricht an Qt
+                try {
+                    window.qt.flightMap.receiveMessage(JSON.stringify(message));
+                } catch (e) {
+                    console.error("Fehler beim Senden an Qt:", e);
+                }
+            } else {
+                console.log("Qt WebChannel nicht verfügbar");
+            }
+        }
+        
+        // Empfange Nachrichten von Qt
+        window.receiveFromQt = function(message) {
+            console.log("Nachricht von Qt empfangen:", message);
+            
+            try {
+                const data = JSON.parse(message);
+                
+                switch(data.type) {
+                    case 'position':
+                        // Aktualisiere Drohnenposition
+                        updateDronePosition(data.lat, data.lon, data.alt, data.speed, data.battery);
+                        break;
+                }
+            } catch (e) {
+                console.error("Fehler beim Verarbeiten der Qt-Nachricht:", e);
+            }
+        };
+        
+        // Aktualisiert die Drohnenposition
+        function updateDronePosition(lat, lon, alt, spd = null, bat = null) {
+            // Simuliere Kartenbewegung durch Änderung der Drohnenposition
+            const mapContainer = document.getElementById('mapContainer');
+            const containerWidth = mapContainer.offsetWidth;
+            const containerHeight = mapContainer.offsetHeight;
+            
+            // Berechne relative Position basierend auf Koordinaten
+            // (Dies ist nur eine Simulation, keine echte Geo-Projektion)
+            const relX = (lon - 7.45) * 1000 + containerWidth / 2;
+            const relY = (51.51 - lat) * 1000 + containerHeight / 2;
+            
+            drone.style.left = relX + 'px';
+            drone.style.top = relY + 'px';
+            
+            // Aktualisiere UI
+            document.getElementById('latitude').textContent = lat.toFixed(6);
+            document.getElementById('longitude').textContent = lon.toFixed(6);
+            document.getElementById('altitude').textContent = alt.toFixed(1) + ' m';
+            
+            if (spd !== null) {
+                speed = spd;
+                document.getElementById('speed').textContent = speed.toFixed(1) + ' m/s';
+            }
+            
+            if (bat !== null) {
+                battery = bat;
+                document.getElementById('battery').textContent = battery + '%';
+            }
+        }
+        
+        // Event-Listener für UI-Elemente
+        document.getElementById('follow-drone').addEventListener('click', function() {
+            sendToQt({
+                type: 'command',
+                action: 'followDrone'
+            });
+        });
+        
+        document.getElementById('top-view').addEventListener('click', function() {
+            sendToQt({
+                type: 'command',
+                action: 'topView'
+            });
+        });
+        
+        document.getElementById('show-path').addEventListener('click', function() {
+            sendToQt({
+                type: 'command',
+                action: 'togglePath'
+            });
+        });
+        
+        // Testfunktion zum Simulieren von Drohnenbewegungen
+        let testPathIndex = 0;
+        function simulateDroneMovement() {
+            // Kreisförmiger Pfad
+            const radius = 0.001; // ca. 100m
+            const centerLat = 51.5056;
+            const centerLon = 7.4524;
+            
+            const angle = testPathIndex * (Math.PI / 180);
+            const newLat = centerLat + radius * Math.sin(angle);
+            const newLon = centerLon + radius * Math.cos(angle);
+            const newAlt = 100 + 50 * Math.sin(angle / 10);
+            const newSpeed = 5 + 2 * Math.sin(angle / 5);
+            const newBattery = 100 - (testPathIndex / 3600 * 10); // 10% pro Stunde
+            
+            updateDronePosition(newLat, newLon, newAlt, newSpeed, newBattery);
+            
+            testPathIndex = (testPathIndex + 1) % 360;
+        }
+        
+        // Starte die Simulation
+        setInterval(simulateDroneMovement, 100);
+        
+        // Bei Klick auf die Karte
+        document.getElementById('mapContainer').addEventListener('click', function(e) {
+            // Verhindere Klick auf Steuerelemente
+            if (e.target === this || e.target.className === 'map-background' || e.target.className === 'grid-overlay') {
+                const rect = mapContainer.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+                
+                // Berechne Geokoordinaten aus Klickposition (Simulation)
+                const clickLon = 7.45 + (clickX - mapContainer.offsetWidth / 2) / 1000;
+                const clickLat = 51.51 - (clickY - mapContainer.offsetHeight / 2) / 1000;
+                
+                sendToQt({
+                    type: 'mapClick',
+                    lat: clickLat,
+                    lon: clickLon,
+                    alt: 0 // Höhe unbekannt
+                });
+            }
+        });
+        
+        // Initialisierungsnachricht
+        console.log("Karte erfolgreich initialisiert");
+        setTimeout(() => {
+            sendToQt({
+                type: 'init',
+                status: 'ready'
+            });
+        }, 1000);
+    </script>
+</body>
+</html>

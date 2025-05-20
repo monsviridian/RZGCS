@@ -9,9 +9,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
 
-// Lokale Komponenten importieren
-import "./" as RZGCS
-
 Item {
     id: root
     width: 800
@@ -367,23 +364,23 @@ Item {
             Layout.fillHeight: true
             currentIndex: tabBar.currentIndex
 
-            RZGCS.PreflightView {
+            PreflightView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
-            RZGCS.ParameterView {
+            ParameterView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
-            RZGCS.SensorView {
+            SensorView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
-            RZGCS.FlightView {
+            FlightView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
-            RZGCS.StoreView {
+            StoreView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }

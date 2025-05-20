@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title id="head-title">test_report_20250520_125533.html</title>
+      <style type="text/css">body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
+  min-width: 800px;
+  color: #999;
+}
+
+h1 {
+  font-size: 24px;
+  color: black;
+}
+
+h2 {
+  font-size: 16px;
+  color: black;
+}
+
+p {
+  color: black;
+}
+
+a {
+  color: #999;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/******************************
+ * SUMMARY INFORMATION
+ ******************************/
+#environment td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  vertical-align: top;
+}
+#environment tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+#environment ul {
+  margin: 0;
+  padding: 0 20px;
+}
+
+/******************************
+ * TEST RESULT COLORS
+ ******************************/
+span.passed,
+.passed .col-result {
+  color: green;
+}
+
+span.skipped,
+span.xfailed,
+span.rerun,
+.skipped .col-result,
+.xfailed .col-result,
+.rerun .col-result {
+  color: orange;
+}
+
+span.error,
+span.failed,
+span.xpassed,
+.error .col-result,
+.failed .col-result,
+.xpassed .col-result {
+  color: red;
+}
+
+.col-links__extra {
+  margin-right: 3px;
+}
+
+/******************************
+ * RESULTS TABLE
+ *
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
+ *
+ ******************************/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
+#results-table {
+  border: 1px solid #e6e6e6;
+  color: #999;
+  font-size: 12px;
+  width: 100%;
+}
+#results-table th,
+#results-table td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  text-align: left;
+}
+#results-table th {
+  font-weight: bold;
+}
+
+/*------------------
+ * 2. Extra
+ *------------------*/
+.logwrapper {
+  max-height: 230px;
+  overflow-y: scroll;
+  background-color: #e6e6e6;
+}
+.logwrapper.expanded {
+  max-height: none;
+}
+.logwrapper.expanded .logexpander:after {
+  content: "collapse [-]";
+}
+.logwrapper .logexpander {
+  z-index: 1;
+  position: sticky;
+  top: 10px;
+  width: max-content;
+  border: 1px solid;
+  border-radius: 3px;
+  padding: 5px 7px;
+  margin: 10px 0 10px calc(100% - 80px);
+  cursor: pointer;
+  background-color: #e6e6e6;
+}
+.logwrapper .logexpander:after {
+  content: "expand [+]";
+}
+.logwrapper .logexpander:hover {
+  color: #000;
+  border-color: #000;
+}
+.logwrapper .log {
+  min-height: 40px;
+  position: relative;
+  top: -50px;
+  height: calc(100% + 50px);
+  border: 1px solid #e6e6e6;
+  color: black;
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  padding: 5px;
+  padding-right: 80px;
+  white-space: pre-wrap;
+}
+
+div.media {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin: 0 5px;
+  overflow: hidden;
+  width: 320px;
+}
+
+.media-container {
+  display: grid;
+  grid-template-columns: 25px auto 25px;
+  align-items: center;
+  flex: 1 1;
+  overflow: hidden;
+  height: 200px;
+}
+
+.media-container--fullscreen {
+  grid-template-columns: 0px auto 0px;
+}
+
+.media-container__nav--right,
+.media-container__nav--left {
+  text-align: center;
+  cursor: pointer;
+}
+
+.media-container__viewport {
+  cursor: pointer;
+  text-align: center;
+  height: inherit;
+}
+.media-container__viewport img,
+.media-container__viewport video {
+  object-fit: cover;
+  width: 100%;
+  max-height: 100%;
+}
+
+.media__name,
+.media__counter {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  flex: 0 0 25px;
+  align-items: center;
+}
+
+.collapsible td:not(.col-links) {
+  cursor: pointer;
+}
+.collapsible td:not(.col-links):hover::after {
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+}
+
+.col-result {
+  width: 130px;
+}
+.col-result:hover::after {
+  content: " (hide details)";
+}
+
+.col-result.collapsed:hover::after {
+  content: " (show details)";
+}
+
+#environment-header h2:hover::after {
+  content: " (hide details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#environment-header.collapsed h2:hover::after {
+  content: " (show details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/*------------------
+ * 3. Sorting items
+ *------------------*/
+.sortable {
+  cursor: pointer;
+}
+.sortable.desc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: -12.5px;
+  border: 10px solid #4caf50;
+  border-bottom: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+.sortable.asc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: 12.5px;
+  border: 10px solid #4caf50;
+  border-top: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+
+.hidden, .summary__reload__button.hidden {
+  display: none;
+}
+
+.summary__data {
+  flex: 0 0 550px;
+}
+.summary__reload {
+  flex: 1 1;
+  display: flex;
+  justify-content: center;
+}
+.summary__reload__button {
+  flex: 0 0 300px;
+  display: flex;
+  color: white;
+  font-weight: bold;
+  background-color: #4caf50;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.summary__reload__button:hover {
+  background-color: #46a049;
+}
+.summary__spacer {
+  flex: 0 0 550px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+}
+
+.filters,
+.collapse {
+  display: flex;
+  align-items: center;
+}
+.filters button,
+.collapse button {
+  color: #999;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.filters button:hover,
+.collapse button:hover {
+  color: #ccc;
+}
+
+.filter__label {
+  margin-right: 10px;
+}
+
+      </style>
+    
+  </head>
+  <body>
+    <h1 id="title">test_report_20250520_125533.html</h1>
+    <p>Report generated on 20-May-2025 at 12:55:44 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a>
+        v4.1.1</p>
+    <div id="environment-header">
+      <h2>Environment</h2>
+    </div>
+    <table id="environment"></table>
+    <!-- TEMPLATES -->
+      <template id="template_environment_row">
+      <tr>
+        <td></td>
+        <td></td>
+      </tr>
+    </template>
+    <template id="template_results-table__body--empty">
+      <tbody class="results-table-row">
+        <tr id="not-found-message">
+          <td colspan="4">No results found. Check the filters.</th>
+        </tr>
+    </template>
+    <template id="template_results-table__tbody">
+      <tbody class="results-table-row">
+        <tr class="collapsible">
+        </tr>
+        <tr class="extras-row">
+          <td class="extra" colspan="4">
+            <div class="extraHTML"></div>
+            <div class="media">
+              <div class="media-container">
+                  <div class="media-container__nav--left"><</div>
+                  <div class="media-container__viewport">
+                    <img src="" />
+                    <video controls>
+                      <source src="" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="media-container__nav--right">></div>
+                </div>
+                <div class="media__name"></div>
+                <div class="media__counter"></div>
+            </div>
+            <div class="logwrapper">
+              <div class="logexpander"></div>
+              <div class="log"></div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </template>
+    <!-- END TEMPLATES -->
+    <div class="summary">
+      <div class="summary__data">
+        <h2>Summary</h2>
+        <div class="additional-summary prefix">
+        </div>
+        <p class="run-count">60 tests took 00:00:08.</p>
+        <p class="filter">(Un)check the boxes to filter the results.</p>
+        <div class="summary__reload">
+          <div class="summary__reload__button hidden" onclick="location.reload()">
+            <div>There are still tests running. <br />Reload this page to get the latest results!</div>
+          </div>
+        </div>
+        <div class="summary__spacer"></div>
+        <div class="controls">
+          <div class="filters">
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="failed" />
+            <span class="failed">37 Failed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="passed" />
+            <span class="passed">23 Passed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="skipped" disabled/>
+            <span class="skipped">0 Skipped,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xfailed" disabled/>
+            <span class="xfailed">0 Expected failures,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xpassed" disabled/>
+            <span class="xpassed">0 Unexpected passes,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="error" />
+            <span class="error">18 Errors,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="rerun" disabled/>
+            <span class="rerun">0 Reruns</span>
+          </div>
+          <div class="collapse">
+            <button id="show_all_details">Show all details</button>&nbsp;/&nbsp;<button id="hide_all_details">Hide all details</button>
+          </div>
+        </div>
+      </div>
+      <div class="additional-summary summary">
+      </div>
+      <div class="additional-summary postfix">
+      </div>
+    </div>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable" data-column-type="result">Result</th>
+          <th class="sortable" data-column-type="testId">Test</th>
+          <th class="sortable" data-column-type="duration">Duration</th>
+          <th>Links</th>
+        </tr>
+      </thead>
+    </table>
+  </body>
+  <footer>
+    <div id="data-container" data-jsonblob="{&#34;environment&#34;: {&#34;Python&#34;: &#34;3.10.0&#34;, &#34;Platform&#34;: &#34;Windows-10-10.0.19045-SP0&#34;, &#34;Packages&#34;: {&#34;pytest&#34;: &#34;8.3.5&#34;, &#34;pluggy&#34;: &#34;1.6.0&#34;}, &#34;Plugins&#34;: {&#34;anyio&#34;: &#34;4.9.0&#34;, &#34;asyncio&#34;: &#34;0.26.0&#34;, &#34;cov&#34;: &#34;6.1.1&#34;, &#34;html&#34;: &#34;4.1.1&#34;, &#34;metadata&#34;: &#34;3.1.1&#34;, &#34;qt&#34;: &#34;4.4.0&#34;}}, &#34;tests&#34;: {&#34;Python/tests/test_3d_view.py::Test3DView::test_store_view_3d_model_exists&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_3d_view.py::Test3DView::test_store_view_3d_model_exists&#34;, &#34;duration&#34;: &#34;671 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_3d_view.py::Test3DView::test_store_view_3d_model_exists&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;671 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_3d_view.Test3DView object at 0x0000018BE4C542E0&amp;gt;\nqml_component_loader = &amp;lt;function Test3DView.qml_component_loader.&amp;lt;locals&amp;gt;._load_component at 0x0000018BFBD07AC0&amp;gt;\n\n    def test_store_view_3d_model_exists(self, qml_component_loader):\n        &amp;quot;&amp;quot;&amp;quot;Testet, ob die 3D-Modellansicht in der StoreView existiert.&amp;quot;&amp;quot;&amp;quot;\n        # Act\n        store_view = qml_component_loader(&amp;quot;StoreView.ui.qml&amp;quot;)\n    \n        # Assert\n        assert store_view is not None\n        # Pr\u00fcfen, ob ein Kind-Element vom Typ Node3D existiert\n&amp;gt;       assert store_view.findChild(QQuick3D) is not None\nE       RuntimeError: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.\n\ntests\\test_3d_view.py:53: RuntimeError\n---------------------------- Captured Qt messages -----------------------------\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:335:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:335:45: QML QQuickRectangle: The current style does not support customization of this control (property: &amp;quot;background&amp;quot; item: QQuickRectangle(0x18bfd6a7e10, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:297:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:297:45: QML QQuickRectangle: The current style does not support customization of this control (property: &amp;quot;background&amp;quot; item: QQuickRectangle(0x18bfd6a7ef0, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:14:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:14:5: TypeError: Cannot read property &amp;#x27;height&amp;#x27; of null\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:13:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:13:5: TypeError: Cannot read property &amp;#x27;width&amp;#x27; of null\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:386:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:386:49: QML QQuickItem: The current style does not support customization of this control (property: &amp;quot;background&amp;quot; item: QQuickItem(0x18bfd6a85f0, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:340:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:340:46: QML QQuickText: The current style does not support customization of this control (property: &amp;quot;contentItem&amp;quot; item: QQuickText(0x18bfd6b6d10, parent=0x0, geometry=0,0 0x0 \u23ff)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:304:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:304:46: QML QQuickText: The current style does not support customization of this control (property: &amp;quot;contentItem&amp;quot; item: QQuickText(0x18bfd6b7760, parent=0x0, geometry=0,0 0x0 \u23ff)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\n&#34;}], &#34;Python/tests/test_3d_view.py::Test3DView::test_preflight_view_3d_model_exists&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_3d_view.py::Test3DView::test_preflight_view_3d_model_exists&#34;, &#34;duration&#34;: &#34;48 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_3d_view.py::Test3DView::test_preflight_view_3d_model_exists&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;48 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_3d_view.Test3DView object at 0x0000018BE4C54490&amp;gt;\nqml_component_loader = &amp;lt;function Test3DView.qml_component_loader.&amp;lt;locals&amp;gt;._load_component at 0x0000018BFBD07BE0&amp;gt;\n\n    def test_preflight_view_3d_model_exists(self, qml_component_loader):\n        &amp;quot;&amp;quot;&amp;quot;Testet, ob die 3D-Modellansicht in der PreflightView existiert.&amp;quot;&amp;quot;&amp;quot;\n        # Act\n        preflight_view = qml_component_loader(&amp;quot;PreflightView.ui.qml&amp;quot;)\n    \n        # Assert\n        assert preflight_view is not None\n        # Pr\u00fcfen, ob ein Kind-Element vom Typ Node3D existiert\n&amp;gt;       assert preflight_view.findChild(QQuick3D) is not None\nE       RuntimeError: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.\n\ntests\\test_3d_view.py:63: RuntimeError\n---------------------------- Captured Qt messages -----------------------------\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:461:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:461:33: QML QQuickRectangle: The current style does not support customization of this control (property: &amp;quot;background&amp;quot; item: QQuickRectangle(0x18bfda10e30, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:406:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:406:33: QML QQuickRectangle: The current style does not support customization of this control (property: &amp;quot;background&amp;quot; item: QQuickRectangle(0x18bfda111b0, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:380:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:380:33: QML QQuickRectangle: The current style does not support customization of this control (property: &amp;quot;background&amp;quot; item: QQuickRectangle(0x18bfda12410, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:354:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:354:33: QML QQuickRectangle: The current style does not support customization of this control (property: &amp;quot;background&amp;quot; item: QQuickRectangle(0x18bfda11b50, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:145:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:145:33: QML QQuickRectangle: The current style does not support customization of this control (property: &amp;quot;background&amp;quot; item: QQuickRectangle(0x18bfda11a70, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:100:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:100:33: QML QQuickRectangle: The current style does not support customization of this control (property: &amp;quot;background&amp;quot; item: QQuickRectangle(0x18bfda11ed0, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:18:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:18:5: TypeError: Cannot read property &amp;#x27;height&amp;#x27; of null\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:17:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:17:5: TypeError: Cannot read property &amp;#x27;width&amp;#x27; of null\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:564:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:564:5: QML Connections: Detected function &amp;quot;onAttitudeChanged&amp;quot; in Connections element. This is probably intended to be a signal handler but no signal of the target matches the name.\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:564:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:564:5: QML Connections: Detected function &amp;quot;onAttitude_msg&amp;quot; in Connections element. This is probably intended to be a signal handler but no signal of the target matches the name.\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:564:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:564:5: QML Connections: Detected function &amp;quot;onConnectedChanged&amp;quot; in Connections element. This is probably intended to be a signal handler but no signal of the target matches the name.\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/LogsList.ui.qml:None:38:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/LogsList.ui.qml:38:5: QML Connections: Detected function &amp;quot;onLogAdded&amp;quot; in Connections element. This is probably intended to be a signal handler but no signal of the target matches the name.\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:466:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:466:34: QML QQuickText: The current style does not support customization of this control (property: &amp;quot;contentItem&amp;quot; item: QQuickText(0x18bfda470a0, parent=0x0, geometry=0,0 0x0 \u23ff)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:411:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:411:34: QML QQuickText: The current style does not support customization of this control (property: &amp;quot;contentItem&amp;quot; item: QQuickText(0x18bfda46b00, parent=0x0, geometry=0,0 0x0 \u23ff)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:385:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:385:34: QML QQuickText: The current style does not support customization of this control (property: &amp;quot;contentItem&amp;quot; item: QQuickText(0x18bfda46bf0, parent=0x0, geometry=0,0 0x0 \u23ff)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:359:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:359:34: QML QQuickText: The current style does not support customization of this control (property: &amp;quot;contentItem&amp;quot; item: QQuickText(0x18bfda7cda0, parent=0x0, geometry=0,0 0x0 \u23ff)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:150:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:150:34: QML QQuickText: The current style does not support customization of this control (property: &amp;quot;contentItem&amp;quot; item: QQuickText(0x18bfda7cad0, parent=0x0, geometry=0,0 0x0 \u23ff)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:107:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:107:34: QML QQuickText: The current style does not support customization of this control (property: &amp;quot;contentItem&amp;quot; item: QQuickText(0x18bfda7d520, parent=0x0, geometry=0,0 0x0 \u23ff)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:601:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:601: ReferenceError: serialConnector is not defined\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/LogsList.ui.qml:None:50:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/LogsList.ui.qml:50: ReferenceError: logger is not defined\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/LogsList.ui.qml:None:19:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/LogsList.ui.qml:19: ReferenceError: logger is not defined\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/LogsList.ui.qml:None:39:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/LogsList.ui.qml:39: ReferenceError: logger is not defined\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:565:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:565: ReferenceError: serialConnector is not defined\n&#34;}], &#34;Python/tests/test_3d_view.py::Test3DView::test_model_switching&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_3d_view.py::Test3DView::test_model_switching&#34;, &#34;duration&#34;: &#34;28 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_3d_view.py::Test3DView::test_model_switching&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;28 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_3d_view.Test3DView object at 0x0000018BE4C546A0&amp;gt;\nqml_component_loader = &amp;lt;function Test3DView.qml_component_loader.&amp;lt;locals&amp;gt;._load_component at 0x0000018BFFF279A0&amp;gt;\n\n    def test_model_switching(self, qml_component_loader):\n        &amp;quot;&amp;quot;&amp;quot;Testet das Umschalten zwischen verschiedenen 3D-Modellen.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        store_view = qml_component_loader(&amp;quot;StoreView.ui.qml&amp;quot;)\n        assert store_view is not None\n    \n        # Model-Wechsel simulieren\n        model_selector = None\n&amp;gt;       for child in store_view.children():\nE       RuntimeError: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.\n\ntests\\test_3d_view.py:73: RuntimeError\n---------------------------- Captured Qt messages -----------------------------\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:335:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:335:45: QML QQuickRectangle: The current style does not support customization of this control (property: &amp;quot;background&amp;quot; item: QQuickRectangle(0x18bfdb88ee0, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:297:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:297:45: QML QQuickRectangle: The current style does not support customization of this control (property: &amp;quot;background&amp;quot; item: QQuickRectangle(0x18bfdb88c40, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:14:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:14:5: TypeError: Cannot read property &amp;#x27;height&amp;#x27; of null\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:13:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:13:5: TypeError: Cannot read property &amp;#x27;width&amp;#x27; of null\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:386:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:386:49: QML QQuickItem: The current style does not support customization of this control (property: &amp;quot;background&amp;quot; item: QQuickItem(0x18bfdb889a0, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:340:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:340:46: QML QQuickText: The current style does not support customization of this control (property: &amp;quot;contentItem&amp;quot; item: QQuickText(0x18bfdbf5030, parent=0x0, geometry=0,0 0x0 \u23ff)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:304:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:304:46: QML QQuickText: The current style does not support customization of this control (property: &amp;quot;contentItem&amp;quot; item: QQuickText(0x18bfdbf67a0, parent=0x0, geometry=0,0 0x0 \u23ff)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\n&#34;}], &#34;Python/tests/test_3d_view.py::Test3DView::test_model_rotation&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_3d_view.py::Test3DView::test_model_rotation&#34;, &#34;duration&#34;: &#34;29 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_3d_view.py::Test3DView::test_model_rotation&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;29 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_3d_view.Test3DView object at 0x0000018BE4C548E0&amp;gt;\nqml_component_loader = &amp;lt;function Test3DView.qml_component_loader.&amp;lt;locals&amp;gt;._load_component at 0x0000018BFFF27C70&amp;gt;\n\n    def test_model_rotation(self, qml_component_loader):\n        &amp;quot;&amp;quot;&amp;quot;Testet die automatische Rotation des 3D-Modells.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        store_view = qml_component_loader(&amp;quot;StoreView.ui.qml&amp;quot;)\n        assert store_view is not None\n    \n        # 3D-Modell-Node finden\n        model_node = None\n&amp;gt;       for child in store_view.children():\nE       RuntimeError: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.\n\ntests\\test_3d_view.py:104: RuntimeError\n---------------------------- Captured Qt messages -----------------------------\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:335:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:335:45: QML QQuickRectangle: The current style does not support customization of this control (property: &amp;quot;background&amp;quot; item: QQuickRectangle(0x18bfdcabd50, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:297:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:297:45: QML QQuickRectangle: The current style does not support customization of this control (property: &amp;quot;background&amp;quot; item: QQuickRectangle(0x18bfdcab2d0, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:14:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:14:5: TypeError: Cannot read property &amp;#x27;height&amp;#x27; of null\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:13:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:13:5: TypeError: Cannot read property &amp;#x27;width&amp;#x27; of null\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:386:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:386:49: QML QQuickItem: The current style does not support customization of this control (property: &amp;quot;background&amp;quot; item: QQuickItem(0x18bfdcaa3f0, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:340:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:340:46: QML QQuickText: The current style does not support customization of this control (property: &amp;quot;contentItem&amp;quot; item: QQuickText(0x18bfdd1a4c0, parent=0x0, geometry=0,0 0x0 \u23ff)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\nfile:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:304:\n\n    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:304:46: QML QQuickText: The current style does not support customization of this control (property: &amp;quot;contentItem&amp;quot; item: QQuickText(0x18bfdd1a880, parent=0x0, geometry=0,0 0x0 \u23ff)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference\n&#34;}], &#34;Python/tests/test_connection.py::TestMAVLinkConnector::test_connection_timeout&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_connection.py::TestMAVLinkConnector::test_connection_timeout&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_connection.py::TestMAVLinkConnector::test_connection_timeout&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_connection.TestMAVLinkConnector object at 0x0000018BFBB86380&amp;gt;\nconnector = &amp;lt;backend.mavlink_connector.MAVLinkConnector(0x18bfdcdfa00) at 0x0000018BE4C5C900&amp;gt;\n\n    def test_connection_timeout(self, connector):\n        &amp;quot;&amp;quot;&amp;quot;Test that connection times out when port is invalid&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       connector.set_connection_params(&amp;quot;COM99&amp;quot;, 57600)\nE       AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntests\\test_connection.py:19: AttributeError\n&#34;}], &#34;Python/tests/test_connection.py::TestMAVLinkConnector::test_connection_invalid_port&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_connection.py::TestMAVLinkConnector::test_connection_invalid_port&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_connection.py::TestMAVLinkConnector::test_connection_invalid_port&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_connection.TestMAVLinkConnector object at 0x0000018BFBB86560&amp;gt;\nconnector = &amp;lt;backend.mavlink_connector.MAVLinkConnector(0x18bfdcdf4e0) at 0x0000018BE4C81EC0&amp;gt;\n\n    def test_connection_invalid_port(self, connector):\n        &amp;quot;&amp;quot;&amp;quot;Test that connection fails with invalid port&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       connector.set_connection_params(&amp;quot;INVALID_PORT&amp;quot;, 57600)\nE       AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntests\\test_connection.py:26: AttributeError\n&#34;}], &#34;Python/tests/test_connection.py::TestMAVLinkConnector::test_reconnection&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_connection.py::TestMAVLinkConnector::test_reconnection&#34;, &#34;duration&#34;: &#34;12 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_connection.py::TestMAVLinkConnector::test_reconnection&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;12 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_connection.TestMAVLinkConnector object at 0x0000018BFBB86740&amp;gt;\nconnector = &amp;lt;backend.mavlink_connector.MAVLinkConnector(0x18bfdcdf560) at 0x0000018BE4C4AB00&amp;gt;\n\n    def test_reconnection(self, connector):\n        &amp;quot;&amp;quot;&amp;quot;Test reconnection logic&amp;quot;&amp;quot;&amp;quot;\n        # Mock Serial\n        with patch(&amp;#x27;serial.Serial&amp;#x27;) as mock_serial:\n            mock_instance = mock_serial.return_value\n            mock_instance.is_open = True\n            mock_instance.read.return_value = b&amp;#x27;&amp;#x27;\n            mock_instance.inWaiting.return_value = 0\n    \n            # First connection\n&amp;gt;           connector.set_connection_params(&amp;quot;COM1&amp;quot;, 57600)\nE           AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntests\\test_connection.py:41: AttributeError\n&#34;}], &#34;Python/tests/test_connection.py::TestMAVLinkConnector::test_connection_parameters&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_connection.py::TestMAVLinkConnector::test_connection_parameters&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_connection.py::TestMAVLinkConnector::test_connection_parameters&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_connection.TestMAVLinkConnector object at 0x0000018BFBB86950&amp;gt;\nconnector = &amp;lt;backend.mavlink_connector.MAVLinkConnector(0x18bfdcdf640) at 0x0000018BFB3A2400&amp;gt;\n\n    def test_connection_parameters(self, connector):\n        &amp;quot;&amp;quot;&amp;quot;Test connection with different parameters&amp;quot;&amp;quot;&amp;quot;\n        with patch(&amp;#x27;serial.Serial&amp;#x27;) as mock_serial:\n            mock_instance = mock_serial.return_value\n            mock_instance.is_open = True\n    \n            # Test with default baudrate\n&amp;gt;           connector.set_connection_params(&amp;quot;COM1&amp;quot;, 57600)\nE           AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntests\\test_connection.py:60: AttributeError\n&#34;}], &#34;Python/tests/test_connection.py::TestMAVLinkConnector::test_connection_state&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_connection.py::TestMAVLinkConnector::test_connection_state&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_connection.py::TestMAVLinkConnector::test_connection_state&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_connection.TestMAVLinkConnector object at 0x0000018BFBB86B60&amp;gt;\nconnector = &amp;lt;backend.mavlink_connector.MAVLinkConnector(0x18bfdcdf380) at 0x0000018BFFF6E6C0&amp;gt;\n\n    def test_connection_state(self, connector):\n        &amp;quot;&amp;quot;&amp;quot;Test connection state management&amp;quot;&amp;quot;&amp;quot;\n        with patch(&amp;#x27;serial.Serial&amp;#x27;) as mock_serial:\n            mock_instance = mock_serial.return_value\n            mock_instance.is_open = True\n            mock_instance.read.return_value = b&amp;#x27;&amp;#x27;\n            mock_instance.inWaiting.return_value = 0\n    \n&amp;gt;           assert connector.is_connected() == False\nE           AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;is_connected&amp;#x27;. Did you mean: &amp;#x27;_is_connecting&amp;#x27;?\n\ntests\\test_connection.py:78: AttributeError\n&#34;}], &#34;Python/tests/test_connection.py::TestMAVLinkConnector::test_connection_events&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_connection.py::TestMAVLinkConnector::test_connection_events&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_connection.py::TestMAVLinkConnector::test_connection_events&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_connection.TestMAVLinkConnector object at 0x0000018BFBB86D70&amp;gt;\nconnector = &amp;lt;backend.mavlink_connector.MAVLinkConnector(0x18bfdcdf3e0) at 0x0000018BFBD27380&amp;gt;\n\n    def test_connection_events(self, connector):\n        &amp;quot;&amp;quot;&amp;quot;Test connection event handling&amp;quot;&amp;quot;&amp;quot;\n        with patch(&amp;#x27;serial.Serial&amp;#x27;) as mock_serial:\n            mock_instance = mock_serial.return_value\n            mock_instance.is_open = True\n            mock_instance.read.return_value = b&amp;#x27;&amp;#x27;\n            mock_instance.inWaiting.return_value = 0\n    \n            connected_events = []\n            disconnected_events = []\n    \n            def on_connected():\n                connected_events.append(True)\n    \n            def on_disconnected():\n                disconnected_events.append(True)\n    \n            # Verbindung mit Signal-Slots aufsetzen\n&amp;gt;           connector.connected.connect(on_connected)\nE           AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;connected&amp;#x27;. Did you mean: &amp;#x27;connect&amp;#x27;?\n\ntests\\test_connection.py:105: AttributeError\n&#34;}], &#34;Python/tests/test_end_to_end.py::TestEndToEnd::test_full_application_startup&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_end_to_end.py::TestEndToEnd::test_full_application_startup::setup&#34;, &#34;duration&#34;: &#34;41 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_end_to_end.py::TestEndToEnd::test_full_application_startup::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;41 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_end_to_end.TestEndToEnd object at 0x0000018BFBB87CD0&amp;gt;\napp = &amp;lt;PySide6.QtWidgets.QApplication(0x18be4131a80) at 0x0000018BFBD26480&amp;gt;\n\n    @pytest.fixture\n    def main_app(self, app):\n        &amp;quot;&amp;quot;&amp;quot;Fixture zum Starten der Hauptanwendung f\u00fcr Tests.&amp;quot;&amp;quot;&amp;quot;\n        # Die Hauptanwendung importieren\n&amp;gt;       from main import MainApplication\nE       ImportError: cannot import name &amp;#x27;MainApplication&amp;#x27; from &amp;#x27;main&amp;#x27; (C:\\Users\\fuckheinerkleinehack\\Documents\\RZGS2\\RZGCS\\Python\\main.py)\n\ntests\\test_end_to_end.py:24: ImportError\n&#34;}], &#34;Python/tests/test_end_to_end.py::TestEndToEnd::test_tab_navigation&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_end_to_end.py::TestEndToEnd::test_tab_navigation::setup&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_end_to_end.py::TestEndToEnd::test_tab_navigation::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_end_to_end.TestEndToEnd object at 0x0000018BFBB87EB0&amp;gt;\napp = &amp;lt;PySide6.QtWidgets.QApplication(0x18be4131a80) at 0x0000018BFBD26480&amp;gt;\n\n    @pytest.fixture\n    def main_app(self, app):\n        &amp;quot;&amp;quot;&amp;quot;Fixture zum Starten der Hauptanwendung f\u00fcr Tests.&amp;quot;&amp;quot;&amp;quot;\n        # Die Hauptanwendung importieren\n&amp;gt;       from main import MainApplication\nE       ImportError: cannot import name &amp;#x27;MainApplication&amp;#x27; from &amp;#x27;main&amp;#x27; (C:\\Users\\fuckheinerkleinehack\\Documents\\RZGS2\\RZGCS\\Python\\main.py)\n\ntests\\test_end_to_end.py:24: ImportError\n&#34;}], &#34;Python/tests/test_end_to_end.py::TestEndToEnd::test_store_view_interaction&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_end_to_end.py::TestEndToEnd::test_store_view_interaction::setup&#34;, &#34;duration&#34;: &#34;0 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_end_to_end.py::TestEndToEnd::test_store_view_interaction::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;0 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_end_to_end.TestEndToEnd object at 0x0000018BFBC500D0&amp;gt;\napp = &amp;lt;PySide6.QtWidgets.QApplication(0x18be4131a80) at 0x0000018BFBD26480&amp;gt;\n\n    @pytest.fixture\n    def main_app(self, app):\n        &amp;quot;&amp;quot;&amp;quot;Fixture zum Starten der Hauptanwendung f\u00fcr Tests.&amp;quot;&amp;quot;&amp;quot;\n        # Die Hauptanwendung importieren\n&amp;gt;       from main import MainApplication\nE       ImportError: cannot import name &amp;#x27;MainApplication&amp;#x27; from &amp;#x27;main&amp;#x27; (C:\\Users\\fuckheinerkleinehack\\Documents\\RZGS2\\RZGCS\\Python\\main.py)\n\ntests\\test_end_to_end.py:24: ImportError\n&#34;}], &#34;Python/tests/test_end_to_end.py::TestEndToEnd::test_connection_workflow&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_end_to_end.py::TestEndToEnd::test_connection_workflow::setup&#34;, &#34;duration&#34;: &#34;0 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_end_to_end.py::TestEndToEnd::test_connection_workflow::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;0 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_end_to_end.TestEndToEnd object at 0x0000018BFBC502B0&amp;gt;\napp = &amp;lt;PySide6.QtWidgets.QApplication(0x18be4131a80) at 0x0000018BFBD26480&amp;gt;\n\n    @pytest.fixture\n    def main_app(self, app):\n        &amp;quot;&amp;quot;&amp;quot;Fixture zum Starten der Hauptanwendung f\u00fcr Tests.&amp;quot;&amp;quot;&amp;quot;\n        # Die Hauptanwendung importieren\n&amp;gt;       from main import MainApplication\nE       ImportError: cannot import name &amp;#x27;MainApplication&amp;#x27; from &amp;#x27;main&amp;#x27; (C:\\Users\\fuckheinerkleinehack\\Documents\\RZGS2\\RZGCS\\Python\\main.py)\n\ntests\\test_end_to_end.py:24: ImportError\n&#34;}], &#34;Python/tests/test_integration.py::TestIntegration::test_message_handler_with_simulator&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_integration.py::TestIntegration::test_message_handler_with_simulator::setup&#34;, &#34;duration&#34;: &#34;0 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_integration.py::TestIntegration::test_message_handler_with_simulator::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;0 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_integration.TestIntegration object at 0x0000018BFBC50F40&amp;gt;\n\n    @pytest.fixture\n    def message_handler(self):\n        &amp;quot;&amp;quot;&amp;quot;Fixture f\u00fcr einen echten MessageHandler.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       return MessageHandler()\nE       TypeError: MessageHandler.__init__() missing 1 required positional argument: &amp;#x27;logger&amp;#x27;\n\ntests\\test_integration.py:25: TypeError\n&#34;}], &#34;Python/tests/test_integration.py::TestIntegration::test_simulator_thread_operation&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_integration.py::TestIntegration::test_simulator_thread_operation::setup&#34;, &#34;duration&#34;: &#34;0 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_integration.py::TestIntegration::test_simulator_thread_operation::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;0 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_integration.TestIntegration object at 0x0000018BFBC510F0&amp;gt;\n\n    @pytest.fixture\n    def message_handler(self):\n        &amp;quot;&amp;quot;&amp;quot;Fixture f\u00fcr einen echten MessageHandler.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       return MessageHandler()\nE       TypeError: MessageHandler.__init__() missing 1 required positional argument: &amp;#x27;logger&amp;#x27;\n\ntests\\test_integration.py:25: TypeError\n&#34;}], &#34;Python/tests/test_integration.py::TestIntegration::test_connector_with_message_handler&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_integration.py::TestIntegration::test_connector_with_message_handler::setup&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_integration.py::TestIntegration::test_connector_with_message_handler::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_integration.TestIntegration object at 0x0000018BFBC512D0&amp;gt;\n\n    @pytest.fixture\n    def mock_connector(self):\n        &amp;quot;&amp;quot;&amp;quot;Fixture f\u00fcr einen Mock-Connector.&amp;quot;&amp;quot;&amp;quot;\n        connector = MagicMock(spec=MAVLinkConnector)\n&amp;gt;       connector.is_connected.return_value = True\n\ntests\\test_integration.py:31: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = &amp;lt;MagicMock spec=&amp;#x27;MAVLinkConnector&amp;#x27; id=&amp;#x27;1700806292960&amp;#x27;&amp;gt;\nname = &amp;#x27;is_connected&amp;#x27;\n\n    def __getattr__(self, name):\n        if name in {&amp;#x27;_mock_methods&amp;#x27;, &amp;#x27;_mock_unsafe&amp;#x27;}:\n            raise AttributeError(name)\n        elif self._mock_methods is not None:\n            if name not in self._mock_methods or name in _all_magics:\n&amp;gt;               raise AttributeError(&amp;quot;Mock object has no attribute %r&amp;quot; % name)\nE               AttributeError: Mock object has no attribute &amp;#x27;is_connected&amp;#x27;. Did you mean: &amp;#x27;disconnect&amp;#x27;?\n\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:634: AttributeError\n&#34;}], &#34;Python/tests/test_integration.py::TestIntegration::test_sensor_data_flow&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_integration.py::TestIntegration::test_sensor_data_flow::setup&#34;, &#34;duration&#34;: &#34;0 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_integration.py::TestIntegration::test_sensor_data_flow::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;0 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_integration.TestIntegration object at 0x0000018BFBC51480&amp;gt;\n\n    @pytest.fixture\n    def message_handler(self):\n        &amp;quot;&amp;quot;&amp;quot;Fixture f\u00fcr einen echten MessageHandler.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       return MessageHandler()\nE       TypeError: MessageHandler.__init__() missing 1 required positional argument: &amp;#x27;logger&amp;#x27;\n\ntests\\test_integration.py:25: TypeError\n&#34;}], &#34;Python/tests/test_integration.py::TestIntegration::test_end_to_end_command_flow&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_integration.py::TestIntegration::test_end_to_end_command_flow::setup&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_integration.py::TestIntegration::test_end_to_end_command_flow::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_integration.TestIntegration object at 0x0000018BFBC51690&amp;gt;\n\n    @pytest.fixture\n    def mock_connector(self):\n        &amp;quot;&amp;quot;&amp;quot;Fixture f\u00fcr einen Mock-Connector.&amp;quot;&amp;quot;&amp;quot;\n        connector = MagicMock(spec=MAVLinkConnector)\n&amp;gt;       connector.is_connected.return_value = True\n\ntests\\test_integration.py:31: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = &amp;lt;MagicMock spec=&amp;#x27;MAVLinkConnector&amp;#x27; id=&amp;#x27;1700334915968&amp;#x27;&amp;gt;\nname = &amp;#x27;is_connected&amp;#x27;\n\n    def __getattr__(self, name):\n        if name in {&amp;#x27;_mock_methods&amp;#x27;, &amp;#x27;_mock_unsafe&amp;#x27;}:\n            raise AttributeError(name)\n        elif self._mock_methods is not None:\n            if name not in self._mock_methods or name in _all_magics:\n&amp;gt;               raise AttributeError(&amp;quot;Mock object has no attribute %r&amp;quot; % name)\nE               AttributeError: Mock object has no attribute &amp;#x27;is_connected&amp;#x27;. Did you mean: &amp;#x27;disconnect&amp;#x27;?\n\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:634: AttributeError\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connector_initialization&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connector_initialization&#34;, &#34;duration&#34;: &#34;4 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connector_initialization&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;4 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000018BFBC52770&amp;gt;\nmock_serial = &amp;lt;MagicMock name=&amp;#x27;Serial()&amp;#x27; id=&amp;#x27;1698668199024&amp;#x27;&amp;gt;\nmock_logger = &amp;lt;MagicMock spec=&amp;#x27;Logger&amp;#x27; id=&amp;#x27;1700806598640&amp;#x27;&amp;gt;\n\n    def test_connector_initialization(self, mock_serial, mock_logger):\n        &amp;quot;&amp;quot;&amp;quot;Testet die korrekte Initialisierung des MAVLink-Connectors.&amp;quot;&amp;quot;&amp;quot;\n        # Arranges\n        port = &amp;#x27;COM1&amp;#x27;\n        baudrate = 57600\n    \n        # Act\n        connector = MAVLinkConnector(mock_logger)\n&amp;gt;       connector.set_connection_params(port, baudrate)\nE       AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntests\\test_mavlink_connector.py:45: AttributeError\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connect_success&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connect_success&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connect_success&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000018BFBC52950&amp;gt;\nmock_serial = &amp;lt;MagicMock name=&amp;#x27;Serial()&amp;#x27; id=&amp;#x27;1700737142784&amp;#x27;&amp;gt;\nmock_logger = &amp;lt;MagicMock spec=&amp;#x27;Logger&amp;#x27; id=&amp;#x27;1698668366384&amp;#x27;&amp;gt;\n\n    def test_connect_success(self, mock_serial, mock_logger):\n        &amp;quot;&amp;quot;&amp;quot;Testet die erfolgreiche Verbindungsherstellung.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        connector = MAVLinkConnector(mock_logger)\n&amp;gt;       connector.set_connection_params(&amp;#x27;COM1&amp;#x27;, 57600)\nE       AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntests\\test_mavlink_connector.py:57: AttributeError\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connect_failure&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connect_failure&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connect_failure&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000018BFBC52B00&amp;gt;\nmock_serial_error = &amp;lt;MagicMock name=&amp;#x27;Serial&amp;#x27; id=&amp;#x27;1700806277728&amp;#x27;&amp;gt;\nmock_logger = &amp;lt;MagicMock spec=&amp;#x27;Logger&amp;#x27; id=&amp;#x27;1700806271056&amp;#x27;&amp;gt;\n\n    @patch(&amp;#x27;backend.mavlink_connector.serial.Serial&amp;#x27;, side_effect=Exception(&amp;#x27;Connection failed&amp;#x27;))\n    def test_connect_failure(self, mock_serial_error, mock_logger):\n        &amp;quot;&amp;quot;&amp;quot;Testet den Fehlerfall bei der Verbindungsherstellung.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        connector = MAVLinkConnector(mock_logger)\n&amp;gt;       connector.set_connection_params(&amp;#x27;COM1&amp;#x27;, 57600)\nE       AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntests\\test_mavlink_connector.py:71: AttributeError\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_disconnect&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_disconnect&#34;, &#34;duration&#34;: &#34;4 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_disconnect&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;4 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000018BFBC52CE0&amp;gt;\nmock_serial = &amp;lt;MagicMock name=&amp;#x27;Serial()&amp;#x27; id=&amp;#x27;1700806595424&amp;#x27;&amp;gt;\nmock_logger = &amp;lt;MagicMock spec=&amp;#x27;Logger&amp;#x27; id=&amp;#x27;1698668365952&amp;#x27;&amp;gt;\n\n    def test_disconnect(self, mock_serial, mock_logger):\n        &amp;quot;&amp;quot;&amp;quot;Testet das korrekte Trennen der Verbindung.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        connector = MAVLinkConnector(mock_logger)\n&amp;gt;       connector.set_connection_params(&amp;#x27;COM1&amp;#x27;, 57600)\nE       AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntests\\test_mavlink_connector.py:83: AttributeError\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_factory_method_mavlink&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_factory_method_mavlink&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_factory_method_mavlink&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000018BFBC52E90&amp;gt;\n\n    def test_factory_method_mavlink(self):\n        &amp;quot;&amp;quot;&amp;quot;Testet die Factory-Methode f\u00fcr die Erstellung eines MAVLink-Connectors.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange &amp;amp; Act\n        with patch(&amp;#x27;backend.mavlink_connector.MAVLinkConnector&amp;#x27;) as mock_connector:\n&amp;gt;           with patch(&amp;#x27;backend.mavlink_connector.Logger&amp;#x27;) as mock_logger_class:\n\ntests\\test_mavlink_connector.py:97: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:1438: in __enter__\n    original, local = self.get_original()\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = &amp;lt;unittest.mock._patch object at 0x0000018BFFF47700&amp;gt;\n\n    def get_original(self):\n        target = self.getter()\n        name = self.attribute\n    \n        original = DEFAULT\n        local = False\n    \n        try:\n            original = target.__dict__[name]\n        except (AttributeError, KeyError):\n            original = getattr(target, name, DEFAULT)\n        else:\n            local = True\n    \n        if name in _builtins and isinstance(target, ModuleType):\n            self.create = True\n    \n        if not self.create and original is DEFAULT:\n&amp;gt;           raise AttributeError(\n                &amp;quot;%s does not have the attribute %r&amp;quot; % (target, name)\n            )\nE           AttributeError: &amp;lt;module &amp;#x27;backend.mavlink_connector&amp;#x27; from &amp;#x27;C:\\\\Users\\\\fuckheinerkleinehack\\\\Documents\\\\RZGS2\\\\RZGCS\\\\Python\\\\backend\\\\mavlink_connector.py&amp;#x27;&amp;gt; does not have the attribute &amp;#x27;Logger&amp;#x27;\n\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:1411: AttributeError\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_factory_method_missing_params&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_factory_method_missing_params&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_factory_method_missing_params&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nFehler beim Erstellen des Connectors: port und baudrate sind erforderlich f\u00fcr MAVLink\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_send_message&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_send_message&#34;, &#34;duration&#34;: &#34;4 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_send_message&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;4 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000018BFBC52DD0&amp;gt;\nmock_serial = &amp;lt;MagicMock name=&amp;#x27;Serial()&amp;#x27; id=&amp;#x27;1698668195712&amp;#x27;&amp;gt;\nmock_logger = &amp;lt;MagicMock spec=&amp;#x27;Logger&amp;#x27; id=&amp;#x27;1700806303008&amp;#x27;&amp;gt;\n\n    def test_send_message(self, mock_serial, mock_logger):\n        &amp;quot;&amp;quot;&amp;quot;Testet das Senden einer Nachricht.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        connector = MAVLinkConnector(mock_logger)\n&amp;gt;       connector.set_connection_params(&amp;#x27;COM1&amp;#x27;, 57600)\nE       AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntests\\test_mavlink_connector.py:123: AttributeError\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_send_message_not_connected&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_send_message_not_connected&#34;, &#34;duration&#34;: &#34;4 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_send_message_not_connected&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;4 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000018BFBC52860&amp;gt;\nmock_logger = &amp;lt;MagicMock spec=&amp;#x27;Logger&amp;#x27; id=&amp;#x27;1698668606896&amp;#x27;&amp;gt;\n\n    def test_send_message_not_connected(self, mock_logger):\n        &amp;quot;&amp;quot;&amp;quot;Testet das Senden einer Nachricht ohne Verbindung.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        connector = MAVLinkConnector(mock_logger)\n&amp;gt;       connector.set_connection_params(&amp;#x27;COM1&amp;#x27;, 57600)\nE       AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntests\\test_mavlink_connector.py:140: AttributeError\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_receive_messages&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_receive_messages&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_receive_messages&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;item = &amp;lt;Function test_receive_messages&amp;gt;\n\n    @pytest.hookimpl(wrapper=True, tryfirst=True)\n    def pytest_runtest_call(item):\n&amp;gt;       result = yield\n\n..\\..\\..\\..\\AppData\\Roaming\\Python\\Python310\\site-packages\\pytestqt\\plugin.py:189: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:1367: in patched\n    with self.decoration_helper(patched,\nC:\\Program Files\\Python310\\lib\\contextlib.py:135: in __enter__\n    return next(self.gen)\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:1349: in decoration_helper\n    arg = exit_stack.enter_context(patching)\nC:\\Program Files\\Python310\\lib\\contextlib.py:492: in enter_context\n    result = _cm_type.__enter__(cm)\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:1438: in __enter__\n    original, local = self.get_original()\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = &amp;lt;unittest.mock._patch object at 0x0000018BFBC51F90&amp;gt;\n\n    def get_original(self):\n        target = self.getter()\n        name = self.attribute\n    \n        original = DEFAULT\n        local = False\n    \n        try:\n            original = target.__dict__[name]\n        except (AttributeError, KeyError):\n            original = getattr(target, name, DEFAULT)\n        else:\n            local = True\n    \n        if name in _builtins and isinstance(target, ModuleType):\n            self.create = True\n    \n        if not self.create and original is DEFAULT:\n&amp;gt;           raise AttributeError(\n                &amp;quot;%s does not have the attribute %r&amp;quot; % (target, name)\n            )\nE           AttributeError: &amp;lt;class &amp;#x27;backend.mavlink_connector.MAVLinkConnector&amp;#x27;&amp;gt; does not have the attribute &amp;#x27;process_messages&amp;#x27;\n\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:1411: AttributeError\n&#34;}], &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_initialization&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_initialization::setup&#34;, &#34;duration&#34;: &#34;149 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_initialization::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;149 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC78070&amp;gt;\nmock_message_handler = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1698668375984&amp;#x27;&amp;gt;\n\n    @pytest.fixture\n    def simulator(self, mock_message_handler):\n        &amp;quot;&amp;quot;&amp;quot;Fixture f\u00fcr einen MAVLinkSimulator mit Mock-Handler.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       return MAVLinkSimulator(mock_message_handler)\n\ntests\\test_mavlink_simulator.py:29: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = &amp;lt;[RuntimeError(&amp;quot;&amp;#x27;__init__&amp;#x27; method of object&amp;#x27;s base class (MAVLinkSimulator) not called.&amp;quot;) raised in repr()] MAVLinkSimulator object at 0x18bfbc6dd40&amp;gt;\nparent = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1698668375984&amp;#x27;&amp;gt;\n\n    def __init__(self, parent=None):\n&amp;gt;       super().__init__(parent)\nE       ValueError: &amp;#x27;PySide6.QtCore.QObject.__init__&amp;#x27; called with wrong argument values:\nE         PySide6.QtCore.QObject.__init__(&amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1698668375984&amp;#x27;&amp;gt;,)\nE       Found signature:\nE         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)\n\nbackend\\mavlink_simulator.py:11: ValueError\n&#34;}], &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_start_simulator&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_start_simulator::setup&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_start_simulator::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC78220&amp;gt;\nmock_message_handler = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700736084496&amp;#x27;&amp;gt;\n\n    @pytest.fixture\n    def simulator(self, mock_message_handler):\n        &amp;quot;&amp;quot;&amp;quot;Fixture f\u00fcr einen MAVLinkSimulator mit Mock-Handler.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       return MAVLinkSimulator(mock_message_handler)\n\ntests\\test_mavlink_simulator.py:29: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = &amp;lt;[RuntimeError(&amp;quot;&amp;#x27;__init__&amp;#x27; method of object&amp;#x27;s base class (MAVLinkSimulator) not called.&amp;quot;) raised in repr()] MAVLinkSimulator object at 0x18b809200c0&amp;gt;\nparent = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700736084496&amp;#x27;&amp;gt;\n\n    def __init__(self, parent=None):\n&amp;gt;       super().__init__(parent)\nE       ValueError: &amp;#x27;PySide6.QtCore.QObject.__init__&amp;#x27; called with wrong argument values:\nE         PySide6.QtCore.QObject.__init__(&amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700736084496&amp;#x27;&amp;gt;,)\nE       Found signature:\nE         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)\n\nbackend\\mavlink_simulator.py:11: ValueError\n&#34;}], &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_stop_simulator&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_stop_simulator::setup&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_stop_simulator::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC78400&amp;gt;\nmock_message_handler = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700806710448&amp;#x27;&amp;gt;\n\n    @pytest.fixture\n    def simulator(self, mock_message_handler):\n        &amp;quot;&amp;quot;&amp;quot;Fixture f\u00fcr einen MAVLinkSimulator mit Mock-Handler.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       return MAVLinkSimulator(mock_message_handler)\n\ntests\\test_mavlink_simulator.py:29: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = &amp;lt;[RuntimeError(&amp;quot;&amp;#x27;__init__&amp;#x27; method of object&amp;#x27;s base class (MAVLinkSimulator) not called.&amp;quot;) raised in repr()] MAVLinkSimulator object at 0x18b80990140&amp;gt;\nparent = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700806710448&amp;#x27;&amp;gt;\n\n    def __init__(self, parent=None):\n&amp;gt;       super().__init__(parent)\nE       ValueError: &amp;#x27;PySide6.QtCore.QObject.__init__&amp;#x27; called with wrong argument values:\nE         PySide6.QtCore.QObject.__init__(&amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700806710448&amp;#x27;&amp;gt;,)\nE       Found signature:\nE         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)\n\nbackend\\mavlink_simulator.py:11: ValueError\n&#34;}], &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_is_running&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_is_running::setup&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_is_running::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC785E0&amp;gt;\nmock_message_handler = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1698668525168&amp;#x27;&amp;gt;\n\n    @pytest.fixture\n    def simulator(self, mock_message_handler):\n        &amp;quot;&amp;quot;&amp;quot;Fixture f\u00fcr einen MAVLinkSimulator mit Mock-Handler.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       return MAVLinkSimulator(mock_message_handler)\n\ntests\\test_mavlink_simulator.py:29: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = &amp;lt;[RuntimeError(&amp;quot;&amp;#x27;__init__&amp;#x27; method of object&amp;#x27;s base class (MAVLinkSimulator) not called.&amp;quot;) raised in repr()] MAVLinkSimulator object at 0x18b809c0a40&amp;gt;\nparent = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1698668525168&amp;#x27;&amp;gt;\n\n    def __init__(self, parent=None):\n&amp;gt;       super().__init__(parent)\nE       ValueError: &amp;#x27;PySide6.QtCore.QObject.__init__&amp;#x27; called with wrong argument values:\nE         PySide6.QtCore.QObject.__init__(&amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1698668525168&amp;#x27;&amp;gt;,)\nE       Found signature:\nE         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)\n\nbackend\\mavlink_simulator.py:11: ValueError\n&#34;}], &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_run_loop&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_run_loop::setup&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_run_loop::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC787F0&amp;gt;\nmock_message_handler = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700806591440&amp;#x27;&amp;gt;\n\n    @pytest.fixture\n    def simulator(self, mock_message_handler):\n        &amp;quot;&amp;quot;&amp;quot;Fixture f\u00fcr einen MAVLinkSimulator mit Mock-Handler.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       return MAVLinkSimulator(mock_message_handler)\n\ntests\\test_mavlink_simulator.py:29: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = &amp;lt;[RuntimeError(&amp;quot;&amp;#x27;__init__&amp;#x27; method of object&amp;#x27;s base class (MAVLinkSimulator) not called.&amp;quot;) raised in repr()] MAVLinkSimulator object at 0x18b808e4b40&amp;gt;\nparent = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700806591440&amp;#x27;&amp;gt;\n\n    def __init__(self, parent=None):\n&amp;gt;       super().__init__(parent)\nE       ValueError: &amp;#x27;PySide6.QtCore.QObject.__init__&amp;#x27; called with wrong argument values:\nE         PySide6.QtCore.QObject.__init__(&amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700806591440&amp;#x27;&amp;gt;,)\nE       Found signature:\nE         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)\n\nbackend\\mavlink_simulator.py:11: ValueError\n&#34;}], &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_simulate_heartbeat&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_simulate_heartbeat::setup&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_simulate_heartbeat::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC789D0&amp;gt;\nmock_message_handler = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1698668526368&amp;#x27;&amp;gt;\n\n    @pytest.fixture\n    def simulator(self, mock_message_handler):\n        &amp;quot;&amp;quot;&amp;quot;Fixture f\u00fcr einen MAVLinkSimulator mit Mock-Handler.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       return MAVLinkSimulator(mock_message_handler)\n\ntests\\test_mavlink_simulator.py:29: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = &amp;lt;[RuntimeError(&amp;quot;&amp;#x27;__init__&amp;#x27; method of object&amp;#x27;s base class (MAVLinkSimulator) not called.&amp;quot;) raised in repr()] MAVLinkSimulator object at 0x18b80992440&amp;gt;\nparent = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1698668526368&amp;#x27;&amp;gt;\n\n    def __init__(self, parent=None):\n&amp;gt;       super().__init__(parent)\nE       ValueError: &amp;#x27;PySide6.QtCore.QObject.__init__&amp;#x27; called with wrong argument values:\nE         PySide6.QtCore.QObject.__init__(&amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1698668526368&amp;#x27;&amp;gt;,)\nE       Found signature:\nE         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)\n\nbackend\\mavlink_simulator.py:11: ValueError\n&#34;}], &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_simulate_attitude&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_simulate_attitude::setup&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_simulate_attitude::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC78BB0&amp;gt;\nmock_message_handler = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700806671856&amp;#x27;&amp;gt;\n\n    @pytest.fixture\n    def simulator(self, mock_message_handler):\n        &amp;quot;&amp;quot;&amp;quot;Fixture f\u00fcr einen MAVLinkSimulator mit Mock-Handler.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       return MAVLinkSimulator(mock_message_handler)\n\ntests\\test_mavlink_simulator.py:29: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = &amp;lt;[RuntimeError(&amp;quot;&amp;#x27;__init__&amp;#x27; method of object&amp;#x27;s base class (MAVLinkSimulator) not called.&amp;quot;) raised in repr()] MAVLinkSimulator object at 0x18b809497c0&amp;gt;\nparent = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700806671856&amp;#x27;&amp;gt;\n\n    def __init__(self, parent=None):\n&amp;gt;       super().__init__(parent)\nE       ValueError: &amp;#x27;PySide6.QtCore.QObject.__init__&amp;#x27; called with wrong argument values:\nE         PySide6.QtCore.QObject.__init__(&amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700806671856&amp;#x27;&amp;gt;,)\nE       Found signature:\nE         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)\n\nbackend\\mavlink_simulator.py:11: ValueError\n&#34;}], &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_simulate_gps_status&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_simulate_gps_status::setup&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_simulate_gps_status::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC78D90&amp;gt;\nmock_message_handler = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700806604928&amp;#x27;&amp;gt;\n\n    @pytest.fixture\n    def simulator(self, mock_message_handler):\n        &amp;quot;&amp;quot;&amp;quot;Fixture f\u00fcr einen MAVLinkSimulator mit Mock-Handler.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       return MAVLinkSimulator(mock_message_handler)\n\ntests\\test_mavlink_simulator.py:29: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = &amp;lt;[RuntimeError(&amp;quot;&amp;#x27;__init__&amp;#x27; method of object&amp;#x27;s base class (MAVLinkSimulator) not called.&amp;quot;) raised in repr()] MAVLinkSimulator object at 0x18b808b9300&amp;gt;\nparent = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700806604928&amp;#x27;&amp;gt;\n\n    def __init__(self, parent=None):\n&amp;gt;       super().__init__(parent)\nE       ValueError: &amp;#x27;PySide6.QtCore.QObject.__init__&amp;#x27; called with wrong argument values:\nE         PySide6.QtCore.QObject.__init__(&amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700806604928&amp;#x27;&amp;gt;,)\nE       Found signature:\nE         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)\n\nbackend\\mavlink_simulator.py:11: ValueError\n&#34;}], &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_simulate_battery_status&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Error&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_simulate_battery_status::setup&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Error&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_simulator.py::TestMAVLinkSimulator::test_simulate_battery_status::setup&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC78F70&amp;gt;\nmock_message_handler = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700806272208&amp;#x27;&amp;gt;\n\n    @pytest.fixture\n    def simulator(self, mock_message_handler):\n        &amp;quot;&amp;quot;&amp;quot;Fixture f\u00fcr einen MAVLinkSimulator mit Mock-Handler.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       return MAVLinkSimulator(mock_message_handler)\n\ntests\\test_mavlink_simulator.py:29: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = &amp;lt;[RuntimeError(&amp;quot;&amp;#x27;__init__&amp;#x27; method of object&amp;#x27;s base class (MAVLinkSimulator) not called.&amp;quot;) raised in repr()] MAVLinkSimulator object at 0x18b809c0500&amp;gt;\nparent = &amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700806272208&amp;#x27;&amp;gt;\n\n    def __init__(self, parent=None):\n&amp;gt;       super().__init__(parent)\nE       ValueError: &amp;#x27;PySide6.QtCore.QObject.__init__&amp;#x27; called with wrong argument values:\nE         PySide6.QtCore.QObject.__init__(&amp;lt;MagicMock spec=&amp;#x27;MessageHandler&amp;#x27; id=&amp;#x27;1700806272208&amp;#x27;&amp;gt;,)\nE       Found signature:\nE         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)\n\nbackend\\mavlink_simulator.py:11: ValueError\n&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_initialization&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_initialization&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_initialization&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameters&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameters&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameters&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_rowCount&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_rowCount&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_rowCount&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_data_valid_index&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_data_valid_index&#34;, &#34;duration&#34;: &#34;27 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_data_valid_index&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;27 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_parameter_model.TestParameterTableModel object at 0x0000018BFBC7A9B0&amp;gt;\nmodel = &amp;lt;backend.parameter_model.ParameterTableModel(0x18bfdc7c640) at 0x0000018B809D9B40&amp;gt;\nsample_params = [{&amp;#x27;defaultValue&amp;#x27;: &amp;#x27;0.1&amp;#x27;, &amp;#x27;description&amp;#x27;: &amp;#x27;Roll rate control P gain&amp;#x27;, &amp;#x27;name&amp;#x27;: &amp;#x27;RATE_RLL_P&amp;#x27;, &amp;#x27;options&amp;#x27;: [], ...}, {&amp;#x27;defau...[], ...}, {&amp;#x27;defaultValue&amp;#x27;: &amp;#x27;0.15&amp;#x27;, &amp;#x27;description&amp;#x27;: &amp;#x27;Yaw rate control P gain&amp;#x27;, &amp;#x27;name&amp;#x27;: &amp;#x27;RATE_YAW_P&amp;#x27;, &amp;#x27;options&amp;#x27;: [], ...}]\n\n    def test_data_valid_index(self, model, sample_params):\n        &amp;quot;&amp;quot;&amp;quot;Testet die data-Methode mit g\u00fcltigen Indizes.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        model.set_parameters(sample_params)\n    \n        # Act &amp;amp; Assert - Verschiedene Rollen testen\n        index = model.index(0, 0)\n        assert model.data(index, ParameterTableModel.NameRole) == &amp;#x27;RATE_RLL_P&amp;#x27;\n        assert model.data(index, ParameterTableModel.ValueRole) == &amp;#x27;0.15&amp;#x27;\n        assert model.data(index, ParameterTableModel.DefaultValueRole) == &amp;#x27;0.1&amp;#x27;\n        assert model.data(index, ParameterTableModel.UnitRole) == &amp;#x27;&amp;#x27;\n        assert model.data(index, ParameterTableModel.OptionsRole) == []\n&amp;gt;       assert model.data(index, ParameterTableModel.DescRole) == &amp;#x27;Roll rate control P gain&amp;#x27;\nE       AssertionError: assert &amp;#x27;&amp;#x27; == &amp;#x27;Roll rate control P gain&amp;#x27;\nE         \nE         - Roll rate control P gain\n\ntests\\test_parameter_model.py:96: AssertionError\n&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_data_invalid_index&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_data_invalid_index&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_data_invalid_index&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_roleNames&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_roleNames&#34;, &#34;duration&#34;: &#34;20 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_roleNames&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;20 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_parameter_model.TestParameterTableModel object at 0x0000018BFBC7AD40&amp;gt;\nmodel = &amp;lt;backend.parameter_model.ParameterTableModel(0x18bfdc96390) at 0x0000018B809F0900&amp;gt;\n\n    def test_roleNames(self, model):\n        &amp;quot;&amp;quot;&amp;quot;Testet die roleNames-Methode.&amp;quot;&amp;quot;&amp;quot;\n        # Act\n        roles = model.roleNames()\n    \n        # Assert\n        expected_roles = {\n            ParameterTableModel.NameRole: b&amp;#x27;name&amp;#x27;,\n            ParameterTableModel.ValueRole: b&amp;#x27;value&amp;#x27;,\n            ParameterTableModel.DefaultValueRole: b&amp;#x27;defaultValue&amp;#x27;,\n            ParameterTableModel.UnitRole: b&amp;#x27;unit&amp;#x27;,\n            ParameterTableModel.OptionsRole: b&amp;#x27;options&amp;#x27;,\n            ParameterTableModel.DescRole: b&amp;#x27;description&amp;#x27;\n        }\n    \n        for role, name in expected_roles.items():\n&amp;gt;           assert roles[role] == name\nE           AssertionError: assert b&amp;#x27;desc&amp;#x27; == b&amp;#x27;description&amp;#x27;\nE             \nE             Use -v to get more diff\n\ntests\\test_parameter_model.py:127: AssertionError\n&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameter_value&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameter_value&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameter_value&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nVersuche Parameter zu setzen: RATE_RLL_P = 0.2\nParameter RATE_RLL_P gefunden, aktualisiere Wert von 0.15 zu 0.2\n&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameter_value_nonexistent&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameter_value_nonexistent&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameter_value_nonexistent&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nVersuche Parameter zu setzen: NONEXISTENT = 1.0\nParameter NONEXISTENT nicht gefunden\n&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_get_parameter_value&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_get_parameter_value&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_get_parameter_value&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_parameter_model.TestParameterTableModel object at 0x0000018BFBC7B2E0&amp;gt;\nmodel = &amp;lt;backend.parameter_model.ParameterTableModel(0x18bfdc96ed0) at 0x0000018B809685C0&amp;gt;\nsample_params = [{&amp;#x27;defaultValue&amp;#x27;: &amp;#x27;0.1&amp;#x27;, &amp;#x27;description&amp;#x27;: &amp;#x27;Roll rate control P gain&amp;#x27;, &amp;#x27;name&amp;#x27;: &amp;#x27;RATE_RLL_P&amp;#x27;, &amp;#x27;options&amp;#x27;: [], ...}, {&amp;#x27;defau...[], ...}, {&amp;#x27;defaultValue&amp;#x27;: &amp;#x27;0.15&amp;#x27;, &amp;#x27;description&amp;#x27;: &amp;#x27;Yaw rate control P gain&amp;#x27;, &amp;#x27;name&amp;#x27;: &amp;#x27;RATE_YAW_P&amp;#x27;, &amp;#x27;options&amp;#x27;: [], ...}]\n\n    def test_get_parameter_value(self, model, sample_params):\n        &amp;quot;&amp;quot;&amp;quot;Testet das Abrufen eines Parameterwerts.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        model.set_parameters(sample_params)\n    \n        # Act &amp;amp; Assert\n&amp;gt;       assert model.get_parameter_value(&amp;#x27;RATE_RLL_P&amp;#x27;) == &amp;#x27;0.15&amp;#x27;\nE       AttributeError: &amp;#x27;ParameterTableModel&amp;#x27; object has no attribute &amp;#x27;get_parameter_value&amp;#x27;. Did you mean: &amp;#x27;set_parameter_value&amp;#x27;?\n\ntests\\test_parameter_model.py:163: AttributeError\n&#34;}], &#34;Python/tests/test_performance.py::TestPerformance::test_message_processing_performance&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_performance.py::TestPerformance::test_message_processing_performance&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_performance.py::TestPerformance::test_message_processing_performance&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_performance.TestPerformance object at 0x0000018BFBCC1450&amp;gt;\nmessage_handler = &amp;lt;backend.message_handler.MessageHandler(0x18bfdcd0ef0) at 0x0000018B80922A40&amp;gt;\nmock_logger = &amp;lt;MagicMock spec=&amp;#x27;Logger&amp;#x27; id=&amp;#x27;1700806670128&amp;#x27;&amp;gt;\n\n    def test_message_processing_performance(self, message_handler, mock_logger):\n        &amp;quot;&amp;quot;&amp;quot;Testet die Performance der Nachrichtenverarbeitung.&amp;quot;&amp;quot;&amp;quot;\n        # Konfigurieren des Profilers\n        pr = cProfile.Profile()\n        pr.enable()\n    \n        # Act - Viele Nachrichten verarbeiten\n        start_time = time.time()\n        for i in range(1000):\n            # Attitude-Nachrichten mit verschiedenen Werten simulieren\n            roll = i / 1000.0\n            pitch = i / 2000.0\n            yaw = i / 3000.0\n&amp;gt;           message_handler.process_attitude(roll, pitch, yaw)\nE           AttributeError: &amp;#x27;MessageHandler&amp;#x27; object has no attribute &amp;#x27;process_attitude&amp;#x27;\n\ntests\\test_performance.py:74: AttributeError\n&#34;}], &#34;Python/tests/test_performance.py::TestPerformance::test_parameter_model_performance&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_performance.py::TestPerformance::test_parameter_model_performance&#34;, &#34;duration&#34;: &#34;12 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_performance.py::TestPerformance::test_parameter_model_performance&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;12 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nVersuche Parameter zu setzen: PARAM_0 = 0.0\nParameter PARAM_0 gefunden, aktualisiere Wert von 0.0 zu 0.0\nVersuche Parameter zu setzen: PARAM_1 = 0.2\nParameter PARAM_1 gefunden, aktualisiere Wert von 0.1 zu 0.2\nVersuche Parameter zu setzen: PARAM_2 = 0.4\nParameter PARAM_2 gefunden, aktualisiere Wert von 0.2 zu 0.4\nVersuche Parameter zu setzen: PARAM_3 = 0.6\nParameter PARAM_3 gefunden, aktualisiere Wert von 0.3 zu 0.6\nVersuche Parameter zu setzen: PARAM_4 = 0.8\nParameter PARAM_4 gefunden, aktualisiere Wert von 0.4 zu 0.8\nVersuche Parameter zu setzen: PARAM_5 = 1.0\nParameter PARAM_5 gefunden, aktualisiere Wert von 0.5 zu 1.0\nVersuche Parameter zu setzen: PARAM_6 = 1.2\nParameter PARAM_6 gefunden, aktualisiere Wert von 0.6 zu 1.2\nVersuche Parameter zu setzen: PARAM_7 = 1.4\nParameter PARAM_7 gefunden, aktualisiere Wert von 0.7 zu 1.4\nVersuche Parameter zu setzen: PARAM_8 = 1.6\nParameter PARAM_8 gefunden, aktualisiere Wert von 0.8 zu 1.6\nVersuche Parameter zu setzen: PARAM_9 = 1.8\nParameter PARAM_9 gefunden, aktualisiere Wert von 0.9 zu 1.8\nVersuche Parameter zu setzen: PARAM_10 = 2.0\nParameter PARAM_10 gefunden, aktualisiere Wert von 1.0 zu 2.0\nVersuche Parameter zu setzen: PARAM_11 = 2.2\nParameter PARAM_11 gefunden, aktualisiere Wert von 1.1 zu 2.2\nVersuche Parameter zu setzen: PARAM_12 = 2.4\nParameter PARAM_12 gefunden, aktualisiere Wert von 1.2 zu 2.4\nVersuche Parameter zu setzen: PARAM_13 = 2.6\nParameter PARAM_13 gefunden, aktualisiere Wert von 1.3 zu 2.6\nVersuche Parameter zu setzen: PARAM_14 = 2.8\nParameter PARAM_14 gefunden, aktualisiere Wert von 1.4 zu 2.8\nVersuche Parameter zu setzen: PARAM_15 = 3.0\nParameter PARAM_15 gefunden, aktualisiere Wert von 1.5 zu 3.0\nVersuche Parameter zu setzen: PARAM_16 = 3.2\nParameter PARAM_16 gefunden, aktualisiere Wert von 1.6 zu 3.2\nVersuche Parameter zu setzen: PARAM_17 = 3.4\nParameter PARAM_17 gefunden, aktualisiere Wert von 1.7 zu 3.4\nVersuche Parameter zu setzen: PARAM_18 = 3.6\nParameter PARAM_18 gefunden, aktualisiere Wert von 1.8 zu 3.6\nVersuche Parameter zu setzen: PARAM_19 = 3.8\nParameter PARAM_19 gefunden, aktualisiere Wert von 1.9 zu 3.8\nVersuche Parameter zu setzen: PARAM_20 = 4.0\nParameter PARAM_20 gefunden, aktualisiere Wert von 2.0 zu 4.0\nVersuche Parameter zu setzen: PARAM_21 = 4.2\nParameter PARAM_21 gefunden, aktualisiere Wert von 2.1 zu 4.2\nVersuche Parameter zu setzen: PARAM_22 = 4.4\nParameter PARAM_22 gefunden, aktualisiere Wert von 2.2 zu 4.4\nVersuche Parameter zu setzen: PARAM_23 = 4.6\nParameter PARAM_23 gefunden, aktualisiere Wert von 2.3 zu 4.6\nVersuche Parameter zu setzen: PARAM_24 = 4.8\nParameter PARAM_24 gefunden, aktualisiere Wert von 2.4 zu 4.8\nVersuche Parameter zu setzen: PARAM_25 = 5.0\nParameter PARAM_25 gefunden, aktualisiere Wert von 2.5 zu 5.0\nVersuche Parameter zu setzen: PARAM_26 = 5.2\nParameter PARAM_26 gefunden, aktualisiere Wert von 2.6 zu 5.2\nVersuche Parameter zu setzen: PARAM_27 = 5.4\nParameter PARAM_27 gefunden, aktualisiere Wert von 2.7 zu 5.4\nVersuche Parameter zu setzen: PARAM_28 = 5.6\nParameter PARAM_28 gefunden, aktualisiere Wert von 2.8 zu 5.6\nVersuche Parameter zu setzen: PARAM_29 = 5.8\nParameter PARAM_29 gefunden, aktualisiere Wert von 2.9 zu 5.8\nVersuche Parameter zu setzen: PARAM_30 = 6.0\nParameter PARAM_30 gefunden, aktualisiere Wert von 3.0 zu 6.0\nVersuche Parameter zu setzen: PARAM_31 = 6.2\nParameter PARAM_31 gefunden, aktualisiere Wert von 3.1 zu 6.2\nVersuche Parameter zu setzen: PARAM_32 = 6.4\nParameter PARAM_32 gefunden, aktualisiere Wert von 3.2 zu 6.4\nVersuche Parameter zu setzen: PARAM_33 = 6.6\nParameter PARAM_33 gefunden, aktualisiere Wert von 3.3 zu 6.6\nVersuche Parameter zu setzen: PARAM_34 = 6.8\nParameter PARAM_34 gefunden, aktualisiere Wert von 3.4 zu 6.8\nVersuche Parameter zu setzen: PARAM_35 = 7.0\nParameter PARAM_35 gefunden, aktualisiere Wert von 3.5 zu 7.0\nVersuche Parameter zu setzen: PARAM_36 = 7.2\nParameter PARAM_36 gefunden, aktualisiere Wert von 3.6 zu 7.2\nVersuche Parameter zu setzen: PARAM_37 = 7.4\nParameter PARAM_37 gefunden, aktualisiere Wert von 3.7 zu 7.4\nVersuche Parameter zu setzen: PARAM_38 = 7.6\nParameter PARAM_38 gefunden, aktualisiere Wert von 3.8 zu 7.6\nVersuche Parameter zu setzen: PARAM_39 = 7.8\nParameter PARAM_39 gefunden, aktualisiere Wert von 3.9 zu 7.8\nVersuche Parameter zu setzen: PARAM_40 = 8.0\nParameter PARAM_40 gefunden, aktualisiere Wert von 4.0 zu 8.0\nVersuche Parameter zu setzen: PARAM_41 = 8.2\nParameter PARAM_41 gefunden, aktualisiere Wert von 4.1 zu 8.2\nVersuche Parameter zu setzen: PARAM_42 = 8.4\nParameter PARAM_42 gefunden, aktualisiere Wert von 4.2 zu 8.4\nVersuche Parameter zu setzen: PARAM_43 = 8.6\nParameter PARAM_43 gefunden, aktualisiere Wert von 4.3 zu 8.6\nVersuche Parameter zu setzen: PARAM_44 = 8.8\nParameter PARAM_44 gefunden, aktualisiere Wert von 4.4 zu 8.8\nVersuche Parameter zu setzen: PARAM_45 = 9.0\nParameter PARAM_45 gefunden, aktualisiere Wert von 4.5 zu 9.0\nVersuche Parameter zu setzen: PARAM_46 = 9.2\nParameter PARAM_46 gefunden, aktualisiere Wert von 4.6 zu 9.2\nVersuche Parameter zu setzen: PARAM_47 = 9.4\nParameter PARAM_47 gefunden, aktualisiere Wert von 4.7 zu 9.4\nVersuche Parameter zu setzen: PARAM_48 = 9.6\nParameter PARAM_48 gefunden, aktualisiere Wert von 4.8 zu 9.6\nVersuche Parameter zu setzen: PARAM_49 = 9.8\nParameter PARAM_49 gefunden, aktualisiere Wert von 4.9 zu 9.8\nVersuche Parameter zu setzen: PARAM_50 = 10.0\nParameter PARAM_50 gefunden, aktualisiere Wert von 5.0 zu 10.0\nVersuche Parameter zu setzen: PARAM_51 = 10.2\nParameter PARAM_51 gefunden, aktualisiere Wert von 5.1 zu 10.2\nVersuche Parameter zu setzen: PARAM_52 = 10.4\nParameter PARAM_52 gefunden, aktualisiere Wert von 5.2 zu 10.4\nVersuche Parameter zu setzen: PARAM_53 = 10.6\nParameter PARAM_53 gefunden, aktualisiere Wert von 5.3 zu 10.6\nVersuche Parameter zu setzen: PARAM_54 = 10.8\nParameter PARAM_54 gefunden, aktualisiere Wert von 5.4 zu 10.8\nVersuche Parameter zu setzen: PARAM_55 = 11.0\nParameter PARAM_55 gefunden, aktualisiere Wert von 5.5 zu 11.0\nVersuche Parameter zu setzen: PARAM_56 = 11.2\nParameter PARAM_56 gefunden, aktualisiere Wert von 5.6 zu 11.2\nVersuche Parameter zu setzen: PARAM_57 = 11.4\nParameter PARAM_57 gefunden, aktualisiere Wert von 5.7 zu 11.4\nVersuche Parameter zu setzen: PARAM_58 = 11.6\nParameter PARAM_58 gefunden, aktualisiere Wert von 5.8 zu 11.6\nVersuche Parameter zu setzen: PARAM_59 = 11.8\nParameter PARAM_59 gefunden, aktualisiere Wert von 5.9 zu 11.8\nVersuche Parameter zu setzen: PARAM_60 = 12.0\nParameter PARAM_60 gefunden, aktualisiere Wert von 6.0 zu 12.0\nVersuche Parameter zu setzen: PARAM_61 = 12.2\nParameter PARAM_61 gefunden, aktualisiere Wert von 6.1 zu 12.2\nVersuche Parameter zu setzen: PARAM_62 = 12.4\nParameter PARAM_62 gefunden, aktualisiere Wert von 6.2 zu 12.4\nVersuche Parameter zu setzen: PARAM_63 = 12.6\nParameter PARAM_63 gefunden, aktualisiere Wert von 6.3 zu 12.6\nVersuche Parameter zu setzen: PARAM_64 = 12.8\nParameter PARAM_64 gefunden, aktualisiere Wert von 6.4 zu 12.8\nVersuche Parameter zu setzen: PARAM_65 = 13.0\nParameter PARAM_65 gefunden, aktualisiere Wert von 6.5 zu 13.0\nVersuche Parameter zu setzen: PARAM_66 = 13.2\nParameter PARAM_66 gefunden, aktualisiere Wert von 6.6 zu 13.2\nVersuche Parameter zu setzen: PARAM_67 = 13.4\nParameter PARAM_67 gefunden, aktualisiere Wert von 6.7 zu 13.4\nVersuche Parameter zu setzen: PARAM_68 = 13.6\nParameter PARAM_68 gefunden, aktualisiere Wert von 6.8 zu 13.6\nVersuche Parameter zu setzen: PARAM_69 = 13.8\nParameter PARAM_69 gefunden, aktualisiere Wert von 6.9 zu 13.8\nVersuche Parameter zu setzen: PARAM_70 = 14.0\nParameter PARAM_70 gefunden, aktualisiere Wert von 7.0 zu 14.0\nVersuche Parameter zu setzen: PARAM_71 = 14.2\nParameter PARAM_71 gefunden, aktualisiere Wert von 7.1 zu 14.2\nVersuche Parameter zu setzen: PARAM_72 = 14.4\nParameter PARAM_72 gefunden, aktualisiere Wert von 7.2 zu 14.4\nVersuche Parameter zu setzen: PARAM_73 = 14.6\nParameter PARAM_73 gefunden, aktualisiere Wert von 7.3 zu 14.6\nVersuche Parameter zu setzen: PARAM_74 = 14.8\nParameter PARAM_74 gefunden, aktualisiere Wert von 7.4 zu 14.8\nVersuche Parameter zu setzen: PARAM_75 = 15.0\nParameter PARAM_75 gefunden, aktualisiere Wert von 7.5 zu 15.0\nVersuche Parameter zu setzen: PARAM_76 = 15.2\nParameter PARAM_76 gefunden, aktualisiere Wert von 7.6 zu 15.2\nVersuche Parameter zu setzen: PARAM_77 = 15.4\nParameter PARAM_77 gefunden, aktualisiere Wert von 7.7 zu 15.4\nVersuche Parameter zu setzen: PARAM_78 = 15.6\nParameter PARAM_78 gefunden, aktualisiere Wert von 7.8 zu 15.6\nVersuche Parameter zu setzen: PARAM_79 = 15.8\nParameter PARAM_79 gefunden, aktualisiere Wert von 7.9 zu 15.8\nVersuche Parameter zu setzen: PARAM_80 = 16.0\nParameter PARAM_80 gefunden, aktualisiere Wert von 8.0 zu 16.0\nVersuche Parameter zu setzen: PARAM_81 = 16.2\nParameter PARAM_81 gefunden, aktualisiere Wert von 8.1 zu 16.2\nVersuche Parameter zu setzen: PARAM_82 = 16.4\nParameter PARAM_82 gefunden, aktualisiere Wert von 8.2 zu 16.4\nVersuche Parameter zu setzen: PARAM_83 = 16.6\nParameter PARAM_83 gefunden, aktualisiere Wert von 8.3 zu 16.6\nVersuche Parameter zu setzen: PARAM_84 = 16.8\nParameter PARAM_84 gefunden, aktualisiere Wert von 8.4 zu 16.8\nVersuche Parameter zu setzen: PARAM_85 = 17.0\nParameter PARAM_85 gefunden, aktualisiere Wert von 8.5 zu 17.0\nVersuche Parameter zu setzen: PARAM_86 = 17.2\nParameter PARAM_86 gefunden, aktualisiere Wert von 8.6 zu 17.2\nVersuche Parameter zu setzen: PARAM_87 = 17.4\nParameter PARAM_87 gefunden, aktualisiere Wert von 8.7 zu 17.4\nVersuche Parameter zu setzen: PARAM_88 = 17.6\nParameter PARAM_88 gefunden, aktualisiere Wert von 8.8 zu 17.6\nVersuche Parameter zu setzen: PARAM_89 = 17.8\nParameter PARAM_89 gefunden, aktualisiere Wert von 8.9 zu 17.8\nVersuche Parameter zu setzen: PARAM_90 = 18.0\nParameter PARAM_90 gefunden, aktualisiere Wert von 9.0 zu 18.0\nVersuche Parameter zu setzen: PARAM_91 = 18.2\nParameter PARAM_91 gefunden, aktualisiere Wert von 9.1 zu 18.2\nVersuche Parameter zu setzen: PARAM_92 = 18.4\nParameter PARAM_92 gefunden, aktualisiere Wert von 9.2 zu 18.4\nVersuche Parameter zu setzen: PARAM_93 = 18.6\nParameter PARAM_93 gefunden, aktualisiere Wert von 9.3 zu 18.6\nVersuche Parameter zu setzen: PARAM_94 = 18.8\nParameter PARAM_94 gefunden, aktualisiere Wert von 9.4 zu 18.8\nVersuche Parameter zu setzen: PARAM_95 = 19.0\nParameter PARAM_95 gefunden, aktualisiere Wert von 9.5 zu 19.0\nVersuche Parameter zu setzen: PARAM_96 = 19.2\nParameter PARAM_96 gefunden, aktualisiere Wert von 9.6 zu 19.2\nVersuche Parameter zu setzen: PARAM_97 = 19.4\nParameter PARAM_97 gefunden, aktualisiere Wert von 9.7 zu 19.4\nVersuche Parameter zu setzen: PARAM_98 = 19.6\nParameter PARAM_98 gefunden, aktualisiere Wert von 9.8 zu 19.6\nVersuche Parameter zu setzen: PARAM_99 = 19.8\nParameter PARAM_99 gefunden, aktualisiere Wert von 9.9 zu 19.8\n&#34;}], &#34;Python/tests/test_performance.py::TestPerformance::test_simulator_performance&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_performance.py::TestPerformance::test_simulator_performance&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_performance.py::TestPerformance::test_simulator_performance&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_performance.TestPerformance object at 0x0000018BFBCC30D0&amp;gt;\nsimulator = &amp;lt;backend.mavlink_simulator.MAVLinkSimulator(0x18bfdcd0f90) at 0x0000018B8098EA00&amp;gt;\nmock_logger = &amp;lt;MagicMock spec=&amp;#x27;Logger&amp;#x27; id=&amp;#x27;1698669843920&amp;#x27;&amp;gt;\n\n    def test_simulator_performance(self, simulator, mock_logger):\n        &amp;quot;&amp;quot;&amp;quot;Testet die Performance des Simulators.&amp;quot;&amp;quot;&amp;quot;\n        # Act - Simulierte Nachrichten in Schleife erzeugen\n        pr = cProfile.Profile()\n        pr.enable()\n    \n        start_time = time.time()\n        for _ in range(1000):\n&amp;gt;           simulator.simulate_heartbeat()\nE           AttributeError: &amp;#x27;MAVLinkSimulator&amp;#x27; object has no attribute &amp;#x27;simulate_heartbeat&amp;#x27;\n\ntests\\test_performance.py:140: AttributeError\n&#34;}], &#34;Python/tests/test_security.py::TestSecurity::test_no_hardcoded_credentials&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_security.py::TestSecurity::test_no_hardcoded_credentials&#34;, &#34;duration&#34;: &#34;56 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_security.py::TestSecurity::test_no_hardcoded_credentials&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;56 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_security.py::TestSecurity::test_input_validation&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_security.py::TestSecurity::test_input_validation&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_security.py::TestSecurity::test_input_validation&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_security.TestSecurity object at 0x0000018BFBCC13C0&amp;gt;\n\n    def test_input_validation(self):\n        &amp;quot;&amp;quot;&amp;quot;Testet die Eingabevalidierung f\u00fcr kritische Funktionen.&amp;quot;&amp;quot;&amp;quot;\n        # Import der zu testenden Module\n        from backend.mavlink_connector import MAVLinkConnector, create_connector, ConnectorType\n    \n        # Mock Logger erstellen\n        mock_logger = MagicMock(spec=Logger)\n    \n        # Test 1: MAVLinkConnector mit ung\u00fcltigen Eingaben\n        connector = MAVLinkConnector(mock_logger)\n    \n        with pytest.raises(ValueError):\n&amp;gt;           connector.set_connection_params(&amp;quot;&amp;quot;, 0)  # Leerer Port und ung\u00fcltige Baudrate\nE           AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntests\\test_security.py:85: AttributeError\n&#34;}], &#34;Python/tests/test_security.py::TestSecurity::test_no_command_injection&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_security.py::TestSecurity::test_no_command_injection&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_security.py::TestSecurity::test_no_command_injection&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_security.TestSecurity object at 0x0000018BFBCC2590&amp;gt;\n\n    def test_no_command_injection(self):\n        &amp;quot;&amp;quot;&amp;quot;Testet die Robustheit gegen Command-Injection-Angriffe.&amp;quot;&amp;quot;&amp;quot;\n        # Import der zu testenden Module\n        from backend.mavlink_connector import MAVLinkConnector\n    \n        # Mock Logger erstellen\n        mock_logger = MagicMock(spec=Logger)\n    \n        # Methode mocken, um direkte Aufrufe zu verhindern\n        with patch(&amp;#x27;serial.Serial&amp;#x27;) as mock_serial:\n            # Mock-Instanz konfigurieren\n            mock_instance = MagicMock()\n            mock_serial.return_value = mock_instance\n            mock_instance.is_open = True\n    \n            # Test mit potenziell gef\u00e4hrlichen Port-Namen\n            malicious_ports = [\n                &amp;quot;COM1; rm -rf /&amp;quot;,\n                &amp;quot;COM1 &amp;amp;&amp;amp; del /f /s /q *&amp;quot;,\n                &amp;quot;COM1` echo pwned`&amp;quot;,\n                &amp;quot;COM1$(cat /etc/passwd)&amp;quot;,\n                &amp;quot;COM1|whoami&amp;quot;\n            ]\n    \n            for port in malicious_ports:\n                # Sicherstellen, dass keine Ausnahme auftritt, aber auch kein System-Befehl ausgef\u00fchrt wird\n                connector = MAVLinkConnector(mock_logger)\n&amp;gt;               connector.set_connection_params(port, 115200)\nE               AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntests\\test_security.py:124: AttributeError\n&#34;}], &#34;Python/tests/test_sensorviewmodel.py::test_initial_sensor_count&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_sensorviewmodel.py::test_initial_sensor_count&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_sensorviewmodel.py::test_initial_sensor_count&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;model = &amp;lt;backend.sensorviewmodel.SensorViewModel(0x18bfdc7c2d0) at 0x0000018B8095D980&amp;gt;\n\n    def test_initial_sensor_count(model):\n        &amp;quot;&amp;quot;&amp;quot;Test, dass die initiale Anzahl der Sensoren korrekt ist.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       assert model.rowCount() == 13  # Anzahl der vordefinierten Sensoren\nE       assert 0 == 13\nE        +  where 0 = rowCount()\nE        +    where rowCount = &amp;lt;backend.sensorviewmodel.SensorViewModel(0x18bfdc7c2d0) at 0x0000018B8095D980&amp;gt;.rowCount\n\ntests\\test_sensorviewmodel.py:13: AssertionError\n&#34;}], &#34;Python/tests/test_sensorviewmodel.py::test_sensor_roles&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_sensorviewmodel.py::test_sensor_roles&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_sensorviewmodel.py::test_sensor_roles&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;model = &amp;lt;backend.sensorviewmodel.SensorViewModel(0x18bfdc7cc80) at 0x0000018B80A0CEC0&amp;gt;\n\n    def test_sensor_roles(model):\n        &amp;quot;&amp;quot;&amp;quot;Test, dass alle Rollen korrekt definiert sind.&amp;quot;&amp;quot;&amp;quot;\n        roles = model.roleNames()\n        assert roles[model.NameRole] == b&amp;quot;name&amp;quot;\n        assert roles[model.ValueRole] == b&amp;quot;value&amp;quot;\n&amp;gt;       assert roles[model.FormattedValueRole] == b&amp;quot;formattedValue&amp;quot;\nE       AttributeError: &amp;#x27;SensorViewModel&amp;#x27; object has no attribute &amp;#x27;FormattedValueRole&amp;#x27;\n\ntests\\test_sensorviewmodel.py:20: AttributeError\n&#34;}], &#34;Python/tests/test_sensorviewmodel.py::test_sensor_data_access&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_sensorviewmodel.py::test_sensor_data_access&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_sensorviewmodel.py::test_sensor_data_access&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;model = &amp;lt;backend.sensorviewmodel.SensorViewModel(0x18bfdc96570) at 0x0000018B8095E900&amp;gt;\n\n    def test_sensor_data_access(model):\n        &amp;quot;&amp;quot;&amp;quot;Test des Zugriffs auf Sensordaten.&amp;quot;&amp;quot;&amp;quot;\n        index = model.index(0)  # Erster Sensor (Roll)\n    \n        # Test Sensor Name\n        name = model.data(index, model.NameRole)\n&amp;gt;       assert name == &amp;quot;Roll&amp;quot;\nE       AssertionError: assert None == &amp;#x27;Roll&amp;#x27;\n\ntests\\test_sensorviewmodel.py:28: AssertionError\n&#34;}], &#34;Python/tests/test_sensorviewmodel.py::test_update_sensor&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_sensorviewmodel.py::test_update_sensor&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_sensorviewmodel.py::test_update_sensor&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;model = &amp;lt;backend.sensorviewmodel.SensorViewModel(0x18bfdc83360) at 0x0000018B80BC2540&amp;gt;\n\n    def test_update_sensor(model):\n        &amp;quot;&amp;quot;&amp;quot;Test der Sensor-Aktualisierung.&amp;quot;&amp;quot;&amp;quot;\n        model.update_sensor(&amp;quot;Roll&amp;quot;, 45.123)\n    \n        index = model.index(0)\n        value = model.data(index, model.ValueRole)\n&amp;gt;       formatted = model.data(index, model.FormattedValueRole)\nE       AttributeError: &amp;#x27;SensorViewModel&amp;#x27; object has no attribute &amp;#x27;FormattedValueRole&amp;#x27;\n\ntests\\test_sensorviewmodel.py:44: AttributeError\n&#34;}], &#34;Python/tests/test_sensorviewmodel.py::test_invalid_sensor_update&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_sensorviewmodel.py::test_invalid_sensor_update&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_sensorviewmodel.py::test_invalid_sensor_update&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;model = &amp;lt;backend.sensorviewmodel.SensorViewModel(0x18bfdc7c690) at 0x0000018B80A0E840&amp;gt;\n\n    def test_invalid_sensor_update(model):\n        &amp;quot;&amp;quot;&amp;quot;Test, dass eine Exception bei ung\u00fcltigem Sensor geworfen wird.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       with pytest.raises(SensorException):\nE       Failed: DID NOT RAISE &amp;lt;class &amp;#x27;backend.exceptions.SensorException&amp;#x27;&amp;gt;\n\ntests\\test_sensorviewmodel.py:51: Failed\n&#34;}], &#34;Python/tests/test_sensorviewmodel.py::test_invalid_index&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_sensorviewmodel.py::test_invalid_index&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_sensorviewmodel.py::test_invalid_index&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_sensorviewmodel.py::test_formatted_value_with_invalid_data&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_sensorviewmodel.py::test_formatted_value_with_invalid_data&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_sensorviewmodel.py::test_formatted_value_with_invalid_data&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;model = &amp;lt;backend.sensorviewmodel.SensorViewModel(0x18bfdc79130) at 0x0000018B809D6240&amp;gt;\n\n    def test_formatted_value_with_invalid_data(model):\n        &amp;quot;&amp;quot;&amp;quot;Test der Formatierung bei ung\u00fcltigen Daten.&amp;quot;&amp;quot;&amp;quot;\n        # Simuliere ung\u00fcltige Daten (w\u00fcrde in der Praxis nicht vorkommen)\n&amp;gt;       model._sensors[0][&amp;quot;value&amp;quot;] = &amp;quot;invalid&amp;quot;\nE       IndexError: list index out of range\n\ntests\\test_sensorviewmodel.py:62: IndexError\n&#34;}], &#34;Python/tests/test_simulated_drone.py::test_drone_initialization&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_simulated_drone.py::test_drone_initialization&#34;, &#34;duration&#34;: &#34;105 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_simulated_drone.py::test_drone_initialization&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;105 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;drone = &amp;lt;backend.simulated_drone.SimulatedDrone object at 0x0000018BFFF96D70&amp;gt;\n\n    def test_drone_initialization(drone):\n        &amp;quot;&amp;quot;&amp;quot;Test, dass die Drone korrekt initialisiert wird.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       assert drone.state.lat == 0.0\nE       AssertionError: assert 51.1657 == 0.0\nE        +  where 51.1657 = DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode=&amp;#x27;STABILIZE&amp;#x27;, armed=False).lat\nE        +    where DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode=&amp;#x27;STABILIZE&amp;#x27;, armed=False) = &amp;lt;backend.simulated_drone.SimulatedDrone object at 0x0000018BFFF96D70&amp;gt;.state\n\ntests\\test_simulated_drone.py:17: AssertionError\n\n---------------------------- Captured stdout setup -----------------------------\nConnected to simulated drone on udpin:localhost:14550\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0Simulation started\n\n--------------------------- Captured stdout teardown ---------------------------\nSimulation stopped\nSimulation stopped\nConnection to simulated drone closed\n&#34;}], &#34;Python/tests/test_simulated_drone.py::test_drone_movement&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_simulated_drone.py::test_drone_movement&#34;, &#34;duration&#34;: &#34;00:00:02&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_simulated_drone.py::test_drone_movement&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:02&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;drone = &amp;lt;backend.simulated_drone.SimulatedDrone object at 0x0000018B8099BEB0&amp;gt;\n\n    def test_drone_movement(drone):\n        &amp;quot;&amp;quot;&amp;quot;Test, dass die Drone sich korrekt bewegt.&amp;quot;&amp;quot;&amp;quot;\n        # Setze Zielposition\n        target_lat = 51.1657\n        target_lon = 10.4515\n        target_alt = 100.0\n    \n        drone.set_target_position(target_lat, target_lon, target_alt)\n    \n        # Warte kurz, damit sich die Drone bewegen kann\n        time.sleep(2)\n    \n        # \u00dcberpr\u00fcfe, ob sich die Position ge\u00e4ndert hat\n        assert drone.state.lat != 0.0\n        assert drone.state.lon != 0.0\n&amp;gt;       assert drone.state.alt != 0.0\nE       AssertionError: assert 0.0 != 0.0\nE        +  where 0.0 = DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode=&amp;#x27;STABILIZE&amp;#x27;, armed=False).alt\nE        +    where DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode=&amp;#x27;STABILIZE&amp;#x27;, armed=False) = &amp;lt;backend.simulated_drone.SimulatedDrone object at 0x0000018B8099BEB0&amp;gt;.state\n\ntests\\test_simulated_drone.py:38: AssertionError\n\n---------------------------- Captured stdout setup -----------------------------\nConnected to simulated drone on udpin:localhost:14550\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0Simulation started\n\n\n----------------------------- Captured stdout call -----------------------------\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\n--------------------------- Captured stdout teardown ---------------------------\nSimulation stopped\nSimulation stopped\nConnection to simulated drone closed\n&#34;}], &#34;Python/tests/test_simulated_drone.py::test_battery_drain&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_simulated_drone.py::test_battery_drain&#34;, &#34;duration&#34;: &#34;00:00:02&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_simulated_drone.py::test_battery_drain&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:02&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;drone = &amp;lt;backend.simulated_drone.SimulatedDrone object at 0x0000018B8088BD00&amp;gt;\n\n    def test_battery_drain(drone):\n        &amp;quot;&amp;quot;&amp;quot;Test, dass der Batteriestand realistisch abnimmt.&amp;quot;&amp;quot;&amp;quot;\n        initial_battery = drone.state.battery_remaining\n    \n        # Setze Zielposition und warte\n        drone.set_target_position(51.1657, 10.4515, 100.0)\n        time.sleep(2)\n    \n        # \u00dcberpr\u00fcfe, ob der Batteriestand abgenommen hat\n&amp;gt;       assert drone.state.battery_remaining &amp;lt; initial_battery\nE       AssertionError: assert 100.0 &amp;lt; 100.0\nE        +  where 100.0 = DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode=&amp;#x27;STABILIZE&amp;#x27;, armed=False).battery_remaining\nE        +    where DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode=&amp;#x27;STABILIZE&amp;#x27;, armed=False) = &amp;lt;backend.simulated_drone.SimulatedDrone object at 0x0000018B8088BD00&amp;gt;.state\n\ntests\\test_simulated_drone.py:49: AssertionError\n\n---------------------------- Captured stdout setup -----------------------------\nConnected to simulated drone on udpin:localhost:14550\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0Simulation started\n\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\n\n----------------------------- Captured stdout call -----------------------------\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\n--------------------------- Captured stdout teardown ---------------------------\nSimulation stopped\nSimulation stopped\nConnection to simulated drone closed\n&#34;}], &#34;Python/tests/test_simulated_drone.py::test_flight_modes&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_simulated_drone.py::test_flight_modes&#34;, &#34;duration&#34;: &#34;110 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_simulated_drone.py::test_flight_modes&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;110 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\nConnected to simulated drone on udpin:localhost:14550\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0Simulation started\n\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\n\n----------------------------- Captured stdout call -----------------------------\nFlight mode changed to STABILIZE\nFlight mode changed to ALTHOLD\nFlight mode changed to LOITER\nFlight mode changed to RTL\n--------------------------- Captured stdout teardown ---------------------------\nSimulation stopped\nSimulation stopped\nConnection to simulated drone closed\n&#34;}], &#34;Python/tests/test_simulated_drone.py::test_arming&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_simulated_drone.py::test_arming&#34;, &#34;duration&#34;: &#34;136 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_simulated_drone.py::test_arming&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;136 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\nConnected to simulated drone on udpin:localhost:14550\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0Simulation started\n\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\n\n----------------------------- Captured stdout call -----------------------------\nDrone armed\nDrone disarmed\n--------------------------- Captured stdout teardown ---------------------------\nSimulation stopped\nSimulation stopped\nConnection to simulated drone closed\n&#34;}], &#34;Python/tests/test_simulated_drone.py::test_max_altitude&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_simulated_drone.py::test_max_altitude&#34;, &#34;duration&#34;: &#34;00:00:01&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_simulated_drone.py::test_max_altitude&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:01&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\nConnected to simulated drone on udpin:localhost:14550\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0Simulation started\n\nError sending global position: argument out of range\n\n----------------------------- Captured stdout call -----------------------------\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\n--------------------------- Captured stdout teardown ---------------------------\nSimulation stopped\nSimulation stopped\nConnection to simulated drone closed\n&#34;}], &#34;Python/tests/test_simulated_drone.py::test_send_heartbeat&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_simulated_drone.py::test_send_heartbeat&#34;, &#34;duration&#34;: &#34;106 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_simulated_drone.py::test_send_heartbeat&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;106 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\nonnected to simulated drone on udpin:localhost:14550\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0Simulation started\n\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range--------------------------- Captured stdout teardown ---------------------------\nSimulation stopped\nSimulation stopped\nConnection to simulated drone closed\n&#34;}], &#34;Python/tests/test_simulated_drone.py::test_send_global_position_int&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_simulated_drone.py::test_send_global_position_int&#34;, &#34;duration&#34;: &#34;107 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_simulated_drone.py::test_send_global_position_int&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;107 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\nonnected to simulated drone on udpin:localhost:14550\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0Simulation started\n\n----------------------------- Captured stdout call -----------------------------\nDebug - Sending position: lat=900000000.0, lon=1800000000.0, alt=1000000, hdg=0\nError sending global position: argument out of range\nValues: lat=510000000, lon=10000000, alt=1000\nConverted: lat_int=900000000.0, lon_int=1800000000.0, alt_int=1000000, hdg=0\n--------------------------- Captured stdout teardown ---------------------------\nSimulation stopped\nSimulation stopped\nConnection to simulated drone closed\n&#34;}], &#34;Python/tests/test_simulated_drone.py::test_send_attitude&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_simulated_drone.py::test_send_attitude&#34;, &#34;duration&#34;: &#34;106 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_simulated_drone.py::test_send_attitude&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;106 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\nConnected to simulated drone on udpin:localhost:14550\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\nValues: roll=0.0, pitch=0.0, yaw=0.0\nSimulation started\n\n----------------------------- Captured stdout call -----------------------------\nDebug - Attitude: roll=0.1, pitch=0.2, yaw=0.3\nError sending attitude: argument out of range\nValues: roll=0.1, pitch=0.2, yaw=0.3\n--------------------------- Captured stdout teardown ---------------------------\nSimulation stopped\nSimulation stopped\nConnection to simulated drone closed\n&#34;}], &#34;Python/tests/test_simulated_drone.py::test_send_sys_status&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_simulated_drone.py::test_send_sys_status&#34;, &#34;duration&#34;: &#34;105 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_simulated_drone.py::test_send_sys_status&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;105 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\nConnected to simulated drone on udpin:localhost:14550\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0Simulation started\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\n\n--------------------------- Captured stdout teardown ---------------------------\nSimulation stopped\nSimulation stopped\nConnection to simulated drone closed\n&#34;}], &#34;Python/tests/test_simulated_drone.py::test_send_vfr_hud&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_simulated_drone.py::test_send_vfr_hud&#34;, &#34;duration&#34;: &#34;106 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_simulated_drone.py::test_send_vfr_hud&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;106 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\nonnected to simulated drone on udpin:localhost:14550\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0Simulation started\n\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0--------------------------- Captured stdout teardown ---------------------------\nSimulation stopped\nSimulation stopped\nConnection to simulated drone closed\n&#34;}], &#34;Python/tests/test_simulated_drone.py::test_send_statustext&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_simulated_drone.py::test_send_statustext&#34;, &#34;duration&#34;: &#34;105 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_simulated_drone.py::test_send_statustext&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;105 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;---------------------------- Captured stdout setup -----------------------------\nConnected to simulated drone on udpin:localhost:14550\nDebug - Sending position: lat=511657000, lon=104515000, alt=0, hdg=0\nError sending global position: argument out of range\nValues: lat=51.1657, lon=10.4515, alt=0.0\nConverted: lat_int=511657000, lon_int=104515000, alt_int=0, hdg=0Simulation started\nDebug - Attitude: roll=0.0, pitch=0.0, yaw=0.0\nError sending attitude: argument out of range\n\n--------------------------- Captured stdout teardown ---------------------------\nSimulation stopped\nSimulation stopped\nConnection to simulated drone closed\n&#34;}], &#34;Python/tests/test_ui_components.py::TestUIComponents::test_preflight_view_loads&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_ui_components.py::TestUIComponents::test_preflight_view_loads&#34;, &#34;duration&#34;: &#34;37 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_ui_components.py::TestUIComponents::test_preflight_view_loads&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;37 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_ui_components.py::TestUIComponents::test_store_view_loads&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_ui_components.py::TestUIComponents::test_store_view_loads&#34;, &#34;duration&#34;: &#34;25 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_ui_components.py::TestUIComponents::test_store_view_loads&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;25 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_ui_components.py::TestUIComponents::test_flight_view_loads&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_ui_components.py::TestUIComponents::test_flight_view_loads&#34;, &#34;duration&#34;: &#34;331 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_ui_components.py::TestUIComponents::test_flight_view_loads&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;331 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_ui_components.py::TestUIComponents::test_sensor_view_loads&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_ui_components.py::TestUIComponents::test_sensor_view_loads&#34;, &#34;duration&#34;: &#34;34 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_ui_components.py::TestUIComponents::test_sensor_view_loads&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;34 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_ui_components.py::TestUIComponents::test_menu_tab_interaction&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_ui_components.py::TestUIComponents::test_menu_tab_interaction&#34;, &#34;duration&#34;: &#34;26 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_ui_components.py::TestUIComponents::test_menu_tab_interaction&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;26 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_ui_components.TestUIComponents object at 0x0000018BFBD17580&amp;gt;\nqml_component_loader = &amp;lt;function TestUIComponents.qml_component_loader.&amp;lt;locals&amp;gt;._load_component at 0x0000018B80A15EA0&amp;gt;\n\n    @pytest.mark.skipif(os.environ.get(&amp;#x27;CI&amp;#x27;) == &amp;#x27;true&amp;#x27;,\n                       reason=&amp;quot;Interaktive Tests werden in CI-Umgebungen \u00fcbersprungen&amp;quot;)\n    def test_menu_tab_interaction(self, qml_component_loader):\n        &amp;quot;&amp;quot;&amp;quot;Testet die Interaktion mit den Men\u00fc-Tabs.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        menu_tab = qml_component_loader(&amp;quot;MenuTab.ui.qml&amp;quot;)\n&amp;gt;       assert menu_tab is not None\nE       assert None is not None\n\ntests\\test_ui_components.py:83: AssertionError\n\n----------------------------- Captured stdout call -----------------------------\nFehler beim Laden der Komponente: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/MenuTab.ui.qml:4 module &amp;quot;RZGCS&amp;quot; is not installed\n\n&#34;}], &#34;Python/tests/test_ui_components.py::TestUIComponents::test_parameter_view_model&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_ui_components.py::TestUIComponents::test_parameter_view_model&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_ui_components.py::TestUIComponents::test_parameter_view_model&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_ui_components.TestUIComponents object at 0x0000018BFBD17A30&amp;gt;\napp = &amp;lt;PySide6.QtWidgets.QApplication(0x18be4131a80) at 0x0000018BFBD26480&amp;gt;\n\n    def test_parameter_view_model(self, app):\n        &amp;quot;&amp;quot;&amp;quot;Testet das ParameterViewModel.&amp;quot;&amp;quot;&amp;quot;\n        # Import hier, damit QApplication bereits existiert\n&amp;gt;       from RZGCSContent.ParameterViewModel import ParameterViewModel\nE       ModuleNotFoundError: No module named &amp;#x27;RZGCSContent&amp;#x27;\n\ntests\\test_ui_components.py:96: ModuleNotFoundError\n&#34;}], &#34;Python/tests/test_ui_components.py::TestUIComponents::test_sensor_view_model&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_ui_components.py::TestUIComponents::test_sensor_view_model&#34;, &#34;duration&#34;: &#34;4 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_ui_components.py::TestUIComponents::test_sensor_view_model&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;4 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_ui_components.TestUIComponents object at 0x0000018BFBD16D70&amp;gt;\napp = &amp;lt;PySide6.QtWidgets.QApplication(0x18be4131a80) at 0x0000018BFBD26480&amp;gt;\n\n    def test_sensor_view_model(self, app):\n        &amp;quot;&amp;quot;&amp;quot;Testet das SensorViewModel.&amp;quot;&amp;quot;&amp;quot;\n        # Import hier, damit QApplication bereits existiert\n&amp;gt;       from RZGCSContent.SensorViewModel import SensorViewModel\nE       ModuleNotFoundError: No module named &amp;#x27;RZGCSContent&amp;#x27;\n\ntests\\test_ui_components.py:112: ModuleNotFoundError\n&#34;}]}, &#34;renderCollapsed&#34;: [&#34;passed&#34;], &#34;initialSort&#34;: &#34;result&#34;, &#34;title&#34;: &#34;test_report_20250520_125533.html&#34;}"></div>
+    <script>
+      (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const { getCollapsedCategory, setCollapsedIds } = require('./storage.js')
+
+class DataManager {
+    setManager(data) {
+        const collapsedCategories = [...getCollapsedCategory(data.renderCollapsed)]
+        const collapsedIds = []
+        const tests = Object.values(data.tests).flat().map((test, index) => {
+            const collapsed = collapsedCategories.includes(test.result.toLowerCase())
+            const id = `test_${index}`
+            if (collapsed) {
+                collapsedIds.push(id)
+            }
+            return {
+                ...test,
+                id,
+                collapsed,
+            }
+        })
+        const dataBlob = { ...data, tests }
+        this.data = { ...dataBlob }
+        this.renderData = { ...dataBlob }
+        setCollapsedIds(collapsedIds)
+    }
+
+    get allData() {
+        return { ...this.data }
+    }
+
+    resetRender() {
+        this.renderData = { ...this.data }
+    }
+
+    setRender(data) {
+        this.renderData.tests = [...data]
+    }
+
+    toggleCollapsedItem(id) {
+        this.renderData.tests = this.renderData.tests.map((test) =>
+            test.id === id ? { ...test, collapsed: !test.collapsed } : test,
+        )
+    }
+
+    set allCollapsed(collapsed) {
+        this.renderData = { ...this.renderData, tests: [...this.renderData.tests.map((test) => (
+            { ...test, collapsed }
+        ))] }
+    }
+
+    get testSubset() {
+        return [...this.renderData.tests]
+    }
+
+    get environment() {
+        return this.renderData.environment
+    }
+
+    get initialSort() {
+        return this.data.initialSort
+    }
+}
+
+module.exports = {
+    manager: new DataManager(),
+}
+
+},{"./storage.js":8}],2:[function(require,module,exports){
+const mediaViewer = require('./mediaviewer.js')
+const templateEnvRow = document.getElementById('template_environment_row')
+const templateResult = document.getElementById('template_results-table__tbody')
+
+function htmlToElements(html) {
+    const temp = document.createElement('template')
+    temp.innerHTML = html
+    return temp.content.childNodes
+}
+
+const find = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return elem.querySelector(selector)
+}
+
+const findAll = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return [...elem.querySelectorAll(selector)]
+}
+
+const dom = {
+    getStaticRow: (key, value) => {
+        const envRow = templateEnvRow.content.cloneNode(true)
+        const isObj = typeof value === 'object' && value !== null
+        const values = isObj ? Object.keys(value).map((k) => `${k}: ${value[k]}`) : null
+
+        const valuesElement = htmlToElements(
+            values ? `<ul>${values.map((val) => `<li>${val}</li>`).join('')}<ul>` : `<div>${value}</div>`)[0]
+        const td = findAll('td', envRow)
+        td[0].textContent = key
+        td[1].appendChild(valuesElement)
+
+        return envRow
+    },
+    getResultTBody: ({ testId, id, log, extras, resultsTableRow, tableHtml, result, collapsed }) => {
+        const resultBody = templateResult.content.cloneNode(true)
+        resultBody.querySelector('tbody').classList.add(result.toLowerCase())
+        resultBody.querySelector('tbody').id = testId
+        resultBody.querySelector('.collapsible').dataset.id = id
+
+        resultsTableRow.forEach((html) => {
+            const t = document.createElement('template')
+            t.innerHTML = html
+            resultBody.querySelector('.collapsible').appendChild(t.content)
+        })
+
+        if (log) {
+            // Wrap lines starting with "E" with span.error to color those lines red
+            const wrappedLog = log.replace(/^E.*$/gm, (match) => `<span class="error">${match}</span>`)
+            resultBody.querySelector('.log').innerHTML = wrappedLog
+        } else {
+            resultBody.querySelector('.log').remove()
+        }
+
+        if (collapsed) {
+            resultBody.querySelector('.collapsible > td')?.classList.add('collapsed')
+            resultBody.querySelector('.extras-row').classList.add('hidden')
+        } else {
+            resultBody.querySelector('.collapsible > td')?.classList.remove('collapsed')
+        }
+
+        const media = []
+        extras?.forEach(({ name, format_type, content }) => {
+            if (['image', 'video'].includes(format_type)) {
+                media.push({ path: content, name, format_type })
+            }
+
+            if (format_type === 'html') {
+                resultBody.querySelector('.extraHTML').insertAdjacentHTML('beforeend', `<div>${content}</div>`)
+            }
+        })
+        mediaViewer.setup(resultBody, media)
+
+        // Add custom html from the pytest_html_results_table_html hook
+        tableHtml?.forEach((item) => {
+            resultBody.querySelector('td[class="extra"]').insertAdjacentHTML('beforeend', item)
+        })
+
+        return resultBody
+    },
+}
+
+module.exports = {
+    dom,
+    htmlToElements,
+    find,
+    findAll,
+}
+
+},{"./mediaviewer.js":6}],3:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const storageModule = require('./storage.js')
+
+const getFilteredSubSet = (filter) =>
+    manager.allData.tests.filter(({ result }) => filter.includes(result.toLowerCase()))
+
+const doInitFilter = () => {
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+}
+
+const doFilter = (type, show) => {
+    if (show) {
+        storageModule.showCategory(type)
+    } else {
+        storageModule.hideCategory(type)
+    }
+
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+
+    const sortColumn = storageModule.getSort()
+    doSort(sortColumn, true)
+}
+
+module.exports = {
+    doFilter,
+    doInitFilter,
+}
+
+},{"./datamanager.js":1,"./sort.js":7,"./storage.js":8}],4:[function(require,module,exports){
+const { redraw, bindEvents, renderStatic } = require('./main.js')
+const { doInitFilter } = require('./filter.js')
+const { doInitSort } = require('./sort.js')
+const { manager } = require('./datamanager.js')
+const data = JSON.parse(document.getElementById('data-container').dataset.jsonblob)
+
+function init() {
+    manager.setManager(data)
+    doInitFilter()
+    doInitSort()
+    renderStatic()
+    redraw()
+    bindEvents()
+}
+
+init()
+
+},{"./datamanager.js":1,"./filter.js":3,"./main.js":5,"./sort.js":7}],5:[function(require,module,exports){
+const { dom, find, findAll } = require('./dom.js')
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const { doFilter } = require('./filter.js')
+const {
+    getVisible,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    getSortDirection,
+    possibleFilters,
+} = require('./storage.js')
+
+const removeChildren = (node) => {
+    while (node.firstChild) {
+        node.removeChild(node.firstChild)
+    }
+}
+
+const renderStatic = () => {
+    const renderEnvironmentTable = () => {
+        const environment = manager.environment
+        const rows = Object.keys(environment).map((key) => dom.getStaticRow(key, environment[key]))
+        const table = document.getElementById('environment')
+        removeChildren(table)
+        rows.forEach((row) => table.appendChild(row))
+    }
+    renderEnvironmentTable()
+}
+
+const addItemToggleListener = (elem) => {
+    elem.addEventListener('click', ({ target }) => {
+        const id = target.parentElement.dataset.id
+        manager.toggleCollapsedItem(id)
+
+        const collapsedIds = getCollapsedIds()
+        if (collapsedIds.includes(id)) {
+            const updated = collapsedIds.filter((item) => item !== id)
+            setCollapsedIds(updated)
+        } else {
+            collapsedIds.push(id)
+            setCollapsedIds(collapsedIds)
+        }
+        redraw()
+    })
+}
+
+const renderContent = (tests) => {
+    const sortAttr = getSort(manager.initialSort)
+    const sortAsc = JSON.parse(getSortDirection())
+    const rows = tests.map(dom.getResultTBody)
+    const table = document.getElementById('results-table')
+    const tableHeader = document.getElementById('results-table-head')
+
+    const newTable = document.createElement('table')
+    newTable.id = 'results-table'
+
+    // remove all sorting classes and set the relevant
+    findAll('.sortable', tableHeader).forEach((elem) => elem.classList.remove('asc', 'desc'))
+    tableHeader.querySelector(`.sortable[data-column-type="${sortAttr}"]`)?.classList.add(sortAsc ? 'desc' : 'asc')
+    newTable.appendChild(tableHeader)
+
+    if (!rows.length) {
+        const emptyTable = document.getElementById('template_results-table__body--empty').content.cloneNode(true)
+        newTable.appendChild(emptyTable)
+    } else {
+        rows.forEach((row) => {
+            if (!!row) {
+                findAll('.collapsible td:not(.col-links', row).forEach(addItemToggleListener)
+                find('.logexpander', row).addEventListener('click',
+                    (evt) => evt.target.parentNode.classList.toggle('expanded'),
+                )
+                newTable.appendChild(row)
+            }
+        })
+    }
+
+    table.replaceWith(newTable)
+}
+
+const renderDerived = () => {
+    const currentFilter = getVisible()
+    possibleFilters.forEach((result) => {
+        const input = document.querySelector(`input[data-test-result="${result}"]`)
+        input.checked = currentFilter.includes(result)
+    })
+}
+
+const bindEvents = () => {
+    const filterColumn = (evt) => {
+        const { target: element } = evt
+        const { testResult } = element.dataset
+
+        doFilter(testResult, element.checked)
+        const collapsedIds = getCollapsedIds()
+        const updated = manager.renderData.tests.map((test) => {
+            return {
+                ...test,
+                collapsed: collapsedIds.includes(test.id),
+            }
+        })
+        manager.setRender(updated)
+        redraw()
+    }
+
+    const header = document.getElementById('environment-header')
+    header.addEventListener('click', () => {
+        const table = document.getElementById('environment')
+        table.classList.toggle('hidden')
+        header.classList.toggle('collapsed')
+    })
+
+    findAll('input[name="filter_checkbox"]').forEach((elem) => {
+        elem.addEventListener('click', filterColumn)
+    })
+
+    findAll('.sortable').forEach((elem) => {
+        elem.addEventListener('click', (evt) => {
+            const { target: element } = evt
+            const { columnType } = element.dataset
+            doSort(columnType)
+            redraw()
+        })
+    })
+
+    document.getElementById('show_all_details').addEventListener('click', () => {
+        manager.allCollapsed = false
+        setCollapsedIds([])
+        redraw()
+    })
+    document.getElementById('hide_all_details').addEventListener('click', () => {
+        manager.allCollapsed = true
+        const allIds = manager.renderData.tests.map((test) => test.id)
+        setCollapsedIds(allIds)
+        redraw()
+    })
+}
+
+const redraw = () => {
+    const { testSubset } = manager
+
+    renderContent(testSubset)
+    renderDerived()
+}
+
+module.exports = {
+    redraw,
+    bindEvents,
+    renderStatic,
+}
+
+},{"./datamanager.js":1,"./dom.js":2,"./filter.js":3,"./sort.js":7,"./storage.js":8}],6:[function(require,module,exports){
+class MediaViewer {
+    constructor(assets) {
+        this.assets = assets
+        this.index = 0
+    }
+
+    nextActive() {
+        this.index = this.index === this.assets.length - 1 ? 0 : this.index + 1
+        return [this.activeFile, this.index]
+    }
+
+    prevActive() {
+        this.index = this.index === 0 ? this.assets.length - 1 : this.index -1
+        return [this.activeFile, this.index]
+    }
+
+    get currentIndex() {
+        return this.index
+    }
+
+    get activeFile() {
+        return this.assets[this.index]
+    }
+}
+
+
+const setup = (resultBody, assets) => {
+    if (!assets.length) {
+        resultBody.querySelector('.media').classList.add('hidden')
+        return
+    }
+
+    const mediaViewer = new MediaViewer(assets)
+    const container = resultBody.querySelector('.media-container')
+    const leftArrow = resultBody.querySelector('.media-container__nav--left')
+    const rightArrow = resultBody.querySelector('.media-container__nav--right')
+    const mediaName = resultBody.querySelector('.media__name')
+    const counter = resultBody.querySelector('.media__counter')
+    const imageEl = resultBody.querySelector('img')
+    const sourceEl = resultBody.querySelector('source')
+    const videoEl = resultBody.querySelector('video')
+
+    const setImg = (media, index) => {
+        if (media?.format_type === 'image') {
+            imageEl.src = media.path
+
+            imageEl.classList.remove('hidden')
+            videoEl.classList.add('hidden')
+        } else if (media?.format_type === 'video') {
+            sourceEl.src = media.path
+
+            videoEl.classList.remove('hidden')
+            imageEl.classList.add('hidden')
+        }
+
+        mediaName.innerText = media?.name
+        counter.innerText = `${index + 1} / ${assets.length}`
+    }
+    setImg(mediaViewer.activeFile, mediaViewer.currentIndex)
+
+    const moveLeft = () => {
+        const [media, index] = mediaViewer.prevActive()
+        setImg(media, index)
+    }
+    const doRight = () => {
+        const [media, index] = mediaViewer.nextActive()
+        setImg(media, index)
+    }
+    const openImg = () => {
+        window.open(mediaViewer.activeFile.path, '_blank')
+    }
+    if (assets.length === 1) {
+        container.classList.add('media-container--fullscreen')
+    } else {
+        leftArrow.addEventListener('click', moveLeft)
+        rightArrow.addEventListener('click', doRight)
+    }
+    imageEl.addEventListener('click', openImg)
+}
+
+module.exports = {
+    setup,
+}
+
+},{}],7:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const storageModule = require('./storage.js')
+
+const genericSort = (list, key, ascending, customOrder) => {
+    let sorted
+    if (customOrder) {
+        sorted = list.sort((a, b) => {
+            const aValue = a.result.toLowerCase()
+            const bValue = b.result.toLowerCase()
+
+            const aIndex = customOrder.findIndex((item) => item.toLowerCase() === aValue)
+            const bIndex = customOrder.findIndex((item) => item.toLowerCase() === bValue)
+
+            // Compare the indices to determine the sort order
+            return aIndex - bIndex
+        })
+    } else {
+        sorted = list.sort((a, b) => a[key] === b[key] ? 0 : a[key] > b[key] ? 1 : -1)
+    }
+
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const durationSort = (list, ascending) => {
+    const parseDuration = (duration) => {
+        if (duration.includes(':')) {
+            // If it's in the format "HH:mm:ss"
+            const [hours, minutes, seconds] = duration.split(':').map(Number)
+            return (hours * 3600 + minutes * 60 + seconds) * 1000
+        } else {
+            // If it's in the format "nnn ms"
+            return parseInt(duration)
+        }
+    }
+    const sorted = list.sort((a, b) => parseDuration(a['duration']) - parseDuration(b['duration']))
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const doInitSort = () => {
+    const type = storageModule.getSort(manager.initialSort)
+    const ascending = storageModule.getSortDirection()
+    const list = manager.testSubset
+    const initialOrder = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed', 'Skipped', 'Passed']
+
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    if (type?.toLowerCase() === 'original') {
+        manager.setRender(list)
+    } else {
+        let sortedList
+        switch (type) {
+        case 'duration':
+            sortedList = durationSort(list, ascending)
+            break
+        case 'result':
+            sortedList = genericSort(list, type, ascending, initialOrder)
+            break
+        default:
+            sortedList = genericSort(list, type, ascending)
+            break
+        }
+        manager.setRender(sortedList)
+    }
+}
+
+const doSort = (type, skipDirection) => {
+    const newSortType = storageModule.getSort(manager.initialSort) !== type
+    const currentAsc = storageModule.getSortDirection()
+    let ascending
+    if (skipDirection) {
+        ascending = currentAsc
+    } else {
+        ascending = newSortType ? false : !currentAsc
+    }
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    const list = manager.testSubset
+    const sortedList = type === 'duration' ? durationSort(list, ascending) : genericSort(list, type, ascending)
+    manager.setRender(sortedList)
+}
+
+module.exports = {
+    doInitSort,
+    doSort,
+}
+
+},{"./datamanager.js":1,"./storage.js":8}],8:[function(require,module,exports){
+const possibleFilters = [
+    'passed',
+    'skipped',
+    'failed',
+    'error',
+    'xfailed',
+    'xpassed',
+    'rerun',
+]
+
+const getVisible = () => {
+    const url = new URL(window.location.href)
+    const settings = new URLSearchParams(url.search).get('visible')
+    const lower = (item) => {
+        const lowerItem = item.toLowerCase()
+        if (possibleFilters.includes(lowerItem)) {
+            return lowerItem
+        }
+        return null
+    }
+    return settings === null ?
+        possibleFilters :
+        [...new Set(settings?.split(',').map(lower).filter((item) => item))]
+}
+
+const hideCategory = (categoryToHide) => {
+    const url = new URL(window.location.href)
+    const visibleParams = new URLSearchParams(url.search).get('visible')
+    const currentVisible = visibleParams ? visibleParams.split(',') : [...possibleFilters]
+    const settings = [...new Set(currentVisible)].filter((f) => f !== categoryToHide).join(',')
+
+    url.searchParams.set('visible', settings)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const showCategory = (categoryToShow) => {
+    if (typeof window === 'undefined') {
+        return
+    }
+    const url = new URL(window.location.href)
+    const currentVisible = new URLSearchParams(url.search).get('visible')?.split(',').filter(Boolean) ||
+        [...possibleFilters]
+    const settings = [...new Set([categoryToShow, ...currentVisible])]
+    const noFilter = possibleFilters.length === settings.length || !settings.length
+
+    noFilter ? url.searchParams.delete('visible') : url.searchParams.set('visible', settings.join(','))
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getSort = (initialSort) => {
+    const url = new URL(window.location.href)
+    let sort = new URLSearchParams(url.search).get('sort')
+    if (!sort) {
+        sort = initialSort || 'result'
+    }
+    return sort
+}
+
+const setSort = (type) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('sort', type)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getCollapsedCategory = (renderCollapsed) => {
+    let categories
+    if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href)
+        const collapsedItems = new URLSearchParams(url.search).get('collapsed')
+        switch (true) {
+        case !renderCollapsed && collapsedItems === null:
+            categories = ['passed']
+            break
+        case collapsedItems?.length === 0 || /^["']{2}$/.test(collapsedItems):
+            categories = []
+            break
+        case /^all$/.test(collapsedItems) || collapsedItems === null && /^all$/.test(renderCollapsed):
+            categories = [...possibleFilters]
+            break
+        default:
+            categories = collapsedItems?.split(',').map((item) => item.toLowerCase()) || renderCollapsed
+            break
+        }
+    } else {
+        categories = []
+    }
+    return categories
+}
+
+const getSortDirection = () => JSON.parse(sessionStorage.getItem('sortAsc')) || false
+const setSortDirection = (ascending) => sessionStorage.setItem('sortAsc', ascending)
+
+const getCollapsedIds = () => JSON.parse(sessionStorage.getItem('collapsedIds')) || []
+const setCollapsedIds = (list) => sessionStorage.setItem('collapsedIds', JSON.stringify(list))
+
+module.exports = {
+    getVisible,
+    hideCategory,
+    showCategory,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    setSort,
+    getSortDirection,
+    setSortDirection,
+    getCollapsedCategory,
+    possibleFilters,
+}
+
+},{}]},{},[4]);
+    </script>
+  </footer>
+</html>

@@ -1,0 +1,1002 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="18" failures="37" skipped="0" tests="78" time="9.500" timestamp="2025-05-20T12:55:34.667753+02:00" hostname="GTA3"><testcase classname="Python.tests.test_3d_view.Test3DView" name="test_store_view_3d_model_exists" time="0.671"><failure message="RuntimeError: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.">self = &lt;test_3d_view.Test3DView object at 0x0000018BE4C542E0&gt;
+qml_component_loader = &lt;function Test3DView.qml_component_loader.&lt;locals&gt;._load_component at 0x0000018BFBD07AC0&gt;
+
+    def test_store_view_3d_model_exists(self, qml_component_loader):
+        """Testet, ob die 3D-Modellansicht in der StoreView existiert."""
+        # Act
+        store_view = qml_component_loader("StoreView.ui.qml")
+    
+        # Assert
+        assert store_view is not None
+        # Prüfen, ob ein Kind-Element vom Typ Node3D existiert
+&gt;       assert store_view.findChild(QQuick3D) is not None
+E       RuntimeError: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.
+
+tests\test_3d_view.py:53: RuntimeError
+---------------------------- Captured Qt messages -----------------------------
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:335:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:335:45: QML QQuickRectangle: The current style does not support customization of this control (property: "background" item: QQuickRectangle(0x18bfd6a7e10, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:297:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:297:45: QML QQuickRectangle: The current style does not support customization of this control (property: "background" item: QQuickRectangle(0x18bfd6a7ef0, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:14:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:14:5: TypeError: Cannot read property 'height' of null
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:13:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:13:5: TypeError: Cannot read property 'width' of null
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:386:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:386:49: QML QQuickItem: The current style does not support customization of this control (property: "background" item: QQuickItem(0x18bfd6a85f0, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:340:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:340:46: QML QQuickText: The current style does not support customization of this control (property: "contentItem" item: QQuickText(0x18bfd6b6d10, parent=0x0, geometry=0,0 0x0 ⏿)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:304:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:304:46: QML QQuickText: The current style does not support customization of this control (property: "contentItem" item: QQuickText(0x18bfd6b7760, parent=0x0, geometry=0,0 0x0 ⏿)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference</failure></testcase><testcase classname="Python.tests.test_3d_view.Test3DView" name="test_preflight_view_3d_model_exists" time="0.048"><failure message="RuntimeError: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.">self = &lt;test_3d_view.Test3DView object at 0x0000018BE4C54490&gt;
+qml_component_loader = &lt;function Test3DView.qml_component_loader.&lt;locals&gt;._load_component at 0x0000018BFBD07BE0&gt;
+
+    def test_preflight_view_3d_model_exists(self, qml_component_loader):
+        """Testet, ob die 3D-Modellansicht in der PreflightView existiert."""
+        # Act
+        preflight_view = qml_component_loader("PreflightView.ui.qml")
+    
+        # Assert
+        assert preflight_view is not None
+        # Prüfen, ob ein Kind-Element vom Typ Node3D existiert
+&gt;       assert preflight_view.findChild(QQuick3D) is not None
+E       RuntimeError: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.
+
+tests\test_3d_view.py:63: RuntimeError
+---------------------------- Captured Qt messages -----------------------------
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:461:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:461:33: QML QQuickRectangle: The current style does not support customization of this control (property: "background" item: QQuickRectangle(0x18bfda10e30, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:406:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:406:33: QML QQuickRectangle: The current style does not support customization of this control (property: "background" item: QQuickRectangle(0x18bfda111b0, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:380:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:380:33: QML QQuickRectangle: The current style does not support customization of this control (property: "background" item: QQuickRectangle(0x18bfda12410, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:354:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:354:33: QML QQuickRectangle: The current style does not support customization of this control (property: "background" item: QQuickRectangle(0x18bfda11b50, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:145:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:145:33: QML QQuickRectangle: The current style does not support customization of this control (property: "background" item: QQuickRectangle(0x18bfda11a70, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:100:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:100:33: QML QQuickRectangle: The current style does not support customization of this control (property: "background" item: QQuickRectangle(0x18bfda11ed0, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:18:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:18:5: TypeError: Cannot read property 'height' of null
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:17:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:17:5: TypeError: Cannot read property 'width' of null
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:564:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:564:5: QML Connections: Detected function "onAttitudeChanged" in Connections element. This is probably intended to be a signal handler but no signal of the target matches the name.
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:564:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:564:5: QML Connections: Detected function "onAttitude_msg" in Connections element. This is probably intended to be a signal handler but no signal of the target matches the name.
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:564:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:564:5: QML Connections: Detected function "onConnectedChanged" in Connections element. This is probably intended to be a signal handler but no signal of the target matches the name.
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/LogsList.ui.qml:None:38:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/LogsList.ui.qml:38:5: QML Connections: Detected function "onLogAdded" in Connections element. This is probably intended to be a signal handler but no signal of the target matches the name.
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:466:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:466:34: QML QQuickText: The current style does not support customization of this control (property: "contentItem" item: QQuickText(0x18bfda470a0, parent=0x0, geometry=0,0 0x0 ⏿)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:411:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:411:34: QML QQuickText: The current style does not support customization of this control (property: "contentItem" item: QQuickText(0x18bfda46b00, parent=0x0, geometry=0,0 0x0 ⏿)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:385:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:385:34: QML QQuickText: The current style does not support customization of this control (property: "contentItem" item: QQuickText(0x18bfda46bf0, parent=0x0, geometry=0,0 0x0 ⏿)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:359:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:359:34: QML QQuickText: The current style does not support customization of this control (property: "contentItem" item: QQuickText(0x18bfda7cda0, parent=0x0, geometry=0,0 0x0 ⏿)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:150:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:150:34: QML QQuickText: The current style does not support customization of this control (property: "contentItem" item: QQuickText(0x18bfda7cad0, parent=0x0, geometry=0,0 0x0 ⏿)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:107:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:107:34: QML QQuickText: The current style does not support customization of this control (property: "contentItem" item: QQuickText(0x18bfda7d520, parent=0x0, geometry=0,0 0x0 ⏿)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:601:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:601: ReferenceError: serialConnector is not defined
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/LogsList.ui.qml:None:50:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/LogsList.ui.qml:50: ReferenceError: logger is not defined
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/LogsList.ui.qml:None:19:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/LogsList.ui.qml:19: ReferenceError: logger is not defined
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/LogsList.ui.qml:None:39:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/LogsList.ui.qml:39: ReferenceError: logger is not defined
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:None:565:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/PreflightView.ui.qml:565: ReferenceError: serialConnector is not defined</failure></testcase><testcase classname="Python.tests.test_3d_view.Test3DView" name="test_model_switching" time="0.028"><failure message="RuntimeError: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.">self = &lt;test_3d_view.Test3DView object at 0x0000018BE4C546A0&gt;
+qml_component_loader = &lt;function Test3DView.qml_component_loader.&lt;locals&gt;._load_component at 0x0000018BFFF279A0&gt;
+
+    def test_model_switching(self, qml_component_loader):
+        """Testet das Umschalten zwischen verschiedenen 3D-Modellen."""
+        # Arrange
+        store_view = qml_component_loader("StoreView.ui.qml")
+        assert store_view is not None
+    
+        # Model-Wechsel simulieren
+        model_selector = None
+&gt;       for child in store_view.children():
+E       RuntimeError: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.
+
+tests\test_3d_view.py:73: RuntimeError
+---------------------------- Captured Qt messages -----------------------------
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:335:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:335:45: QML QQuickRectangle: The current style does not support customization of this control (property: "background" item: QQuickRectangle(0x18bfdb88ee0, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:297:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:297:45: QML QQuickRectangle: The current style does not support customization of this control (property: "background" item: QQuickRectangle(0x18bfdb88c40, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:14:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:14:5: TypeError: Cannot read property 'height' of null
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:13:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:13:5: TypeError: Cannot read property 'width' of null
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:386:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:386:49: QML QQuickItem: The current style does not support customization of this control (property: "background" item: QQuickItem(0x18bfdb889a0, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:340:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:340:46: QML QQuickText: The current style does not support customization of this control (property: "contentItem" item: QQuickText(0x18bfdbf5030, parent=0x0, geometry=0,0 0x0 ⏿)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:304:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:304:46: QML QQuickText: The current style does not support customization of this control (property: "contentItem" item: QQuickText(0x18bfdbf67a0, parent=0x0, geometry=0,0 0x0 ⏿)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference</failure></testcase><testcase classname="Python.tests.test_3d_view.Test3DView" name="test_model_rotation" time="0.029"><failure message="RuntimeError: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.">self = &lt;test_3d_view.Test3DView object at 0x0000018BE4C548E0&gt;
+qml_component_loader = &lt;function Test3DView.qml_component_loader.&lt;locals&gt;._load_component at 0x0000018BFFF27C70&gt;
+
+    def test_model_rotation(self, qml_component_loader):
+        """Testet die automatische Rotation des 3D-Modells."""
+        # Arrange
+        store_view = qml_component_loader("StoreView.ui.qml")
+        assert store_view is not None
+    
+        # 3D-Modell-Node finden
+        model_node = None
+&gt;       for child in store_view.children():
+E       RuntimeError: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.
+
+tests\test_3d_view.py:104: RuntimeError
+---------------------------- Captured Qt messages -----------------------------
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:335:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:335:45: QML QQuickRectangle: The current style does not support customization of this control (property: "background" item: QQuickRectangle(0x18bfdcabd50, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:297:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:297:45: QML QQuickRectangle: The current style does not support customization of this control (property: "background" item: QQuickRectangle(0x18bfdcab2d0, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:14:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:14:5: TypeError: Cannot read property 'height' of null
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:13:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:13:5: TypeError: Cannot read property 'width' of null
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:386:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:386:49: QML QQuickItem: The current style does not support customization of this control (property: "background" item: QQuickItem(0x18bfdcaa3f0, parent=0x0, geometry=0,0 0x0)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:340:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:340:46: QML QQuickText: The current style does not support customization of this control (property: "contentItem" item: QQuickText(0x18bfdd1a4c0, parent=0x0, geometry=0,0 0x0 ⏿)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:None:304:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/StoreView.ui.qml:304:46: QML QQuickText: The current style does not support customization of this control (property: "contentItem" item: QQuickText(0x18bfdd1a880, parent=0x0, geometry=0,0 0x0 ⏿)). Please customize a non-native style (such as Basic, Fusion, Material, etc). For more information, see: https://doc.qt.io/qt-6/qtquickcontrols2-customize.html#customization-reference</failure></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_connection_timeout" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_connection.TestMAVLinkConnector object at 0x0000018BFBB86380&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x18bfdcdfa00) at 0x0000018BE4C5C900&gt;
+
+    def test_connection_timeout(self, connector):
+        """Test that connection times out when port is invalid"""
+&gt;       connector.set_connection_params("COM99", 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+tests\test_connection.py:19: AttributeError</failure></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_connection_invalid_port" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_connection.TestMAVLinkConnector object at 0x0000018BFBB86560&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x18bfdcdf4e0) at 0x0000018BE4C81EC0&gt;
+
+    def test_connection_invalid_port(self, connector):
+        """Test that connection fails with invalid port"""
+&gt;       connector.set_connection_params("INVALID_PORT", 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+tests\test_connection.py:26: AttributeError</failure></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_reconnection" time="0.012"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_connection.TestMAVLinkConnector object at 0x0000018BFBB86740&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x18bfdcdf560) at 0x0000018BE4C4AB00&gt;
+
+    def test_reconnection(self, connector):
+        """Test reconnection logic"""
+        # Mock Serial
+        with patch('serial.Serial') as mock_serial:
+            mock_instance = mock_serial.return_value
+            mock_instance.is_open = True
+            mock_instance.read.return_value = b''
+            mock_instance.inWaiting.return_value = 0
+    
+            # First connection
+&gt;           connector.set_connection_params("COM1", 57600)
+E           AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+tests\test_connection.py:41: AttributeError</failure></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_connection_parameters" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_connection.TestMAVLinkConnector object at 0x0000018BFBB86950&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x18bfdcdf640) at 0x0000018BFB3A2400&gt;
+
+    def test_connection_parameters(self, connector):
+        """Test connection with different parameters"""
+        with patch('serial.Serial') as mock_serial:
+            mock_instance = mock_serial.return_value
+            mock_instance.is_open = True
+    
+            # Test with default baudrate
+&gt;           connector.set_connection_params("COM1", 57600)
+E           AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+tests\test_connection.py:60: AttributeError</failure></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_connection_state" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'is_connected'. Did you mean: '_is_connecting'?">self = &lt;test_connection.TestMAVLinkConnector object at 0x0000018BFBB86B60&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x18bfdcdf380) at 0x0000018BFFF6E6C0&gt;
+
+    def test_connection_state(self, connector):
+        """Test connection state management"""
+        with patch('serial.Serial') as mock_serial:
+            mock_instance = mock_serial.return_value
+            mock_instance.is_open = True
+            mock_instance.read.return_value = b''
+            mock_instance.inWaiting.return_value = 0
+    
+&gt;           assert connector.is_connected() == False
+E           AttributeError: 'MAVLinkConnector' object has no attribute 'is_connected'. Did you mean: '_is_connecting'?
+
+tests\test_connection.py:78: AttributeError</failure></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_connection_events" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'connected'. Did you mean: 'connect'?">self = &lt;test_connection.TestMAVLinkConnector object at 0x0000018BFBB86D70&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x18bfdcdf3e0) at 0x0000018BFBD27380&gt;
+
+    def test_connection_events(self, connector):
+        """Test connection event handling"""
+        with patch('serial.Serial') as mock_serial:
+            mock_instance = mock_serial.return_value
+            mock_instance.is_open = True
+            mock_instance.read.return_value = b''
+            mock_instance.inWaiting.return_value = 0
+    
+            connected_events = []
+            disconnected_events = []
+    
+            def on_connected():
+                connected_events.append(True)
+    
+            def on_disconnected():
+                disconnected_events.append(True)
+    
+            # Verbindung mit Signal-Slots aufsetzen
+&gt;           connector.connected.connect(on_connected)
+E           AttributeError: 'MAVLinkConnector' object has no attribute 'connected'. Did you mean: 'connect'?
+
+tests\test_connection.py:105: AttributeError</failure></testcase><testcase classname="Python.tests.test_end_to_end.TestEndToEnd" name="test_full_application_startup" time="0.042"><error message="failed on setup with &quot;ImportError: cannot import name 'MainApplication' from 'main' (C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\main.py)&quot;">self = &lt;test_end_to_end.TestEndToEnd object at 0x0000018BFBB87CD0&gt;
+app = &lt;PySide6.QtWidgets.QApplication(0x18be4131a80) at 0x0000018BFBD26480&gt;
+
+    @pytest.fixture
+    def main_app(self, app):
+        """Fixture zum Starten der Hauptanwendung für Tests."""
+        # Die Hauptanwendung importieren
+&gt;       from main import MainApplication
+E       ImportError: cannot import name 'MainApplication' from 'main' (C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\main.py)
+
+tests\test_end_to_end.py:24: ImportError</error></testcase><testcase classname="Python.tests.test_end_to_end.TestEndToEnd" name="test_tab_navigation" time="0.001"><error message="failed on setup with &quot;ImportError: cannot import name 'MainApplication' from 'main' (C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\main.py)&quot;">self = &lt;test_end_to_end.TestEndToEnd object at 0x0000018BFBB87EB0&gt;
+app = &lt;PySide6.QtWidgets.QApplication(0x18be4131a80) at 0x0000018BFBD26480&gt;
+
+    @pytest.fixture
+    def main_app(self, app):
+        """Fixture zum Starten der Hauptanwendung für Tests."""
+        # Die Hauptanwendung importieren
+&gt;       from main import MainApplication
+E       ImportError: cannot import name 'MainApplication' from 'main' (C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\main.py)
+
+tests\test_end_to_end.py:24: ImportError</error></testcase><testcase classname="Python.tests.test_end_to_end.TestEndToEnd" name="test_store_view_interaction" time="0.001"><error message="failed on setup with &quot;ImportError: cannot import name 'MainApplication' from 'main' (C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\main.py)&quot;">self = &lt;test_end_to_end.TestEndToEnd object at 0x0000018BFBC500D0&gt;
+app = &lt;PySide6.QtWidgets.QApplication(0x18be4131a80) at 0x0000018BFBD26480&gt;
+
+    @pytest.fixture
+    def main_app(self, app):
+        """Fixture zum Starten der Hauptanwendung für Tests."""
+        # Die Hauptanwendung importieren
+&gt;       from main import MainApplication
+E       ImportError: cannot import name 'MainApplication' from 'main' (C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\main.py)
+
+tests\test_end_to_end.py:24: ImportError</error></testcase><testcase classname="Python.tests.test_end_to_end.TestEndToEnd" name="test_connection_workflow" time="0.001"><error message="failed on setup with &quot;ImportError: cannot import name 'MainApplication' from 'main' (C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\main.py)&quot;">self = &lt;test_end_to_end.TestEndToEnd object at 0x0000018BFBC502B0&gt;
+app = &lt;PySide6.QtWidgets.QApplication(0x18be4131a80) at 0x0000018BFBD26480&gt;
+
+    @pytest.fixture
+    def main_app(self, app):
+        """Fixture zum Starten der Hauptanwendung für Tests."""
+        # Die Hauptanwendung importieren
+&gt;       from main import MainApplication
+E       ImportError: cannot import name 'MainApplication' from 'main' (C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\main.py)
+
+tests\test_end_to_end.py:24: ImportError</error></testcase><testcase classname="Python.tests.test_integration.TestIntegration" name="test_message_handler_with_simulator" time="0.001"><error message="failed on setup with &quot;TypeError: MessageHandler.__init__() missing 1 required positional argument: 'logger'&quot;">self = &lt;test_integration.TestIntegration object at 0x0000018BFBC50F40&gt;
+
+    @pytest.fixture
+    def message_handler(self):
+        """Fixture für einen echten MessageHandler."""
+&gt;       return MessageHandler()
+E       TypeError: MessageHandler.__init__() missing 1 required positional argument: 'logger'
+
+tests\test_integration.py:25: TypeError</error></testcase><testcase classname="Python.tests.test_integration.TestIntegration" name="test_simulator_thread_operation" time="0.001"><error message="failed on setup with &quot;TypeError: MessageHandler.__init__() missing 1 required positional argument: 'logger'&quot;">self = &lt;test_integration.TestIntegration object at 0x0000018BFBC510F0&gt;
+
+    @pytest.fixture
+    def message_handler(self):
+        """Fixture für einen echten MessageHandler."""
+&gt;       return MessageHandler()
+E       TypeError: MessageHandler.__init__() missing 1 required positional argument: 'logger'
+
+tests\test_integration.py:25: TypeError</error></testcase><testcase classname="Python.tests.test_integration.TestIntegration" name="test_connector_with_message_handler" time="0.002"><error message="failed on setup with &quot;AttributeError: Mock object has no attribute 'is_connected'. Did you mean: 'disconnect'?&quot;">self = &lt;test_integration.TestIntegration object at 0x0000018BFBC512D0&gt;
+
+    @pytest.fixture
+    def mock_connector(self):
+        """Fixture für einen Mock-Connector."""
+        connector = MagicMock(spec=MAVLinkConnector)
+&gt;       connector.is_connected.return_value = True
+
+tests\test_integration.py:31: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;MagicMock spec='MAVLinkConnector' id='1700806292960'&gt;
+name = 'is_connected'
+
+    def __getattr__(self, name):
+        if name in {'_mock_methods', '_mock_unsafe'}:
+            raise AttributeError(name)
+        elif self._mock_methods is not None:
+            if name not in self._mock_methods or name in _all_magics:
+&gt;               raise AttributeError("Mock object has no attribute %r" % name)
+E               AttributeError: Mock object has no attribute 'is_connected'. Did you mean: 'disconnect'?
+
+C:\Program Files\Python310\lib\unittest\mock.py:634: AttributeError</error></testcase><testcase classname="Python.tests.test_integration.TestIntegration" name="test_sensor_data_flow" time="0.001"><error message="failed on setup with &quot;TypeError: MessageHandler.__init__() missing 1 required positional argument: 'logger'&quot;">self = &lt;test_integration.TestIntegration object at 0x0000018BFBC51480&gt;
+
+    @pytest.fixture
+    def message_handler(self):
+        """Fixture für einen echten MessageHandler."""
+&gt;       return MessageHandler()
+E       TypeError: MessageHandler.__init__() missing 1 required positional argument: 'logger'
+
+tests\test_integration.py:25: TypeError</error></testcase><testcase classname="Python.tests.test_integration.TestIntegration" name="test_end_to_end_command_flow" time="0.002"><error message="failed on setup with &quot;AttributeError: Mock object has no attribute 'is_connected'. Did you mean: 'disconnect'?&quot;">self = &lt;test_integration.TestIntegration object at 0x0000018BFBC51690&gt;
+
+    @pytest.fixture
+    def mock_connector(self):
+        """Fixture für einen Mock-Connector."""
+        connector = MagicMock(spec=MAVLinkConnector)
+&gt;       connector.is_connected.return_value = True
+
+tests\test_integration.py:31: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;MagicMock spec='MAVLinkConnector' id='1700334915968'&gt;
+name = 'is_connected'
+
+    def __getattr__(self, name):
+        if name in {'_mock_methods', '_mock_unsafe'}:
+            raise AttributeError(name)
+        elif self._mock_methods is not None:
+            if name not in self._mock_methods or name in _all_magics:
+&gt;               raise AttributeError("Mock object has no attribute %r" % name)
+E               AttributeError: Mock object has no attribute 'is_connected'. Did you mean: 'disconnect'?
+
+C:\Program Files\Python310\lib\unittest\mock.py:634: AttributeError</error></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_connector_initialization" time="0.004"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000018BFBC52770&gt;
+mock_serial = &lt;MagicMock name='Serial()' id='1698668199024'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='1700806598640'&gt;
+
+    def test_connector_initialization(self, mock_serial, mock_logger):
+        """Testet die korrekte Initialisierung des MAVLink-Connectors."""
+        # Arranges
+        port = 'COM1'
+        baudrate = 57600
+    
+        # Act
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params(port, baudrate)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+tests\test_mavlink_connector.py:45: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_connect_success" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000018BFBC52950&gt;
+mock_serial = &lt;MagicMock name='Serial()' id='1700737142784'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='1698668366384'&gt;
+
+    def test_connect_success(self, mock_serial, mock_logger):
+        """Testet die erfolgreiche Verbindungsherstellung."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+tests\test_mavlink_connector.py:57: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_connect_failure" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000018BFBC52B00&gt;
+mock_serial_error = &lt;MagicMock name='Serial' id='1700806277728'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='1700806271056'&gt;
+
+    @patch('backend.mavlink_connector.serial.Serial', side_effect=Exception('Connection failed'))
+    def test_connect_failure(self, mock_serial_error, mock_logger):
+        """Testet den Fehlerfall bei der Verbindungsherstellung."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+tests\test_mavlink_connector.py:71: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_disconnect" time="0.004"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000018BFBC52CE0&gt;
+mock_serial = &lt;MagicMock name='Serial()' id='1700806595424'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='1698668365952'&gt;
+
+    def test_disconnect(self, mock_serial, mock_logger):
+        """Testet das korrekte Trennen der Verbindung."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+tests\test_mavlink_connector.py:83: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_factory_method_mavlink" time="0.002"><failure message="AttributeError: &lt;module 'backend.mavlink_connector' from 'C:\\Users\\fuckheinerkleinehack\\Documents\\RZGS2\\RZGCS\\Python\\backend\\mavlink_connector.py'&gt; does not have the attribute 'Logger'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000018BFBC52E90&gt;
+
+    def test_factory_method_mavlink(self):
+        """Testet die Factory-Methode für die Erstellung eines MAVLink-Connectors."""
+        # Arrange &amp; Act
+        with patch('backend.mavlink_connector.MAVLinkConnector') as mock_connector:
+&gt;           with patch('backend.mavlink_connector.Logger') as mock_logger_class:
+
+tests\test_mavlink_connector.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Program Files\Python310\lib\unittest\mock.py:1438: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;unittest.mock._patch object at 0x0000018BFFF47700&gt;
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+&gt;           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: &lt;module 'backend.mavlink_connector' from 'C:\\Users\\fuckheinerkleinehack\\Documents\\RZGS2\\RZGCS\\Python\\backend\\mavlink_connector.py'&gt; does not have the attribute 'Logger'
+
+C:\Program Files\Python310\lib\unittest\mock.py:1411: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_factory_method_missing_params" time="0.002" /><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_send_message" time="0.004"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000018BFBC52DD0&gt;
+mock_serial = &lt;MagicMock name='Serial()' id='1698668195712'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='1700806303008'&gt;
+
+    def test_send_message(self, mock_serial, mock_logger):
+        """Testet das Senden einer Nachricht."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+tests\test_mavlink_connector.py:123: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_send_message_not_connected" time="0.004"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000018BFBC52860&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='1698668606896'&gt;
+
+    def test_send_message_not_connected(self, mock_logger):
+        """Testet das Senden einer Nachricht ohne Verbindung."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+tests\test_mavlink_connector.py:140: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_receive_messages" time="0.003"><failure message="AttributeError: &lt;class 'backend.mavlink_connector.MAVLinkConnector'&gt; does not have the attribute 'process_messages'">item = &lt;Function test_receive_messages&gt;
+
+    @pytest.hookimpl(wrapper=True, tryfirst=True)
+    def pytest_runtest_call(item):
+&gt;       result = yield
+
+..\..\..\..\AppData\Roaming\Python\Python310\site-packages\pytestqt\plugin.py:189: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Program Files\Python310\lib\unittest\mock.py:1367: in patched
+    with self.decoration_helper(patched,
+C:\Program Files\Python310\lib\contextlib.py:135: in __enter__
+    return next(self.gen)
+C:\Program Files\Python310\lib\unittest\mock.py:1349: in decoration_helper
+    arg = exit_stack.enter_context(patching)
+C:\Program Files\Python310\lib\contextlib.py:492: in enter_context
+    result = _cm_type.__enter__(cm)
+C:\Program Files\Python310\lib\unittest\mock.py:1438: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;unittest.mock._patch object at 0x0000018BFBC51F90&gt;
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+&gt;           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: &lt;class 'backend.mavlink_connector.MAVLinkConnector'&gt; does not have the attribute 'process_messages'
+
+C:\Program Files\Python310\lib\unittest\mock.py:1411: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_initialization" time="0.149"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1698668375984'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC78070&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='1698668375984'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+tests\test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x18bfbc6dd40&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='1698668375984'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1698668375984'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_start_simulator" time="0.002"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1700736084496'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC78220&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='1700736084496'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+tests\test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x18b809200c0&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='1700736084496'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1700736084496'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_stop_simulator" time="0.002"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1700806710448'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC78400&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='1700806710448'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+tests\test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x18b80990140&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='1700806710448'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1700806710448'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_is_running" time="0.002"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1698668525168'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC785E0&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='1698668525168'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+tests\test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x18b809c0a40&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='1698668525168'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1698668525168'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_run_loop" time="0.002"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1700806591440'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC787F0&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='1700806591440'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+tests\test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x18b808e4b40&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='1700806591440'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1700806591440'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_simulate_heartbeat" time="0.002"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1698668526368'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC789D0&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='1698668526368'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+tests\test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x18b80992440&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='1698668526368'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1698668526368'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_simulate_attitude" time="0.001"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1700806671856'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC78BB0&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='1700806671856'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+tests\test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x18b809497c0&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='1700806671856'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1700806671856'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_simulate_gps_status" time="0.002"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1700806604928'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC78D90&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='1700806604928'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+tests\test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x18b808b9300&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='1700806604928'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1700806604928'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_simulate_battery_status" time="0.001"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1700806272208'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x0000018BFBC78F70&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='1700806272208'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+tests\test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x18b809c0500&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='1700806272208'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='1700806272208'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_initialization" time="0.002" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_set_parameters" time="0.003" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_rowCount" time="0.002" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_data_valid_index" time="0.027"><failure message="AssertionError: assert '' == 'Roll rate control P gain'&#10;  &#10;  - Roll rate control P gain">self = &lt;test_parameter_model.TestParameterTableModel object at 0x0000018BFBC7A9B0&gt;
+model = &lt;backend.parameter_model.ParameterTableModel(0x18bfdc7c640) at 0x0000018B809D9B40&gt;
+sample_params = [{'defaultValue': '0.1', 'description': 'Roll rate control P gain', 'name': 'RATE_RLL_P', 'options': [], ...}, {'defau...[], ...}, {'defaultValue': '0.15', 'description': 'Yaw rate control P gain', 'name': 'RATE_YAW_P', 'options': [], ...}]
+
+    def test_data_valid_index(self, model, sample_params):
+        """Testet die data-Methode mit gültigen Indizes."""
+        # Arrange
+        model.set_parameters(sample_params)
+    
+        # Act &amp; Assert - Verschiedene Rollen testen
+        index = model.index(0, 0)
+        assert model.data(index, ParameterTableModel.NameRole) == 'RATE_RLL_P'
+        assert model.data(index, ParameterTableModel.ValueRole) == '0.15'
+        assert model.data(index, ParameterTableModel.DefaultValueRole) == '0.1'
+        assert model.data(index, ParameterTableModel.UnitRole) == ''
+        assert model.data(index, ParameterTableModel.OptionsRole) == []
+&gt;       assert model.data(index, ParameterTableModel.DescRole) == 'Roll rate control P gain'
+E       AssertionError: assert '' == 'Roll rate control P gain'
+E         
+E         - Roll rate control P gain
+
+tests\test_parameter_model.py:96: AssertionError</failure></testcase><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_data_invalid_index" time="0.001" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_roleNames" time="0.020"><failure message="AssertionError: assert b'desc' == b'description'&#10;  &#10;  Use -v to get more diff">self = &lt;test_parameter_model.TestParameterTableModel object at 0x0000018BFBC7AD40&gt;
+model = &lt;backend.parameter_model.ParameterTableModel(0x18bfdc96390) at 0x0000018B809F0900&gt;
+
+    def test_roleNames(self, model):
+        """Testet die roleNames-Methode."""
+        # Act
+        roles = model.roleNames()
+    
+        # Assert
+        expected_roles = {
+            ParameterTableModel.NameRole: b'name',
+            ParameterTableModel.ValueRole: b'value',
+            ParameterTableModel.DefaultValueRole: b'defaultValue',
+            ParameterTableModel.UnitRole: b'unit',
+            ParameterTableModel.OptionsRole: b'options',
+            ParameterTableModel.DescRole: b'description'
+        }
+    
+        for role, name in expected_roles.items():
+&gt;           assert roles[role] == name
+E           AssertionError: assert b'desc' == b'description'
+E             
+E             Use -v to get more diff
+
+tests\test_parameter_model.py:127: AssertionError</failure></testcase><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_set_parameter_value" time="0.002" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_set_parameter_value_nonexistent" time="0.002" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_get_parameter_value" time="0.001"><failure message="AttributeError: 'ParameterTableModel' object has no attribute 'get_parameter_value'. Did you mean: 'set_parameter_value'?">self = &lt;test_parameter_model.TestParameterTableModel object at 0x0000018BFBC7B2E0&gt;
+model = &lt;backend.parameter_model.ParameterTableModel(0x18bfdc96ed0) at 0x0000018B809685C0&gt;
+sample_params = [{'defaultValue': '0.1', 'description': 'Roll rate control P gain', 'name': 'RATE_RLL_P', 'options': [], ...}, {'defau...[], ...}, {'defaultValue': '0.15', 'description': 'Yaw rate control P gain', 'name': 'RATE_YAW_P', 'options': [], ...}]
+
+    def test_get_parameter_value(self, model, sample_params):
+        """Testet das Abrufen eines Parameterwerts."""
+        # Arrange
+        model.set_parameters(sample_params)
+    
+        # Act &amp; Assert
+&gt;       assert model.get_parameter_value('RATE_RLL_P') == '0.15'
+E       AttributeError: 'ParameterTableModel' object has no attribute 'get_parameter_value'. Did you mean: 'set_parameter_value'?
+
+tests\test_parameter_model.py:163: AttributeError</failure></testcase><testcase classname="Python.tests.test_performance.TestPerformance" name="test_message_processing_performance" time="0.003"><failure message="AttributeError: 'MessageHandler' object has no attribute 'process_attitude'">self = &lt;test_performance.TestPerformance object at 0x0000018BFBCC1450&gt;
+message_handler = &lt;backend.message_handler.MessageHandler(0x18bfdcd0ef0) at 0x0000018B80922A40&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='1700806670128'&gt;
+
+    def test_message_processing_performance(self, message_handler, mock_logger):
+        """Testet die Performance der Nachrichtenverarbeitung."""
+        # Konfigurieren des Profilers
+        pr = cProfile.Profile()
+        pr.enable()
+    
+        # Act - Viele Nachrichten verarbeiten
+        start_time = time.time()
+        for i in range(1000):
+            # Attitude-Nachrichten mit verschiedenen Werten simulieren
+            roll = i / 1000.0
+            pitch = i / 2000.0
+            yaw = i / 3000.0
+&gt;           message_handler.process_attitude(roll, pitch, yaw)
+E           AttributeError: 'MessageHandler' object has no attribute 'process_attitude'
+
+tests\test_performance.py:74: AttributeError</failure></testcase><testcase classname="Python.tests.test_performance.TestPerformance" name="test_parameter_model_performance" time="0.012" /><testcase classname="Python.tests.test_performance.TestPerformance" name="test_simulator_performance" time="0.003"><failure message="AttributeError: 'MAVLinkSimulator' object has no attribute 'simulate_heartbeat'">self = &lt;test_performance.TestPerformance object at 0x0000018BFBCC30D0&gt;
+simulator = &lt;backend.mavlink_simulator.MAVLinkSimulator(0x18bfdcd0f90) at 0x0000018B8098EA00&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='1698669843920'&gt;
+
+    def test_simulator_performance(self, simulator, mock_logger):
+        """Testet die Performance des Simulators."""
+        # Act - Simulierte Nachrichten in Schleife erzeugen
+        pr = cProfile.Profile()
+        pr.enable()
+    
+        start_time = time.time()
+        for _ in range(1000):
+&gt;           simulator.simulate_heartbeat()
+E           AttributeError: 'MAVLinkSimulator' object has no attribute 'simulate_heartbeat'
+
+tests\test_performance.py:140: AttributeError</failure></testcase><testcase classname="Python.tests.test_security.TestSecurity" name="test_no_hardcoded_credentials" time="0.056" /><testcase classname="Python.tests.test_security.TestSecurity" name="test_input_validation" time="0.002"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_security.TestSecurity object at 0x0000018BFBCC13C0&gt;
+
+    def test_input_validation(self):
+        """Testet die Eingabevalidierung für kritische Funktionen."""
+        # Import der zu testenden Module
+        from backend.mavlink_connector import MAVLinkConnector, create_connector, ConnectorType
+    
+        # Mock Logger erstellen
+        mock_logger = MagicMock(spec=Logger)
+    
+        # Test 1: MAVLinkConnector mit ungültigen Eingaben
+        connector = MAVLinkConnector(mock_logger)
+    
+        with pytest.raises(ValueError):
+&gt;           connector.set_connection_params("", 0)  # Leerer Port und ungültige Baudrate
+E           AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+tests\test_security.py:85: AttributeError</failure></testcase><testcase classname="Python.tests.test_security.TestSecurity" name="test_no_command_injection" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_security.TestSecurity object at 0x0000018BFBCC2590&gt;
+
+    def test_no_command_injection(self):
+        """Testet die Robustheit gegen Command-Injection-Angriffe."""
+        # Import der zu testenden Module
+        from backend.mavlink_connector import MAVLinkConnector
+    
+        # Mock Logger erstellen
+        mock_logger = MagicMock(spec=Logger)
+    
+        # Methode mocken, um direkte Aufrufe zu verhindern
+        with patch('serial.Serial') as mock_serial:
+            # Mock-Instanz konfigurieren
+            mock_instance = MagicMock()
+            mock_serial.return_value = mock_instance
+            mock_instance.is_open = True
+    
+            # Test mit potenziell gefährlichen Port-Namen
+            malicious_ports = [
+                "COM1; rm -rf /",
+                "COM1 &amp;&amp; del /f /s /q *",
+                "COM1` echo pwned`",
+                "COM1$(cat /etc/passwd)",
+                "COM1|whoami"
+            ]
+    
+            for port in malicious_ports:
+                # Sicherstellen, dass keine Ausnahme auftritt, aber auch kein System-Befehl ausgeführt wird
+                connector = MAVLinkConnector(mock_logger)
+&gt;               connector.set_connection_params(port, 115200)
+E               AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+tests\test_security.py:124: AttributeError</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_initial_sensor_count" time="0.002"><failure message="assert 0 == 13&#10; +  where 0 = rowCount()&#10; +    where rowCount = &lt;backend.sensorviewmodel.SensorViewModel(0x18bfdc7c2d0) at 0x0000018B8095D980&gt;.rowCount">model = &lt;backend.sensorviewmodel.SensorViewModel(0x18bfdc7c2d0) at 0x0000018B8095D980&gt;
+
+    def test_initial_sensor_count(model):
+        """Test, dass die initiale Anzahl der Sensoren korrekt ist."""
+&gt;       assert model.rowCount() == 13  # Anzahl der vordefinierten Sensoren
+E       assert 0 == 13
+E        +  where 0 = rowCount()
+E        +    where rowCount = &lt;backend.sensorviewmodel.SensorViewModel(0x18bfdc7c2d0) at 0x0000018B8095D980&gt;.rowCount
+
+tests\test_sensorviewmodel.py:13: AssertionError</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_sensor_roles" time="0.002"><failure message="AttributeError: 'SensorViewModel' object has no attribute 'FormattedValueRole'">model = &lt;backend.sensorviewmodel.SensorViewModel(0x18bfdc7cc80) at 0x0000018B80A0CEC0&gt;
+
+    def test_sensor_roles(model):
+        """Test, dass alle Rollen korrekt definiert sind."""
+        roles = model.roleNames()
+        assert roles[model.NameRole] == b"name"
+        assert roles[model.ValueRole] == b"value"
+&gt;       assert roles[model.FormattedValueRole] == b"formattedValue"
+E       AttributeError: 'SensorViewModel' object has no attribute 'FormattedValueRole'
+
+tests\test_sensorviewmodel.py:20: AttributeError</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_sensor_data_access" time="0.002"><failure message="AssertionError: assert None == 'Roll'">model = &lt;backend.sensorviewmodel.SensorViewModel(0x18bfdc96570) at 0x0000018B8095E900&gt;
+
+    def test_sensor_data_access(model):
+        """Test des Zugriffs auf Sensordaten."""
+        index = model.index(0)  # Erster Sensor (Roll)
+    
+        # Test Sensor Name
+        name = model.data(index, model.NameRole)
+&gt;       assert name == "Roll"
+E       AssertionError: assert None == 'Roll'
+
+tests\test_sensorviewmodel.py:28: AssertionError</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_update_sensor" time="0.001"><failure message="AttributeError: 'SensorViewModel' object has no attribute 'FormattedValueRole'">model = &lt;backend.sensorviewmodel.SensorViewModel(0x18bfdc83360) at 0x0000018B80BC2540&gt;
+
+    def test_update_sensor(model):
+        """Test der Sensor-Aktualisierung."""
+        model.update_sensor("Roll", 45.123)
+    
+        index = model.index(0)
+        value = model.data(index, model.ValueRole)
+&gt;       formatted = model.data(index, model.FormattedValueRole)
+E       AttributeError: 'SensorViewModel' object has no attribute 'FormattedValueRole'
+
+tests\test_sensorviewmodel.py:44: AttributeError</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_invalid_sensor_update" time="0.001"><failure message="Failed: DID NOT RAISE &lt;class 'backend.exceptions.SensorException'&gt;">model = &lt;backend.sensorviewmodel.SensorViewModel(0x18bfdc7c690) at 0x0000018B80A0E840&gt;
+
+    def test_invalid_sensor_update(model):
+        """Test, dass eine Exception bei ungültigem Sensor geworfen wird."""
+&gt;       with pytest.raises(SensorException):
+E       Failed: DID NOT RAISE &lt;class 'backend.exceptions.SensorException'&gt;
+
+tests\test_sensorviewmodel.py:51: Failed</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_invalid_index" time="0.001" /><testcase classname="Python.tests.test_sensorviewmodel" name="test_formatted_value_with_invalid_data" time="0.001"><failure message="IndexError: list index out of range">model = &lt;backend.sensorviewmodel.SensorViewModel(0x18bfdc79130) at 0x0000018B809D6240&gt;
+
+    def test_formatted_value_with_invalid_data(model):
+        """Test der Formatierung bei ungültigen Daten."""
+        # Simuliere ungültige Daten (würde in der Praxis nicht vorkommen)
+&gt;       model._sensors[0]["value"] = "invalid"
+E       IndexError: list index out of range
+
+tests\test_sensorviewmodel.py:62: IndexError</failure></testcase><testcase classname="Python.tests.test_simulated_drone" name="test_drone_initialization" time="0.105"><failure message="AssertionError: assert 51.1657 == 0.0&#10; +  where 51.1657 = DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False).lat&#10; +    where DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False) = &lt;backend.simulated_drone.SimulatedDrone object at 0x0000018BFFF96D70&gt;.state">drone = &lt;backend.simulated_drone.SimulatedDrone object at 0x0000018BFFF96D70&gt;
+
+    def test_drone_initialization(drone):
+        """Test, dass die Drone korrekt initialisiert wird."""
+&gt;       assert drone.state.lat == 0.0
+E       AssertionError: assert 51.1657 == 0.0
+E        +  where 51.1657 = DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False).lat
+E        +    where DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False) = &lt;backend.simulated_drone.SimulatedDrone object at 0x0000018BFFF96D70&gt;.state
+
+tests\test_simulated_drone.py:17: AssertionError</failure></testcase><testcase classname="Python.tests.test_simulated_drone" name="test_drone_movement" time="2.029"><failure message="AssertionError: assert 0.0 != 0.0&#10; +  where 0.0 = DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False).alt&#10; +    where DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False) = &lt;backend.simulated_drone.SimulatedDrone object at 0x0000018B8099BEB0&gt;.state">drone = &lt;backend.simulated_drone.SimulatedDrone object at 0x0000018B8099BEB0&gt;
+
+    def test_drone_movement(drone):
+        """Test, dass die Drone sich korrekt bewegt."""
+        # Setze Zielposition
+        target_lat = 51.1657
+        target_lon = 10.4515
+        target_alt = 100.0
+    
+        drone.set_target_position(target_lat, target_lon, target_alt)
+    
+        # Warte kurz, damit sich die Drone bewegen kann
+        time.sleep(2)
+    
+        # Überprüfe, ob sich die Position geändert hat
+        assert drone.state.lat != 0.0
+        assert drone.state.lon != 0.0
+&gt;       assert drone.state.alt != 0.0
+E       AssertionError: assert 0.0 != 0.0
+E        +  where 0.0 = DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False).alt
+E        +    where DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False) = &lt;backend.simulated_drone.SimulatedDrone object at 0x0000018B8099BEB0&gt;.state
+
+tests\test_simulated_drone.py:38: AssertionError</failure></testcase><testcase classname="Python.tests.test_simulated_drone" name="test_battery_drain" time="2.025"><failure message="AssertionError: assert 100.0 &lt; 100.0&#10; +  where 100.0 = DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False).battery_remaining&#10; +    where DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False) = &lt;backend.simulated_drone.SimulatedDrone object at 0x0000018B8088BD00&gt;.state">drone = &lt;backend.simulated_drone.SimulatedDrone object at 0x0000018B8088BD00&gt;
+
+    def test_battery_drain(drone):
+        """Test, dass der Batteriestand realistisch abnimmt."""
+        initial_battery = drone.state.battery_remaining
+    
+        # Setze Zielposition und warte
+        drone.set_target_position(51.1657, 10.4515, 100.0)
+        time.sleep(2)
+    
+        # Überprüfe, ob der Batteriestand abgenommen hat
+&gt;       assert drone.state.battery_remaining &lt; initial_battery
+E       AssertionError: assert 100.0 &lt; 100.0
+E        +  where 100.0 = DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False).battery_remaining
+E        +    where DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False) = &lt;backend.simulated_drone.SimulatedDrone object at 0x0000018B8088BD00&gt;.state
+
+tests\test_simulated_drone.py:49: AssertionError</failure></testcase><testcase classname="Python.tests.test_simulated_drone" name="test_flight_modes" time="0.110" /><testcase classname="Python.tests.test_simulated_drone" name="test_arming" time="0.136" /><testcase classname="Python.tests.test_simulated_drone" name="test_max_altitude" time="1.031" /><testcase classname="Python.tests.test_simulated_drone" name="test_send_heartbeat" time="0.106" /><testcase classname="Python.tests.test_simulated_drone" name="test_send_global_position_int" time="0.107" /><testcase classname="Python.tests.test_simulated_drone" name="test_send_attitude" time="0.106" /><testcase classname="Python.tests.test_simulated_drone" name="test_send_sys_status" time="0.105" /><testcase classname="Python.tests.test_simulated_drone" name="test_send_vfr_hud" time="0.106" /><testcase classname="Python.tests.test_simulated_drone" name="test_send_statustext" time="0.105" /><testcase classname="Python.tests.test_ui_components.TestUIComponents" name="test_preflight_view_loads" time="0.037" /><testcase classname="Python.tests.test_ui_components.TestUIComponents" name="test_store_view_loads" time="0.025" /><testcase classname="Python.tests.test_ui_components.TestUIComponents" name="test_flight_view_loads" time="0.331" /><testcase classname="Python.tests.test_ui_components.TestUIComponents" name="test_sensor_view_loads" time="0.034" /><testcase classname="Python.tests.test_ui_components.TestUIComponents" name="test_menu_tab_interaction" time="0.026"><failure message="assert None is not None">self = &lt;test_ui_components.TestUIComponents object at 0x0000018BFBD17580&gt;
+qml_component_loader = &lt;function TestUIComponents.qml_component_loader.&lt;locals&gt;._load_component at 0x0000018B80A15EA0&gt;
+
+    @pytest.mark.skipif(os.environ.get('CI') == 'true',
+                       reason="Interaktive Tests werden in CI-Umgebungen übersprungen")
+    def test_menu_tab_interaction(self, qml_component_loader):
+        """Testet die Interaktion mit den Menü-Tabs."""
+        # Arrange
+        menu_tab = qml_component_loader("MenuTab.ui.qml")
+&gt;       assert menu_tab is not None
+E       assert None is not None
+
+tests\test_ui_components.py:83: AssertionError</failure></testcase><testcase classname="Python.tests.test_ui_components.TestUIComponents" name="test_parameter_view_model" time="0.003"><failure message="ModuleNotFoundError: No module named 'RZGCSContent'">self = &lt;test_ui_components.TestUIComponents object at 0x0000018BFBD17A30&gt;
+app = &lt;PySide6.QtWidgets.QApplication(0x18be4131a80) at 0x0000018BFBD26480&gt;
+
+    def test_parameter_view_model(self, app):
+        """Testet das ParameterViewModel."""
+        # Import hier, damit QApplication bereits existiert
+&gt;       from RZGCSContent.ParameterViewModel import ParameterViewModel
+E       ModuleNotFoundError: No module named 'RZGCSContent'
+
+tests\test_ui_components.py:96: ModuleNotFoundError</failure></testcase><testcase classname="Python.tests.test_ui_components.TestUIComponents" name="test_sensor_view_model" time="0.004"><failure message="ModuleNotFoundError: No module named 'RZGCSContent'">self = &lt;test_ui_components.TestUIComponents object at 0x0000018BFBD16D70&gt;
+app = &lt;PySide6.QtWidgets.QApplication(0x18be4131a80) at 0x0000018BFBD26480&gt;
+
+    def test_sensor_view_model(self, app):
+        """Testet das SensorViewModel."""
+        # Import hier, damit QApplication bereits existiert
+&gt;       from RZGCSContent.SensorViewModel import SensorViewModel
+E       ModuleNotFoundError: No module named 'RZGCSContent'
+
+tests\test_ui_components.py:112: ModuleNotFoundError</failure></testcase></testsuite></testsuites>
