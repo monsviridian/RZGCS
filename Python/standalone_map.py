@@ -5,9 +5,14 @@ Eigenständige 3D-Karten-Anwendung für RZGCS
 import os
 import sys
 import math
-from PySide6.QtCore import QUrl, QTimer
-from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
+import time
+import json
+import socket
+import threading
+from PySide6.QtCore import QUrl, QTimer, QObject, Signal, Slot
+from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QPushButton
 from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtWebEngineCore import QWebEngineSettings
 
 class MapWindow(QMainWindow):
     def __init__(self):
@@ -31,8 +36,17 @@ class MapWindow(QMainWindow):
         # HTML-Dateipfad ermitteln
         script_dir = os.path.dirname(os.path.abspath(__file__))
         parent_dir = os.path.dirname(script_dir)
-        html_path = os.path.join(parent_dir, "RZGCSContent", "cesium", "flight_map_local.html")
+        html_path = os.path.join(parent_dir, "RZGCSContent", "cesium", "simple_3d_map.html")
         print(f"Versuche, Karte zu laden: {html_path}")
+        
+        # Aktiviere JavaScript-Debugging
+        self.web_view.page().settings().setAttribute(QWebEngineSettings.JavascriptEnabled, True)
+        self.web_view.page().settings().setAttribute(QWebEngineSettings.LocalContentCanAccessRemoteUrls, True)
+        self.web_view.page().settings().setAttribute(QWebEngineSettings.ErrorPageEnabled, True)
+
+        # Füge Debug-Ausgaben für JavaScript-Fehler hinzu - korrigierte Version
+        # In neueren Versionen von PySide6 verwenden wir die javaScriptConsoleMessage-Überschreibung
+        self.web_view.page().javaScriptConsoleMessage = self._handle_js_console
         
         # Falls die Datei nicht existiert, erstellen wir eine einfache Version
         if not os.path.exists(html_path):
@@ -145,6 +159,12 @@ class MapWindow(QMainWindow):
         
         self.sim_angle = 0
         
+    def _handle_js_console(self, level, message, line, source):
+        """Behandelt JavaScript-Konsolenausgaben für bessere Fehleranalyse"""
+        levels = ["Info", "Warning", "Error", "Debug"]
+        level_str = levels[level] if 0 <= level < len(levels) else "Unknown"
+        print(f"JS {level_str} ({source}:{line}): {message}")
+
     def simulate_drone(self):
         """Simuliert Drohnenbewegung durch JavaScript-Aufruf"""
         # Kreisförmiger Pfad
@@ -160,10 +180,78 @@ class MapWindow(QMainWindow):
         battery = 100 - self.sim_angle / 10
         
         # Position über JavaScript aktualisieren
-        position_json = f'{{"type":"position","lat":{lat},"lon":{lon},"alt":{alt},"speed":{speed},"battery":{battery}}}'
-        js_code = f"window.receiveFromQt('{position_json}');"
-        self.web_view.page().runJavaScript(js_code)
+        try:
+            position_json = json.dumps({
+                "type": "position",
+                "lat": lat,
+                "lon": lon,
+                "alt": alt,
+                "speed": speed,
+                "battery": battery
+            })
+            js_code = f"window.receiveFromQt('{position_json}');"
+            self.web_view.page().runJavaScript(js_code, 0, lambda result: None)
+        except Exception as e:
+            print(f"Fehler bei der Aktualisierung der Drohnenposition: {e}")
 
+class MapServer(threading.Thread):
+    """Socket-Server zum Empfangen von Positionsdaten vom Hauptprogramm"""
+    def __init__(self, map_window, host='127.0.0.1', port=65432):
+        super().__init__(daemon=True)
+        self.map_window = map_window
+        self.host = host
+        self.port = port
+        self.running = True
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.server_socket.bind((self.host, self.port))
+        print(f"Socket-Server gestartet auf {self.host}:{self.port}")
+    
+    def run(self):
+        """Hauptschleife des Servers"""
+        try:
+            self._run_server()
+        except Exception as e:
+            print(f"Fehler im Socket-Server: {e}")
+    
+    def _run_server(self):
+        """Empfängt Daten und verarbeitet sie"""
+        while self.running:
+            try:
+                data, _ = self.server_socket.recvfrom(1024)
+                message = json.loads(data.decode('utf-8'))
+                
+                if message.get('type') == 'position':
+                    # Position an die Karte weitergeben
+                    lat = message.get('lat', 0.0)
+                    lon = message.get('lon', 0.0)
+                    alt = message.get('alt', 0.0)
+                    speed = message.get('speed', 0.0)
+                    battery = message.get('battery', 0.0)
+                    
+                    position_json = json.dumps(message)
+                    js_code = f"window.receiveFromQt('{position_json}');"
+                    
+                    # JavaScript im UI-Thread ausführen
+                    QApplication.instance().postEvent(
+                        self.map_window,
+                        ExecuteJavaScriptEvent(js_code)
+                    )
+            except Exception as e:
+                print(f"Fehler beim Empfangen von Daten: {e}")
+                time.sleep(0.1)
+    
+    def stop(self):
+        """Stoppt den Server"""
+        self.running = False
+        self.server_socket.close()
+
+# Event-Klasse für sicheren JavaScript-Aufruf aus einem Thread
+class ExecuteJavaScriptEvent(QObject):
+    def __init__(self, js_code):
+        super().__init__()
+        self.js_code = js_code
+
+# Hauptfunktion
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     
@@ -171,6 +259,14 @@ if __name__ == "__main__":
     os.environ["QTWEBENGINE_REMOTE_DEBUGGING"] = "9222"
     
     window = MapWindow()
+    
+    # Starte den Socket-Server für die Kommunikation mit dem Hauptprogramm
+    server = MapServer(window)
+    server.start()
+    
     window.show()
     
-    sys.exit(app.exec())
+    # Start the application
+    exit_code = app.exec()
+    server.stop()
+    sys.exit(exit_code)

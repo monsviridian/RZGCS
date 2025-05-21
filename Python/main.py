@@ -13,6 +13,8 @@ from backend.serial_connector import SerialConnector
 from backend.sensorviewmodel import SensorViewModel
 from backend.parameter_model import ParameterTableModel
 from backend.flight_view_controller import FlightViewController
+from backend.calibration_view_controller import CalibrationViewController
+from backend.motor_test_controller import MotorTestController
 
 class Backend(QObject):
     def __init__(self):
@@ -71,6 +73,9 @@ def main():
         print("Initialisiere 3D-Kartenansicht...")
         flight_controller = FlightViewController(engine)
         
+        # Registriere den FlightViewController im QML-Kontext
+        engine.rootContext().setContextProperty("flightViewController", flight_controller)
+        
         # Initialize flight controller with root object
         root_object = engine.rootObjects()[0]
         flight_map_view = flight_controller.initialize(root_object)
@@ -83,6 +88,42 @@ def main():
         print(f"Fehler bei der Initialisierung der 3D-Kartenansicht: {str(e)}")
         print("Die Anwendung wird ohne 3D-Karte fortgesetzt.")
         flight_map_view = None
+        
+    # Initialisiere den Kalibrierungs-Controller
+    try:
+        print("Initialisiere Kalibrierungsansicht...")
+        calibration_controller = CalibrationViewController(engine)
+        
+        # Registriere den Controller im QML-Kontext
+        engine.rootContext().setContextProperty("calibrationViewController", calibration_controller)
+        
+        # Initialisiere mit Root-Objekt
+        root_object = engine.rootObjects()[0]
+        if calibration_controller.initialize(root_object):
+            print("Kalibrierungsansicht erfolgreich initialisiert")
+        else:
+            print("Warnung: Kalibrierungsansicht konnte nicht initialisiert werden")
+    except Exception as e:
+        print(f"Fehler bei der Initialisierung der Kalibrierungsansicht: {str(e)}")
+        print("Die Anwendung wird ohne Kalibrierungsfunktion fortgesetzt.")
+        
+    # Initialisiere den Motor-Test-Controller
+    try:
+        print("Initialisiere Motor-Test-Ansicht...")
+        motor_test_controller = MotorTestController(engine)
+        
+        # Registriere den Controller im QML-Kontext
+        engine.rootContext().setContextProperty("motorTestController", motor_test_controller)
+        
+        # Initialisiere mit Root-Objekt
+        root_object = engine.rootObjects()[0]
+        if motor_test_controller.initialize(root_object):
+            print("Motor-Test-Ansicht erfolgreich initialisiert")
+        else:
+            print("Warnung: Motor-Test-Ansicht konnte nicht initialisiert werden")
+    except Exception as e:
+        print(f"Fehler bei der Initialisierung der Motor-Test-Ansicht: {str(e)}")
+        print("Die Anwendung wird ohne Motor-Test-Funktion fortgesetzt.")
         
     return app.exec()
 

@@ -26,7 +26,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 40
-            color: "#0d52a4"
+            color: "#000000"
             radius: 5
             
             RowLayout {
@@ -44,7 +44,7 @@ Item {
                 
                 Text {
                     id: updateTime
-                    text: "Letzte Aktualisierung: " + new Date().toLocaleTimeString()
+                    text: "Last Update: " + new Date().toLocaleTimeString()
                     color: "white"
                     font.pixelSize: 12
                 }

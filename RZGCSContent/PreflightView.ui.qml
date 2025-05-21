@@ -17,11 +17,11 @@ Item {
     width: parent.width
     height: parent.height
 
-    // Schwarzer Hintergrund
+    // Black background
     Rectangle {
         anchors.fill: parent
         color: "black"
-        z: -1  // Hinter allen Elementen
+        z: -1  // Behind all elements
     }
 
     // Status Bar
@@ -317,7 +317,7 @@ Item {
                 }
             }
             
-            // Rotationswerte und Steuerungshilfe
+            // Rotation values and control aids
             Column {
                 anchors.bottom: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -422,7 +422,7 @@ Item {
             }
         }
         
-        // Kompakte Log-Ansicht (10% der Höhe)
+        // Compact log view (10% of height)
         Rectangle {
             id: logArea
             anchors.top: modelView.bottom
@@ -490,7 +490,7 @@ Item {
         }
     }
     
-    // Timer für Sensor-Updates (3D-Modell, GPS und Batterie)
+    // Timer for sensor updates (3D model, GPS and battery)
     Timer {
         id: sensorUpdateTimer
         interval: 50
