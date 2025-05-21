@@ -7,70 +7,70 @@ QML_IMPORT_MAJOR_VERSION = 1
 @QmlElement
 class MotorTestController(QObject):
     """
-    Controller fu00fcr die Motortest-Ansicht.
-    Diese Klasse stellt Funktionen zum Testen der Motoren bereit.
+    Controller for the motor test view.
+    This class provides functions for testing the motors.
     """
     
-    # Signale
-    motorStatusChanged = Signal(int, bool, str)  # Motor-Nr, Lu00e4uft?, Statustext
-    logMessageAdded = Signal(str)  # Lognachricht
-    testProgressChanged = Signal(float, str)  # Fortschritt, Status
-    testFinished = Signal(bool, str)  # Erfolgreich?, Statustext
-    motorRPMChanged = Signal(int, int)  # Motor-Nr, RPM
+    # Signals
+    motorStatusChanged = Signal(int, bool, str)  # Motor number, Running?, Status text
+    logMessageAdded = Signal(str)  # Log message
+    testProgressChanged = Signal(float, str)  # Progress, Status
+    testFinished = Signal(bool, str)  # Successful?, Status text
+    motorRPMChanged = Signal(int, int)  # Motor number, RPM
     
     def __init__(self, parent=None):
         super().__init__(parent)
         self._test_in_progress = False
-        self._test_mode = "single"  # Optionen: "single", "sequence", "all"
+        self._test_mode = "single"  # Options: "single", "sequence", "all"
         self._throttle = 30.0  # 0-100%
-        self._active_motors = [False, False, False, False]  # Status fu00fcr Motor 1-4
+        self._active_motors = [False, False, False, False]  # Status for motors 1-4
         self._sequence_timer = QTimer(self)
         self._sequence_timer.timeout.connect(self._sequence_step)
         self._current_sequence_motor = 0
-        self._sequence_duration = 1000  # ms pro Motor in der Sequenz
+        self._sequence_duration = 1000  # ms per motor in the sequence
     
     @Slot()
     def initialize(self, root_item):
         """
-        Initialisiert den Controller und verbindet ihn mit dem QML-Root-Item.
+        Initializes the controller and connects it to the QML root item.
         """
-        print("Initialisiere MotorTestController")
-        self.logMessageAdded.emit("Motortest-Controller initialisiert")
+        print("Initializing MotorTestController")
+        self.logMessageAdded.emit("Motor test controller initialized")
         return True
     
     @Slot(str)
     def setTestMode(self, mode):
         """
-        Setzt den Testmodus.
-        mode: "single", "sequence" oder "all"
+        Sets the test mode.
+        mode: "single", "sequence" or "all"
         """
         if mode in ["single", "sequence", "all"]:
             self._test_mode = mode
-            print(f"Testmodus auf {mode} gestellt")
-            self.logMessageAdded.emit(f"Testmodus: {self._get_mode_description(mode)}")
+            print(f"Test mode set to {mode}")
+            self.logMessageAdded.emit(f"Test mode: {self._get_mode_description(mode)}")
     
     def _get_mode_description(self, mode):
         if mode == "single":
-            return "Einzeltest (einen Motor manuell auswu00e4hlen)"
+            return "Single test (select one motor manually)"
         elif mode == "sequence":
-            return "Sequenztest (Motoren nacheinander testen)"
+            return "Sequence test (test motors one after another)"
         elif mode == "all":
-            return "Alle Motoren gleichzeitig testen"
-        return "Unbekannter Modus"
+            return "Test all motors simultaneously"
+        return "Unknown mode"
     
     @Slot(float)
     def setThrottle(self, throttle):
         """
-        Setzt die Motorleistung (0-100%).
+        Sets the motor power (0-100%).
         """
         self._throttle = max(0, min(100, throttle))
-        # Wenn wir im Testmodus sind, aktualisiere die laufenden Motoren
+        # If we are in test mode, update the running motors
         if self._test_in_progress:
             self._update_active_motors()
             
     def _update_active_motors(self):
         """
-        Aktualisiert die aktiven Motoren basierend auf dem aktuellen Testmodus und Throttle.
+        Updates the active motors based on the current test mode and throttle.
         """
         for i in range(4):
             if self._active_motors[i]:
@@ -80,92 +80,92 @@ class MotorTestController(QObject):
     @Slot(int)
     def testMotor(self, motor_number):
         """
-        Testet einen bestimmten Motor (1-4).
-        Nur im Einzeltestmodus wirksam.
+        Tests a specific motor (1-4).
+        Only effective in single test mode.
         """
         if not self._test_in_progress:
-            self.logMessageAdded.emit("Bitte starten Sie zuerst den Test mit dem 'Start Test' Button")
+            self.logMessageAdded.emit("Please start the test first with the 'Start Test' button")
             return
             
         if self._test_mode != "single":
-            self.logMessageAdded.emit("Motorauswahl ist nur im Einzeltestmodus verfu00fcgbar")
+            self.logMessageAdded.emit("Motor selection is only available in single test mode")
             return
             
-        # Motorindex (0-3)
+        # Motor index (0-3)
         idx = motor_number - 1
         if 0 <= idx < 4:
-            # Toggeln des Motorstatus
-            self._active_motors = [False, False, False, False]  # Alle zuru00fccksetzen
+            # Toggle the motor status
+            self._active_motors = [False, False, False, False]  # Reset all
             self._active_motors[idx] = True
             self._send_motor_command(motor_number, self._throttle)
             self.motorStatusChanged.emit(
-                motor_number, True, f"Motor {motor_number} aktiv mit {self._throttle:.0f}% Leistung")
-            self.logMessageAdded.emit(f"Motor {motor_number} wird getestet mit {self._throttle:.0f}% Leistung")
+                motor_number, True, f"Motor {motor_number} active with {self._throttle:.0f}% power")
+            self.logMessageAdded.emit(f"Testing motor {motor_number} with {self._throttle:.0f}% power")
             self.motorRPMChanged.emit(motor_number, int(self._throttle * 50))  # Simulierter RPM-Wert
     
     @Slot()
     def startTest(self):
         """
-        Startet den Motortest entsprechend dem ausgewu00e4hlten Modus.
+        Starts the motor test according to the selected mode.
         """
         if self._test_in_progress:
             self.stopTest()
             
         self._test_in_progress = True
-        self.testProgressChanged.emit(0.0, "Test gestartet")
-        self.logMessageAdded.emit(f"Starte Motortest im Modus: {self._get_mode_description(self._test_mode)}")
+        self.testProgressChanged.emit(0.0, "Test started")
+        self.logMessageAdded.emit(f"Starting motor test in mode: {self._get_mode_description(self._test_mode)}")
         
         if self._test_mode == "sequence":
-            # Starte den Sequenztest
+            # Start the sequence test
             self._current_sequence_motor = 0
             self._sequence_timer.start(self._sequence_duration)
-            self._sequence_step()  # Ersten Schritt sofort ausfu00fchren
+            self._sequence_step()  # Execute the first step immediately
         elif self._test_mode == "all":
-            # Aktiviere alle Motoren
+            # Activate all motors
             self._active_motors = [True, True, True, True]
             for i in range(4):
                 self._send_motor_command(i+1, self._throttle)
-                self.motorStatusChanged.emit(i+1, True, f"Motor {i+1} aktiv")
-                self.motorRPMChanged.emit(i+1, int(self._throttle * 50))  # Simulierter RPM-Wert
-        else:  # "single"-Modus
-            self.logMessageAdded.emit("Bitte wu00e4hlen Sie einen Motor, indem Sie darauf klicken")
-            # Alle Motoren zunu00e4chst deaktivieren
+                self.motorStatusChanged.emit(i+1, True, f"Motor {i+1} active")
+                self.motorRPMChanged.emit(i+1, int(self._throttle * 50))  # Simulated RPM value
+        else:  # "single" mode
+            self.logMessageAdded.emit("Please select a motor by clicking on it")
+            # First deactivate all motors
             self._active_motors = [False, False, False, False]
             for i in range(4):
                 self._send_motor_command(i+1, 0)
-                self.motorStatusChanged.emit(i+1, False, f"Motor {i+1} inaktiv")
+                self.motorStatusChanged.emit(i+1, False, f"Motor {i+1} inactive")
                 self.motorRPMChanged.emit(i+1, 0)
     
     def _sequence_step(self):
         """
-        Fu00fchrt einen Schritt im Sequenztest aus.
+        Executes a step in the sequence test.
         """
         if not self._test_in_progress or self._test_mode != "sequence":
             self._sequence_timer.stop()
             return
             
-        # Alle Motoren deaktivieren
+        # Deactivate all motors
         self._active_motors = [False, False, False, False]
         
-        # Aktuellen Motor aktivieren
+        # Activate current motor
         self._active_motors[self._current_sequence_motor] = True
         motor_number = self._current_sequence_motor + 1
         
-        # Kommando senden
+        # Send command
         self._send_motor_command(motor_number, self._throttle)
         self.motorStatusChanged.emit(
-            motor_number, True, f"Motor {motor_number} aktiv mit {self._throttle:.0f}% Leistung")
-        self.logMessageAdded.emit(f"Teste Motor {motor_number} mit {self._throttle:.0f}% Leistung")
-        self.motorRPMChanged.emit(motor_number, int(self._throttle * 50))  # Simulierter RPM-Wert
+            motor_number, True, f"Motor {motor_number} active with {self._throttle:.0f}% power")
+        self.logMessageAdded.emit(f"Testing motor {motor_number} with {self._throttle:.0f}% power")
+        self.motorRPMChanged.emit(motor_number, int(self._throttle * 50))  # Simulated RPM value
         
-        # Fortschritt aktualisieren (0-100%)
+        # Update progress (0-100%)
         progress = (self._current_sequence_motor / 4.0) * 100.0
-        self.testProgressChanged.emit(progress, f"Teste Motor {motor_number}")
+        self.testProgressChanged.emit(progress, f"Testing motor {motor_number}")
         
-        # Zum nu00e4chsten Motor
+        # Move to next motor
         self._current_sequence_motor = (self._current_sequence_motor + 1) % 4
         
-        # Wenn wir wieder beim ersten Motor angekommen sind, stoppe nach einer Runde
+        # If we've reached the first motor again, stop after one round
         if self._current_sequence_motor == 0:
             self._sequence_timer.stop()
             self.stopTest()
@@ -173,46 +173,47 @@ class MotorTestController(QObject):
     @Slot()
     def stopTest(self):
         """
-        Stoppt alle laufenden Motortests.
+        Stops all running motor tests.
         """
         self._test_in_progress = False
         self._sequence_timer.stop()
         
-        # Alle Motoren stoppen
+        # Stop all motors
         self._active_motors = [False, False, False, False]
         for i in range(4):
             self._send_motor_command(i+1, 0)
-            self.motorStatusChanged.emit(i+1, False, f"Motor {i+1} gestoppt")
+            self.motorStatusChanged.emit(i+1, False, f"Motor {i+1} stopped")
             self.motorRPMChanged.emit(i+1, 0)
             
-        self.testFinished.emit(True, "Test beendet")
-        self.logMessageAdded.emit("Motortest gestoppt")
+        self.testFinished.emit(True, "Test finished")
+        self.logMessageAdded.emit("Motor test stopped")
     
     @Slot()
     def runSafetyCheck(self):
         """
-        Fu00fchrt einen Sicherheitscheck aus, um sicherzustellen, dass die Motoren funktionsfu00e4hig sind.
+        Performs a safety check to ensure that the motors are functioning properly.
         """
-        self.logMessageAdded.emit("Fu00fchre Sicherheitscheck durch...")
+        self.logMessageAdded.emit("Performing safety check...")
         
-        # Hier wu00fcrde man in einer realen Implementierung die 
-        # Motoren und ESCs auf korrekte Verbindung und Funktion pru00fcfen
+        # In a real implementation, you would check the
+        # motors and ESCs for correct connection and function
         
-        # In dieser Demo-Implementierung geben wir nur Status-Updates aus
-        QTimer.singleShot(500, lambda: self.logMessageAdded.emit("Pru00fcfe ESC Verbindungen..."))
-        QTimer.singleShot(1000, lambda: self.logMessageAdded.emit("Pru00fcfe Motoranschlu00fcsse..."))
-        QTimer.singleShot(1500, lambda: self.logMessageAdded.emit("Teste Motorreaktion..."))
-        QTimer.singleShot(2000, lambda: self.logMessageAdded.emit("Sicherheitscheck abgeschlossen: Alle Motoren bereit"))
+        # In this demo implementation, we only output status updates
+        QTimer.singleShot(500, lambda: self.logMessageAdded.emit("Checking ESC connections..."))
+        QTimer.singleShot(1000, lambda: self.logMessageAdded.emit("Checking motor connections..."))
+        QTimer.singleShot(1500, lambda: self.logMessageAdded.emit("Testing motor response..."))
+        QTimer.singleShot(2000, lambda: self.logMessageAdded.emit("Calibrating ESCs..."))
+        QTimer.singleShot(2500, lambda: self.logMessageAdded.emit("Safety check completed. All motors are operational."))
     
     def _send_motor_command(self, motor_number, throttle):
         """
-        Sendet einen Motorbefehl an die Hardware.
+        Sends a motor command to the hardware.
         
-        In einer realen Implementierung wu00fcrden wir hier MAVLink-Befehle senden.
-        In dieser Demo-Version geben wir nur Logs aus.
+        In a real implementation, we would send MAVLink commands here.
+        In this demo version, we only output logs.
         """
-        # Hier wu00fcrde man MAVLink-Befehle senden, z.B. RC_CHANNELS_OVERRIDE
-        print(f"Sende Motorbefehl: Motor {motor_number}, Throttle: {throttle:.1f}%")
+        # Here you would send MAVLink commands, e.g. RC_CHANNELS_OVERRIDE
+        print(f"Sending motor command: Motor {motor_number}, Throttle: {throttle:.1f}%")
         
-        # Wir ku00f6nnten hier spu00e4ter eine Verbindung zum MAVLink-System herstellen
+        # We could later establish a connection to the MAVLink system here
         # self._mavlink.send_command(motor_number, throttle)
