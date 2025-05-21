@@ -1,6 +1,6 @@
 # RZGCS - Drone Control System
 
-A user-friendly drone control software for Mac.
+A user-friendly drone control software.
 
 ## Documentation
 
