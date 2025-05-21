@@ -3,6 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <title>RZGCS - 3D Flight Map (Local Version)</title>
+    <!-- Offline-Fallback-Mechanismus -->
+    <script>
+        // Flag, ob Cesium erfolgreich geladen wurde
+        window.cesiumLoaded = false;
+        
+        // Funktion zum Umschalten auf 2D-Fallback
+        function enableFallbackMode() {
+            console.log('Fallback-Modus aktiviert');
+            document.querySelector('.map-background').style.display = 'block';
+            document.querySelector('.grid-overlay').style.display = 'block';
+            document.getElementById('cesiumContainer').style.display = 'none';
+            document.getElementById('loadingMessage').style.display = 'none';
+        }
+        
+        // Timeout für Ladevorgang
+        setTimeout(function() {
+            if (!window.cesiumLoaded) {
+                console.log('Cesium konnte nicht geladen werden, aktiviere Fallback');
+                enableFallbackMode();
+            }
+        }, 5000); // 5 Sekunden Timeout
+    </script>
+    
+    <!-- Cesium-Bibliothek (mit Fallback) -->
+    <script>
+        try {
+            // Versuche, Cesium über HTTPS zu laden
+            const cesiumScript = document.createElement('script');
+            cesiumScript.src = "https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Cesium.js";
+            cesiumScript.onerror = function() {
+                console.error('Fehler beim Laden von Cesium.js');
+                enableFallbackMode();
+            };
+            document.head.appendChild(cesiumScript);
+            
+            // Lade die CSS
+            const cesiumCss = document.createElement('link');
+            cesiumCss.rel = "stylesheet";
+            cesiumCss.href = "https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Widgets/widgets.css";
+            document.head.appendChild(cesiumCss);
+        } catch (e) {
+            console.error('Fehler beim Laden von Cesium:', e);
+            enableFallbackMode();
+        }
+    </script>
     <style>
         html, body { 
             width: 100%; 
@@ -113,8 +158,24 @@
 </head>
 <body>
     <div id="mapContainer">
-        <div class="map-background"></div>
-        <div class="grid-overlay"></div>
+        <div id="cesiumContainer" style="width: 100%; height: 100%;"></div>
+        
+        <!-- Ladeindikator -->
+        <div id="loadingMessage" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0,0,0,0.7); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 18px; margin-bottom: 15px;">Cesium 3D-Karte wird geladen...</div>
+            <div style="width: 50px; height: 50px; border: 5px solid #ccc; border-top-color: #4CAF50; border-radius: 50%; margin: 0 auto; animation: spin 1s linear infinite;"></div>
+        </div>
+        
+        <!-- Fallback, wenn Cesium nicht geladen werden kann -->
+        <div class="map-background" style="display: none;"></div>
+        <div class="grid-overlay" style="display: none;"></div>
+        
+        <style>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
         
         <div id="drone">
             <div style="position: absolute; top: -25px; left: 15px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 3px 8px; border-radius: 10px; font-size: 12px; white-space: nowrap;">RZGCS Drone</div>
@@ -281,8 +342,127 @@
             testPathIndex = (testPathIndex + 1) % 360;
         }
         
-        // Starte die Simulation
-        setInterval(simulateDroneMovement, 100);
+        // Initialisiere Cesium
+        var viewer;
+        var initialized = false;
+        
+        function initCesium() {
+            try {
+                // Prüfe, ob Cesium verfügbar ist
+                if (typeof Cesium === 'undefined') {
+                    console.error('Cesium ist nicht definiert');
+                    enableFallbackMode();
+                    return false;
+                }
+                
+                // Markiere Cesium als geladen
+                window.cesiumLoaded = true;
+                
+                // Cesium ion Token (wichtig für Terra-Server-Zugriff)
+                Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4OTMxOWFlZC0yNWRhLTQzYmEtYjA1Ni1jZjY5OTYxOTgyNjgiLCJpZCI6MjA1OSwic2NvcGVzIjpbImFzciIsImdjIl0sImlhdCI6MTU0MTYxODM3MH0.k1EfBQQRJGoYwJGGHFg6ScMnF1W0DiY7SLsYsLJcvVE';
+                
+                // Erstelle den Cesium Viewer mit vereinfachten Optionen für bessere Leistung
+                viewer = new Cesium.Viewer('cesiumContainer', {
+                    // Nutze eine einfachere Terrainquelle für bessere Offline-Kompatibilität
+                    terrainProvider: Cesium.createWorldTerrain({
+                        requestWaterMask: false,
+                        requestVertexNormals: false
+                    }),
+                    // UI-Elemente reduzieren für bessere Leistung
+                    timeline: false,
+                    animation: false,
+                    sceneModePicker: false,
+                    baseLayerPicker: false,
+                    navigationHelpButton: false,
+                    homeButton: false,
+                    fullscreenButton: false,
+                    infoBox: false,
+                    selectionIndicator: false,
+                    // Performance-Einstellungen
+                    requestRenderMode: true,            // Rendert nur bei Bedarf für bessere Leistung
+                    maximumScreenSpaceError: 4,        // Reduziert Detail für bessere Leistung
+                    targetFrameRate: 30,                // Ziel-Framerate festlegen
+                    useBrowserRecommendedResolution: true  // Verwende empfohlene Auflösung
+                });
+                
+                // Initialisiere die Kamera auf Deutschland
+                viewer.camera.setView({
+                    destination: Cesium.Cartesian3.fromDegrees(10.0, 51.0, 500000.0)
+                });
+                
+                // Verberge Ladeindikator und Fallback-Elemente
+                document.querySelector('.map-background').style.display = 'none';
+                document.querySelector('.grid-overlay').style.display = 'none';
+                document.getElementById('loadingMessage').style.display = 'none';
+                
+                initialized = true;
+                console.log('Cesium erfolgreich initialisiert');
+                
+                // Erstelle Drone Entity
+                addDroneEntity(51.505600, 7.452400, 100.0);
+                
+                return true;
+            } catch (error) {
+                console.error('Fehler beim Initialisieren von Cesium:', error);
+                enableFallbackMode();
+                return false;
+            }
+        }
+        
+        function addDroneEntity(lat, lon, alt) {
+            if (!initialized) return;
+            
+            viewer.entities.add({
+                position: Cesium.Cartesian3.fromDegrees(lon, lat, alt),
+                name: 'RZGCS Drone',
+                point: {
+                    pixelSize: 15,
+                    color: Cesium.Color.RED,
+                    outlineColor: Cesium.Color.WHITE,
+                    outlineWidth: 2
+                },
+                label: {
+                    text: 'RZGCS Drone',
+                    font: '14pt sans-serif',
+                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                    outlineWidth: 2,
+                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                    pixelOffset: new Cesium.Cartesian2(0, -9)
+                }
+            });
+        }
+        
+        // Event-Listener für Cesium
+        window.addEventListener('load', function() {
+            // Prüfe, ob Cesium bereits geladen ist
+            if (typeof Cesium !== 'undefined') {
+                initCesium();
+            } else {
+                // Wenn Cesium noch nicht geladen ist, versuche es erneut in 1 Sekunde
+                console.log('Warte auf Cesium...');
+                setTimeout(function() {
+                    if (typeof Cesium !== 'undefined') {
+                        initCesium();
+                    } else {
+                        console.error('Cesium konnte nicht geladen werden');
+                        enableFallbackMode();
+                    }
+                }, 1000);
+            }
+        });
+        
+        // Starte das Laden von Cesium direkt
+        if (typeof Cesium !== 'undefined') {
+            console.log('Cesium bereits verfügbar, initialisiere sofort');
+            setTimeout(initCesium, 100);  // Kleiner Verzögerung für sicheres DOM-Laden
+        }
+        
+        // Starte die Simulation nur für den 2D-Fallback
+        setInterval(function() {
+            if (!initialized) {
+                simulateDroneMovement();
+            }
+        }, 100);
         
         // Bei Klick auf die Karte
         document.getElementById('mapContainer').addEventListener('click', function(e) {

@@ -10,14 +10,12 @@ from PySide6.QtCore import QObject, Signal, Slot, Property, QUrl, Qt
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QLabel
 from PySide6.QtGui import QColor, QFont
 
-# Versuche WebEngine-Module zu importieren, biete Fallback wenn nicht verfügbar
-try:
-    from PySide6.QtWebChannel import QWebChannel
-    from PySide6.QtWebEngineWidgets import QWebEngineView
-    HAS_WEBENGINE = True
-except ImportError:
-    HAS_WEBENGINE = False
-    print("[WARNUNG] QtWebEngine nicht verfügbar - 3D-Karte wird durch Platzhalter ersetzt")
+# Importiere unsere einfache Kartenansicht
+from .simple_map_view import SimpleMapView
+
+# Flag für WebEngine setzen wir auf False, um unsere eigene Implementierung zu verwenden
+HAS_WEBENGINE = False
+print("[INFO] Verwende vereinfachte 2D-Kartenansicht anstelle von WebEngine")
 
 class FlightMapBridge(QObject):
     """Brücke für die Kommunikation zwischen Python und JavaScript."""
@@ -165,7 +163,7 @@ class FlightMapBridge(QObject):
 
 
 class FlightMapView(QWidget):
-    """Widget für die Darstellung der Cesium-3D-Karte."""
+    """Widget für die Darstellung der Flugkarte."""
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -176,80 +174,73 @@ class FlightMapView(QWidget):
         # Bridge für die Kommunikation
         self.bridge = FlightMapBridge(self)
         
-        # HTML-Pfad bestimmen - verwende die lokale Version
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-        # Wenn die lokale Version existiert, verwende diese, ansonsten die normale Version
-        local_html_path = os.path.join(base_dir, 'RZGCSContent', 'cesium', 'flight_map_local.html')
-        normal_html_path = os.path.join(base_dir, 'RZGCSContent', 'cesium', 'flight_map.html')
+        print("[INFO] Initialisiere vereinfachte 2D-Kartenansicht...")
         
-        if os.path.exists(local_html_path):
-            html_path = local_html_path
-            print(f"[INFO] Verwende lokale Kartenversion: {local_html_path}")
-        else:
-            html_path = normal_html_path
-            print(f"[INFO] Verwende Standard-Kartenversion: {normal_html_path}")
-        
-        if HAS_WEBENGINE:
-            try:
-                # WebEngine-View erstellen
-                self.webview = QWebEngineView(self)
-                self.layout.addWidget(self.webview)
-                
-                # WebChannel für die Kommunikation zwischen QML/Python und JavaScript
-                self.channel = QWebChannel()
-                self.channel.registerObject("flightMap", self.bridge)
-                self.webview.page().setWebChannel(self.channel)
-                
-                # JavaScript-Funktion definieren, um Nachrichten zu senden
-                self.bridge.sendToJavaScript = self.send_to_javascript
-                
-                # Debugging ist in dieser Version nicht verfügbar
-                # Alternativer Debug-Ansatz durch Logging
-                print("[DEBUG] WebEngine wird initialisiert")
-                
-                # Ladefortschritt überwachen
-                self.webview.loadStarted.connect(lambda: print("[DEBUG] WebEngine: Laden gestartet"))
-                self.webview.loadFinished.connect(lambda ok: print(f"[DEBUG] WebEngine: Laden beendet: {'Erfolgreich' if ok else 'Fehlgeschlagen'}"))
-                
-                # HTML-Datei laden
-                abs_path = os.path.abspath(html_path)
-                url = QUrl.fromLocalFile(abs_path)
-                print(f"[INFO] 3D-Karte wird geladen: {abs_path} (URL: {url.toString()})")
-                self.webview.load(url)
-            except Exception as e:
-                print(f"[FEHLER] Beim Laden der 3D-Karte: {str(e)}")
-                self._create_fallback_view()
-        else:
+        # Verwende unsere garantiert funktionierende SimpleMapView
+        try:
+            # Erstelle die einfache Kartenansicht
+            self.map_view = SimpleMapView(self)
+            self.layout.addWidget(self.map_view)
+            
+            # Verbinde Signale und Slots
+            self.map_view.positionClicked.connect(self.bridge.mapClicked)
+            
+            # Definiere die Funktion zum Senden von Daten an die Karte
+            self.bridge.sendToJavaScript = self.send_to_map_view
+            
+            print("[INFO] 2D-Kartenansicht erfolgreich initialisiert")
+        except Exception as e:
+            print(f"[FEHLER] Beim Initialisieren der 2D-Karte: {str(e)}")
             self._create_fallback_view()
     
     def _create_fallback_view(self):
-        """Erstellt eine Fallback-Ansicht wenn WebEngine nicht verfügbar ist."""
-        label = QLabel("3D-Karte nicht verfügbar\n\nStellen Sie sicher, dass PySide6 mit\nWebEngine-Unterstützung installiert ist.")
+        """Erstellt eine Fallback-Ansicht wenn die Karte nicht initialisiert werden kann."""
+        label = QLabel("Kartenansicht nicht verfügbar\n\nEs ist ein Fehler bei der Initialisierung\nder Karte aufgetreten.")
         label.setAlignment(Qt.AlignCenter)
-        label.setStyleSheet("background-color: #333333; color: #cccccc;")
-        font = QFont()
-        font.setPointSize(12)
-        label.setFont(font)
+        label.setStyleSheet("background-color: #003366; color: white; font-size: 14pt;")
         self.layout.addWidget(label)
+        print("Warnung: Kartenansicht konnte nicht initialisiert werden")
     
-    def send_to_javascript(self, message):
-        """Sendet eine Nachricht an JavaScript."""
-        if HAS_WEBENGINE and hasattr(self, 'webview'):
+    def send_to_map_view(self, message):
+        """Sendet eine Nachricht an die Kartenansicht."""
+        if hasattr(self, 'map_view'):
             try:
-                js = f"window.receiveFromQt('{message}');"
-                self.webview.page().runJavaScript(js)
+                # JSON-Nachricht parsen und an die Karte weiterleiten
+                data = json.loads(message)
+                if data.get('type') == 'position':
+                    # Drohnenposition aktualisieren
+                    self.map_view.update_drone_position(
+                        data.get('lat'), 
+                        data.get('lon'), 
+                        data.get('alt'),
+                        data.get('heading'),
+                        data.get('speed'),
+                        data.get('battery')
+                    )
             except Exception as e:
-                print(f"[FEHLER] Beim Senden an JavaScript: {str(e)}")
+                print(f"[FEHLER] Beim Senden an MapView: {str(e)}")
+        else:
+            print("[WARNUNG] Kann keine Nachricht senden: MapView nicht verfügbar")
     
-    def update_drone_position(self, lat, lon, alt, speed=None, battery=None):
+    def update_drone_position(self, lat, lon, alt, speed=None, battery=None, heading=None):
         """Aktualisiert die Drohnenposition."""
-        try:
-            if speed is not None and battery is not None:
-                self.bridge.updateDroneState(lat, lon, alt, speed, battery)
-            else:
-                self.bridge.updateDronePosition(lat, lon, alt)
-        except Exception as e:
-            print(f"[FEHLER] Beim Aktualisieren der Drohnenposition: {str(e)}")
+        data = {
+            'type': 'position',
+            'lat': lat,
+            'lon': lon,
+            'alt': alt
+        }
+        
+        if speed is not None:
+            data['speed'] = speed
+        
+        if battery is not None:
+            data['battery'] = battery
+            
+        if heading is not None:
+            data['heading'] = heading
+        
+        self.bridge.sendToJavaScript(json.dumps(data))
     
     def center_map(self, lat, lon, alt, heading=0, pitch=-30):
         """Zentriert die Karte auf eine bestimmte Position."""

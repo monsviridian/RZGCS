@@ -119,7 +119,7 @@ Item {
 
                 Button {
                     text: serialConnector && serialConnector.connected ? "Disconnect" : "Connect"
-                    Layout.preferredWidth: 100
+                    Layout.preferredWidth: 80
                     background: Rectangle {
                         color: "black"
                         border.color: "gray"
@@ -332,6 +332,34 @@ Item {
                 }
             }
             TabButton {
+                text: "Calibration"
+                contentItem: Text {
+                    text: parent.text
+                    color: "white"
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+                background: Rectangle {
+                    color: parent.checked ? "#303030" : "black"
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                }
+            }
+            TabButton {
+                text: "Motor Test"
+                contentItem: Text {
+                    text: parent.text
+                    color: "white"
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+                background: Rectangle {
+                    color: parent.checked ? "#303030" : "black"
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                }
+            }
+            TabButton {
                 text: "Flight"
                 contentItem: Text {
                     text: parent.text
@@ -378,6 +406,16 @@ Item {
             RZGCS.SensorView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+            }
+            RZGCS.CalibrationView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                controller: calibrationViewController
+            }
+            RZGCS.MotorTestView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                controller: motorTestController
             }
             RZGCS.FlightView {
                 Layout.fillWidth: true
