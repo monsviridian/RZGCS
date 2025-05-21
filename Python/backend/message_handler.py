@@ -14,7 +14,7 @@ class MessageHandler(QObject):
     battery_received = Signal(object)
     status_text_received = Signal(object)
     parameter_received = Signal(object)
-    vfr_hud_received = Signal(object)  # Neues Signal für VFR_HUD
+    vfr_hud_received = Signal(object)  # New signal for VFR_HUD
     error_occurred = Signal(str)
     
     def __init__(self, logger: Logger):
@@ -127,21 +127,21 @@ class MessageHandler(QObject):
         if not self._running or not self._mavlink_connection:
             return
         
-        # Mehrere Nachrichten in einem Zyklus verarbeiten für bessere Leistung
+        # Process multiple messages in one cycle for better performance
         messages_processed = 0
-        max_messages_per_cycle = 10  # Verarbeite bis zu 10 Nachrichten pro Zyklus
+        max_messages_per_cycle = 10  # Process up to 10 messages per cycle
             
         try:
             while messages_processed < max_messages_per_cycle:
                 msg = self._mavlink_connection.recv_match(blocking=False)
                 if not msg:
-                    break  # Keine weiteren Nachrichten in der Warteschlange
+                    break  # No more messages in the queue
                     
                 messages_processed += 1
                 msg_type = msg.get_type()
                 
-                # Wichtige Debug-Ausgabe für Sensorwerte hinzufügen
-                self._logger.addLog(f"Empfange MAVLink-Nachricht: {msg_type}")
+                # Add important debug output for sensor values
+                self._logger.addLog(f"Receiving MAVLink message: {msg_type}")
                 
                 if msg_type == 'HEARTBEAT':
                     self.heartbeat_received.emit(msg)
@@ -176,22 +176,22 @@ class MessageHandler(QObject):
                         voltage = msg.voltage_battery / 1000.0
                         current = msg.current_battery / 100.0
                         remaining = msg.battery_remaining
-                        self._logger.addLog(f"[DEBUG] Batterie: {voltage:.1f}V, {current:.1f}A, {remaining}%")
+                        self._logger.addLog(f"[DEBUG] Battery: {voltage:.1f}V, {current:.1f}A, {remaining}%")
                     except:
                         pass
                     
                 elif msg_type == 'VFR_HUD':
-                    # Direktes Signal für VFR_HUD hinzufügen
+                    # Add direct signal for VFR_HUD
                     try:
                         airspeed = msg.airspeed
                         groundspeed = msg.groundspeed
-                        self._logger.addLog(f"[DEBUG] Geschwindigkeit: Air={airspeed:.1f}m/s, Ground={groundspeed:.1f}m/s")
+                        self._logger.addLog(f"[DEBUG] Speed: Air={airspeed:.1f}m/s, Ground={groundspeed:.1f}m/s")
                         
-                        # VFR_HUD-Signal direkt an SensorModel weiterleiten 
-                        # Signal speziell für VFR_HUD erstellen
+                        # Forward VFR_HUD signal directly to SensorModel
+                        # Create signal specifically for VFR_HUD
                         self.vfr_hud_received.emit(msg)
                     except Exception as vfr_error:
-                        self._logger.addLog(f"Fehler bei VFR_HUD: {str(vfr_error)}")
+                        self._logger.addLog(f"Error with VFR_HUD: {str(vfr_error)}")
                         pass
                     
                 elif msg_type == 'STATUSTEXT':
@@ -201,7 +201,7 @@ class MessageHandler(QObject):
                     self.parameter_received.emit(msg)
                     
         except Exception as e:
-            error_msg = f"Error bei Nachrichtenverarbeitung: {str(e)}"
+            error_msg = f"Error in message processing: {str(e)}"
             self._logger.addLog(error_msg)
             self.error_occurred.emit(error_msg)
             
