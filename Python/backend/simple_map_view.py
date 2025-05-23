@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Simple Map View für RZGCS - Garantiert funktionierendes Kartenmodul ohne externe Abhängigkeiten
+Simple Map View for RZGCS - Guaranteed working map module without external dependencies
 """
 
 import sys
@@ -16,13 +16,13 @@ from PySide6.QtGui import (QPainter, QPen, QBrush, QColor, QFont, QPainterPath,
 
 
 class SimpleMapView(QWidget):
-    """Einfache Kartenansicht für die Integration in RZGCS
+    """Simple map view for integration into RZGCS
     
-    Diese Klasse stellt eine basic 2D-Karte bereit, die keine WebEngine benötigt
-    und in jeder Umgebung garantiert funktioniert.
+    This class provides a basic 2D map that doesn't require a WebEngine
+    and is guaranteed to work in any environment.
     """
     
-    # Signale für Interaktion mit anderen Komponenten
+    # Signals for interaction with other components
     positionClicked = Signal(float, float, float)  # lat, lon, alt
     
     def __init__(self, parent=None):
@@ -42,18 +42,18 @@ class SimpleMapView(QWidget):
         self.max_path_length = 100
         self.show_path = True
         
-        # Kartenparameter
+        # Map parameters
         self.center_lat = self.drone_lat
         self.center_lon = self.drone_lon
-        self.scale = 100000  # Skalierungsfaktor (höhere Werte = mehr Zoom)
-        self.follow_drone = True  # Automatische Verfolgung der Drohne
+        self.scale = 100000  # Scaling factor (higher values = more zoom)
+        self.follow_drone = True  # Automatic drone tracking
         
-        # Layout für UI-Elemente
+        # Layout for UI elements
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         
-        # Status-Label oben
-        self.status_label = QLabel("RZGCS 2D-Karte - Aktiv")
+        # Status label at the top
+        self.status_label = QLabel("RZGCS 2D Map - Active")
         self.status_label.setStyleSheet(
             "background-color: rgba(0, 0, 0, 150); color: white; padding: 5px;"
         )
@@ -61,23 +61,23 @@ class SimpleMapView(QWidget):
         layout.addWidget(self.status_label)
         layout.addStretch()
         
-        # Control-Panel unten
+        # Control panel at the bottom
         control_panel = QWidget()
         control_panel.setStyleSheet(
             "background-color: rgba(0, 0, 0, 150); color: white; padding: 5px;"
         )
         control_layout = QHBoxLayout(control_panel)
         
-        # Buttons für Kartensteuerung
-        center_button = QPushButton("Zentrieren")
+        # Buttons for map control
+        center_button = QPushButton("Center")
         center_button.clicked.connect(self.center_on_drone)
         control_layout.addWidget(center_button)
         
-        self.follow_button = QPushButton("Verfolgen: Ein")
+        self.follow_button = QPushButton("Follow: On")
         self.follow_button.clicked.connect(self.toggle_follow)
         control_layout.addWidget(self.follow_button)
         
-        self.path_button = QPushButton("Pfad: Ein")
+        self.path_button = QPushButton("Path: On")
         self.path_button.clicked.connect(self.toggle_path)
         control_layout.addWidget(self.path_button)
         
@@ -88,29 +88,29 @@ class SimpleMapView(QWidget):
         self.last_mouse_pos = None
     
     def center_on_drone(self):
-        """Zentriert die Karte auf die aktuelle Drohnenposition"""
+        """Centers the map on the current drone position"""
         self.center_lat = self.drone_lat
         self.center_lon = self.drone_lon
         self.update()
     
     def toggle_follow(self):
-        """Schaltet die automatische Verfolgung der Drohne ein/aus"""
+        """Toggles automatic drone tracking on/off"""
         self.follow_drone = not self.follow_drone
-        self.follow_button.setText(f"Verfolgen: {'Ein' if self.follow_drone else 'Aus'}")
+        self.follow_button.setText(f"Follow: {'On' if self.follow_drone else 'Off'}")
         if self.follow_drone:
             self.center_on_drone()
         self.update()
     
     def toggle_path(self):
-        """Schaltet die Anzeige des Flugpfads ein/aus"""
+        """Toggles the display of the flight path on/off"""
         self.show_path = not self.show_path
-        self.path_button.setText(f"Pfad: {'Ein' if self.show_path else 'Aus'}")
+        self.path_button.setText(f"Path: {'On' if self.show_path else 'Off'}")
         self.update()
     
     def update_drone_position(self, lat, lon, alt=None, heading=None, speed=None, battery=None):
-        """Aktualisiert die Drohnenposition und andere Parameter
+        """Updates the drone position and other parameters
         
-        Diese Methode wird von außen aufgerufen, um die Drohnendaten zu aktualisieren.
+        This method is called from outside to update the drone data.
         """
         self.drone_lat = lat
         self.drone_lon = lon
@@ -123,39 +123,39 @@ class SimpleMapView(QWidget):
         if battery is not None:
             self.drone_battery = battery
         
-        # Zur Pfadhistorie hinzufügen
+        # Add to path history
         self.path.append((lat, lon))
         if len(self.path) > self.max_path_length:
             self.path = self.path[-self.max_path_length:]
         
-        # Wenn Verfolgung aktiviert ist, Karte auf Drohne zentrieren
+        # If tracking is enabled, center map on drone
         if self.follow_drone:
             self.center_lat = lat
             self.center_lon = lon
         
-        # Karte neu zeichnen
+        # Redraw map
         self.update()
     
     def clear_path(self):
-        """Löscht den bisherigen Flugpfad"""
+        """Clears the previous flight path"""
         self.path = []
         self.update()
     
     def geo_to_screen(self, lat, lon):
-        """Konvertiert geografische in Bildschirmkoordinaten"""
+        """Converts geographic coordinates to screen coordinates"""
         dx = (lon - self.center_lon) * self.scale
         dy = (lat - self.center_lat) * self.scale
         
-        # Bildschirmkoordinaten (Ursprung in der Mitte)
+        # Screen coordinates (origin in the center)
         x = self.width() / 2 + dx
-        y = self.height() / 2 - dy  # Invertiert, da y nach unten zunimmt
+        y = self.height() / 2 - dy  # Inverted, as y increases downward
         
         return QPointF(x, y)
     
     def screen_to_geo(self, x, y):
-        """Konvertiert Bildschirm- in geografische Koordinaten"""
+        """Converts screen coordinates to geographic coordinates"""
         dx = x - self.width() / 2
-        dy = self.height() / 2 - y  # Invertiert, da y nach unten zunimmt
+        dy = self.height() / 2 - y  # Inverted, as y increases downward
         
         lon = self.center_lon + dx / self.scale
         lat = self.center_lat + dy / self.scale
@@ -163,40 +163,40 @@ class SimpleMapView(QWidget):
         return lat, lon
     
     def paintEvent(self, event):
-        """Zeichnet die Karte und Drohne"""
+        """Draws the map and drone"""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         
-        # Hintergrund - einfacher Farbverlauf (Himmel/Boden)
+        # Background - simple gradient (sky/ground)
         gradient = QLinearGradient(0, 0, 0, self.height())
-        gradient.setColorAt(0, QColor(135, 206, 250))  # Hellblau oben
-        gradient.setColorAt(1, QColor(34, 139, 34))    # Grün unten
+        gradient.setColorAt(0, QColor(135, 206, 250))  # Light blue top
+        gradient.setColorAt(1, QColor(34, 139, 34))    # Green bottom
         painter.fillRect(self.rect(), gradient)
         
-        # Gitter zeichnen
+        # Draw grid
         self.draw_grid(painter)
         
-        # Pfad zeichnen wenn aktiviert
+        # Draw path if enabled
         if self.show_path:
             self.draw_path(painter)
         
-        # Drohne zeichnen
+        # Draw drone
         self.draw_drone(painter)
         
-        # Information anzeigen
+        # Display information
         self.draw_info_panel(painter)
         
-        # Kompass zeichnen
+        # Draw compass
         self.draw_compass(painter)
     
     def draw_grid(self, painter):
-        """Zeichnet ein einfaches Koordinatengitter"""
+        """Draws a simple coordinate grid"""
         painter.setPen(QPen(QColor(255, 255, 255, 80), 1))
         
-        # Grid-Abstand in geografischen Koordinaten
-        grid_spacing = 0.001  # ca. 100m
+        # Grid spacing in geographic coordinates
+        grid_spacing = 0.001  # approx. 100m
         
-        # Sichtbarer Bereich berechnen
+        # Calculate visible area
         width_deg = self.width() / self.scale
         height_deg = self.height() / self.scale
         
@@ -205,13 +205,13 @@ class SimpleMapView(QWidget):
         min_lat = self.center_lat - height_deg / 2
         max_lat = self.center_lat + height_deg / 2
         
-        # Gridlinien abrunden/aufrunden für saubere Darstellung
+        # Round grid lines down/up for clean display
         min_lon_grid = math.floor(min_lon / grid_spacing) * grid_spacing
         max_lon_grid = math.ceil(max_lon / grid_spacing) * grid_spacing
         min_lat_grid = math.floor(min_lat / grid_spacing) * grid_spacing
         max_lat_grid = math.ceil(max_lat / grid_spacing) * grid_spacing
         
-        # Horizontale Linien
+        # Horizontal lines
         lat = min_lat_grid
         while lat <= max_lat_grid:
             start = self.geo_to_screen(lat, min_lon_grid)
@@ -219,7 +219,7 @@ class SimpleMapView(QWidget):
             painter.drawLine(start, end)
             lat += grid_spacing
         
-        # Vertikale Linien
+        # Vertical lines
         lon = min_lon_grid
         while lon <= max_lon_grid:
             start = self.geo_to_screen(min_lat_grid, lon)
@@ -228,7 +228,7 @@ class SimpleMapView(QWidget):
             lon += grid_spacing
     
     def draw_path(self, painter):
-        """Zeichnet den Flugpfad der Drohne"""
+        """Draws the flight path of the drone"""
         if len(self.path) < 2:
             return
         
@@ -245,19 +245,19 @@ class SimpleMapView(QWidget):
         painter.drawPath(path)
     
     def draw_drone(self, painter):
-        """Zeichnet die Drohne als Pfeil in Bewegungsrichtung"""
+        """Draws the drone as an arrow in the direction of movement"""
         drone_pos = self.geo_to_screen(self.drone_lat, self.drone_lon)
         
-        # Drohne als farbiger Kreis mit Pfeil
+        # Drone as a colored circle with arrow
         painter.setPen(QPen(Qt.white, 2))
         painter.setBrush(QBrush(QColor(255, 0, 0, 200)))
         
-        # Größe der Drohne, abhängig vom Zoom
+        # Size of the drone, dependent on zoom
         drone_size = 10
         
         painter.drawEllipse(drone_pos, drone_size, drone_size)
         
-        # Pfeil für Heading
+        # Arrow for heading
         rad_heading = math.radians(self.drone_heading)
         arrow_end = QPointF(
             drone_pos.x() + math.sin(rad_heading) * drone_size * 1.5,
@@ -267,12 +267,12 @@ class SimpleMapView(QWidget):
         painter.drawLine(drone_pos, arrow_end)
     
     def draw_info_panel(self, painter):
-        """Zeigt Informationen zur Drohne an"""
+        """Displays information about the drone"""
         panel_width = 180
         panel_height = 140
         margin = 10
         
-        # Panel in der linken unteren Ecke
+        # Panel in the bottom left corner
         panel_rect = QRectF(
             margin, 
             self.height() - panel_height - margin,
@@ -280,23 +280,23 @@ class SimpleMapView(QWidget):
             panel_height
         )
         
-        # Hintergrund mit Transparenz
+        # Background with transparency
         painter.setPen(QPen(QColor(255, 255, 255, 100), 1))
         painter.setBrush(QBrush(QColor(0, 0, 0, 150)))
         painter.drawRect(panel_rect)
         
-        # Text anzeigen
+        # Display text
         painter.setPen(QPen(Qt.white))
         font = painter.font()
         font.setPointSize(9)
         painter.setFont(font)
         
-        # Textpositionen berechnen
+        # Calculate text positions
         text_x = panel_rect.left() + 10
         text_y = panel_rect.top() + 20
         line_height = 18
         
-        # Drohneninformationen
+        # Drone information
         info_lines = [
             f"Lat: {self.drone_lat:.6f}",
             f"Lon: {self.drone_lon:.6f}",
@@ -310,21 +310,21 @@ class SimpleMapView(QWidget):
             painter.drawText(text_x, text_y + i * line_height, line)
     
     def draw_compass(self, painter):
-        """Zeichnet einen einfachen Kompass"""
+        """Draws a simple compass"""
         compass_size = 60
         margin = 10
         compass_x = self.width() - compass_size - margin
         compass_y = margin + compass_size / 2
         
-        # Kompass-Hintergrund
+        # Compass background
         painter.setPen(QPen(QColor(255, 255, 255, 100), 1))
         painter.setBrush(QBrush(QColor(0, 0, 0, 150)))
         painter.drawEllipse(QPointF(compass_x, compass_y), compass_size / 2, compass_size / 2)
         
-        # Himmelsrichtungen
+        # Cardinal directions
         painter.setPen(QPen(Qt.white, 1))
         
-        directions = [("N", 0), ("O", 90), ("S", 180), ("W", 270)]
+        directions = [("N", 0), ("E", 90), ("S", 180), ("W", 270)]
         for label, angle in directions:
             rad = math.radians(angle)
             dir_x = compass_x + math.sin(rad) * (compass_size / 2 - 15)
@@ -332,13 +332,13 @@ class SimpleMapView(QWidget):
             
             painter.drawText(dir_x - 5, dir_y + 5, label)
         
-        # Nordpfeil
+        # North arrow
         painter.setPen(QPen(Qt.red, 2))
         north_x = compass_x
         north_y = compass_y - compass_size / 3
         painter.drawLine(compass_x, compass_y, north_x, north_y)
         
-        # Drohnenpfeil
+        # Drone arrow
         painter.setPen(QPen(QColor(50, 180, 255), 2))
         rad_heading = math.radians(self.drone_heading)
         drone_dir_x = compass_x + math.sin(rad_heading) * (compass_size / 3)
@@ -346,39 +346,39 @@ class SimpleMapView(QWidget):
         painter.drawLine(compass_x, compass_y, drone_dir_x, drone_dir_y)
     
     def mousePressEvent(self, event):
-        """Behandelt Mausklick-Ereignisse"""
+        """Handles mouse click events"""
         if event.button() == Qt.LeftButton:
             self.last_mouse_pos = event.position()
             
-            # Wenn mit Shift geklickt wird, Position als Ziel auswählen
+            # When clicked with Shift, select position as target
             if event.modifiers() & Qt.ShiftModifier:
                 lat, lon = self.screen_to_geo(event.position().x(), event.position().y())
-                alt = 50.0  # Default-Höhe für Ziele
+                alt = 50.0  # Default altitude for targets
                 self.positionClicked.emit(lat, lon, alt)
     
     def mouseMoveEvent(self, event):
-        """Behandelt Mausbewegungen für Kartenverschiebung"""
+        """Handles mouse movements for map panning"""
         if self.last_mouse_pos and event.buttons() & Qt.LeftButton:
             delta = event.position() - self.last_mouse_pos
-            # Umrechnung von Pixel zu Koordinaten
+            # Convert from pixels to coordinates
             self.center_lon -= delta.x() / self.scale
-            self.center_lat += delta.y() / self.scale  # Y ist invertiert
+            self.center_lat += delta.y() / self.scale  # Y is inverted
             
-            # Deaktiviere Drohnenverfolgung bei manueller Bewegung
+            # Deactivate drone tracking when manually moving
             if self.follow_drone and (delta.x() != 0 or delta.y() != 0):
                 self.follow_drone = False
-                self.follow_button.setText("Verfolgen: Aus")
+                self.follow_button.setText("Follow: Off")
             
             self.last_mouse_pos = event.position()
             self.update()
     
     def mouseReleaseEvent(self, event):
-        """Behandelt Mausloslassen"""
+        """Handles mouse release"""
         if event.button() == Qt.LeftButton:
             self.last_mouse_pos = None
     
     def wheelEvent(self, event):
-        """Behandelt Mausrad für Zoom"""
+        """Handles mouse wheel for zoom"""
         zoom_factor = 1.2 if event.angleDelta().y() > 0 else 1/1.2
         self.scale *= zoom_factor
         self.update()

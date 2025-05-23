@@ -71,13 +71,13 @@ Item {
         anchors.bottom: parent.bottom
         anchors.margins: 10
         
-        // Große 3D-Ansicht (90% der Höhe)
+        // Große 3D-Ansicht (70% der Höhe)
         Rectangle {
             id: modelView
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
-            height: parent.height * 0.9
+            height: parent.height * 0.7
             color: "#0a0a0a"
             border.color: "#3c3c3c"
             border.width: 1
@@ -229,7 +229,7 @@ Item {
                     id: droneModelNode
                     position: Qt.vector3d(0, 20, 0)
                     
-                    // Schwebeananimation
+                    // Schwebeanimation
                     SequentialAnimation on y {
                         id: hoverAnimation
                         loops: Animation.Infinite
@@ -422,7 +422,7 @@ Item {
             }
         }
         
-        // Compact log view (10% of height)
+        // Erweiterte Log-Ansicht (30% der Höhe)
         Rectangle {
             id: logArea
             anchors.top: modelView.bottom
@@ -445,9 +445,9 @@ Item {
                 spacing: 10
                 
                 Text {
-                    text: "Important FC Messages"
+                    text: "FC System Information"
                     color: "white"
-                    font.pixelSize: 12
+                    font.pixelSize: 14
                     font.bold: true
                     anchors.verticalCenter: parent.verticalCenter
                 }

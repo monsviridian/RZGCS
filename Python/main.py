@@ -92,14 +92,13 @@ def main():
     # Initialisiere den Kalibrierungs-Controller
     try:
         print("Initialisiere Kalibrierungsansicht...")
-        calibration_controller = CalibrationViewController(engine)
+        calibration_controller = CalibrationViewController()
         
         # Registriere den Controller im QML-Kontext
         engine.rootContext().setContextProperty("calibrationViewController", calibration_controller)
         
-        # Initialisiere mit Root-Objekt
-        root_object = engine.rootObjects()[0]
-        if calibration_controller.initialize(root_object):
+        # Initialisiere mit dem message_handler vom SerialConnector
+        if calibration_controller.initialize(backend.serial_connector.get_message_handler()):
             print("Kalibrierungsansicht erfolgreich initialisiert")
         else:
             print("Warnung: Kalibrierungsansicht konnte nicht initialisiert werden")

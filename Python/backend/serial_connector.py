@@ -1,6 +1,6 @@
 """
-Serial Connector für MAVLink-Verbindungen und Simulator.
-Verwaltet die Verbindung zum Fluggerät oder Simulator.
+Serial Connector for MAVLink connections and simulator.
+Manages the connection to the aircraft or simulator.
 """
 
 import sys
@@ -84,10 +84,10 @@ class SerialConnector(QObject):
         self._message_handler.battery_received.connect(self._sensor_manager.handle_battery)
         self._message_handler.parameter_received.connect(self._parameter_manager.handle_parameter)
         
-        # Neuen VFR_HUD-Signal-Handler verbinden
+        # Connect new VFR_HUD signal handler
         if hasattr(self._message_handler, 'vfr_hud_received') and hasattr(self._sensor_manager, 'handle_vfr_hud'):
             self._message_handler.vfr_hud_received.connect(self._sensor_manager.handle_vfr_hud)
-            self._logger.addLog("[INFO] VFR_HUD-Handler verbunden")
+            self._logger.addLog("[INFO] VFR_HUD handler connected")
 
     @Property(bool, notify=connectedChanged)
     def connected(self):
@@ -99,8 +99,12 @@ class SerialConnector(QObject):
         return self._port
 
     @Property(int, notify=baudRateChanged)
-    def baudRate(self):
+    def baud_rate(self):
         return self._baud_rate
+
+    def get_message_handler(self):
+        """Gibt den MessageHandler zurück für die Kalibrierung"""
+        return self._message_handler
 
     @Property('QVariantList', notify=availablePortsChanged)
     def availablePorts(self):
@@ -138,138 +142,138 @@ class SerialConnector(QObject):
 
     @Slot()
     def connect(self):
-        """Verbindet mit dem ausgewählten Port, entweder Simulator oder seriellem Port."""
-        # Grundlegende Prüfungen
+        """Connects to the selected port, either simulator or serial port."""
+        # Basic validation
         if not self._port:
             self.errorOccurred.emit("No port selected")
             self._logger.addLog("[ERR] No port selected")
             return
 
-        # Wenn bereits verbunden, trenne zuerst
+        # If already connected, disconnect first
         if self._connected:
             self.disconnect()
 
         try:
             self._logger.addLog(f"[INFO] Attempting to connect to {self._port}...")
             
-            # Unterscheide zwischen Simulator und regulärer Verbindung
+            # Distinguish between simulator and regular connection
             if self._port == "Simulator":
-                # Simulator-Verbindung
+                # Simulator connection
                 return self._connect_to_simulator()
             else:
-                # Normale serielle Verbindung
+                # Normal serial connection
                 return self._connect_to_serial_port()
                 
         except Exception as e:
-            # Globale Fehlerbehandlung
+            # Global error handling
             error_msg = f"[ERR] Connection failed: {str(e)}"
             self.errorOccurred.emit(error_msg)
             self._logger.addLog(error_msg)
             
-            # Alles bereinigen
+            # Clean up everything
             self._cleanup_connection()
             return False
 
     def _connect_to_simulator(self):
-        """Verbindet mit dem MAVLink-Simulator oder verwendet einen der Alternativ-Simulatoren."""
+        """Connects to the MAVLink simulator or uses one of the alternative simulators."""
         try:
-            # Sensoren initialisieren - WICHTIG: Muss vor der Verbindung passieren
+            # Initialize sensors - IMPORTANT: Must happen before connection
             self._initialize_sensors()
-            self._logger.addLog("Sensoren initialisiert")
+            self._logger.addLog("Sensors initialized")
             
-            # Versuch 1: Standard MAVLink-Simulator
+            # Attempt 1: Standard MAVLink simulator
             try:
-                # MAVLink-Simulator initialisieren
+                # Initialize MAVLink simulator
                 if self._simulator_connector is None:
                     self._simulator_connector = SimulatorConnector(self._logger)
                 
-                # Mit Simulator verbinden
+                # Connect to simulator
                 if self._simulator_connector.start_connection():
-                    # Signale verbinden
+                    # Connect signals
                     self._simulator_connector.connectionStatusChanged.connect(self._on_simulator_connection_changed)
                     self._simulator_connector.messageReceived.connect(self._on_simulator_message)
                     self._simulator_connector.errorOccurred.connect(self._on_simulator_error)
                     
-                    # Verbindung hergestellt
+                    # Connection established
                     self._connected = True
                     self._port = "Simulator"
                     self.connectedChanged.emit(self._connected)
                     self.portChanged.emit(self._port)
-                    self._log_info("[OK] Verbunden mit MAVLink-Simulator")
+                    self._log_info("[OK] Connected to MAVLink simulator")
                     
-                    # Automatisch Parameter laden
-                    self._log_info("[LOAD] Lade Parameter nach Verbindung...")
+                    # Automatically load parameters
+                    self._log_info("[LOAD] Loading parameters after connection...")
                     self.load_parameters()
                     return True
                 else:
-                    self._logger.addLog("MAVLink-Simulator konnte nicht gestartet werden")
+                    self._logger.addLog("MAVLink simulator could not be started")
             except Exception as mavlink_error:
-                self._logger.addLog(f"Fehler beim Starten des MAVLink-Simulators: {str(mavlink_error)}")
+                self._logger.addLog(f"Error starting the MAVLink simulator: {str(mavlink_error)}")
                 
-            # Versuch 2: Kompatibler Sensor-Simulator (empfohlen als Fallback)
-            self._logger.addLog("Versuche kompatiblen Sensor-Simulator...")
+            # Attempt 2: Compatible sensor simulator (recommended as fallback)
+            self._logger.addLog("Trying compatible sensor simulator...")
             try:
-                # Kompatiblen Simulator initialisieren und mit Sensor-Modell verbinden
+                # Initialize compatible simulator and connect to sensor model
                 self._compatible_simulator = CompatibleSensorSimulator()
                 
-                # Sensor-Modell abrufen (sollte bereits initialisiert sein)
+                # Get sensor model (should already be initialized)
                 if hasattr(self, '_sensor_model') and self._sensor_model:
-                    # Sensoren initialisieren und Simulator starten
+                    # Initialize sensors and start simulator
                     self._compatible_simulator.initialize_sensors(self._sensor_model)
                     if self._compatible_simulator.start():
-                        self._logger.addLog("Kompatibler Sensor-Simulator gestartet")
+                        self._logger.addLog("Compatible sensor simulator started")
                         
-                        # Verbindung hergestellt - Status setzen
+                        # Connection established - set status
                         self._connected = True
-                        self._port = "Simulator (Kompatibel)"
+                        self._port = "Simulator (Compatible)"
                         self.connectedChanged.emit(self._connected)
                         self.portChanged.emit(self._port)
-                        self._log_info("[OK] Verbunden mit kompatiblem Simulator")
+                        self._log_info("[OK] Connected to compatible simulator")
                         
-                        # Simulierte Parameter laden
-                        self._log_info("[LOAD] Lade simulierte Parameter...")
+                        # Load simulated parameters
+                        self._log_info("[LOAD] Loading simulated parameters...")
                         self._create_simulator_parameters()
                         
                         return True
                 else:
-                    self._logger.addLog("Kein Sensor-Modell vorhanden für Simulator")
+                    self._logger.addLog("No sensor model available for simulator")
                     
             except Exception as compat_error:
-                self._logger.addLog(f"Fehler beim Starten des kompatiblen Simulators: {str(compat_error)}")
+                self._logger.addLog(f"Error starting the compatible simulator: {str(compat_error)}")
             
-            # Versuch 3: Direkter Sensor-Simulator (veraltet)
-            self._logger.addLog("Versuche direkten Sensor-Simulator...")
+            # Attempt 3: Direct sensor simulator (deprecated)
+            self._logger.addLog("Trying direct sensor simulator...")
             try:
-                # Direkten Sensor-Simulator initialisieren
+                # Initialize direct sensor simulator
                 self._direct_simulator = DirectSensorSimulator()
                 
-                # Signale verbinden - Wird wahrscheinlich fehlschlagen wegen fehlender Methoden im Modell
+                # Connect signals - Will probably fail due to missing methods in the model
                 self._direct_simulator.batteryUpdated.connect(self._handle_battery_direct)
                 self._direct_simulator.attitudeUpdated.connect(self._handle_attitude_direct)
                 self._direct_simulator.gpsUpdated.connect(self._handle_gps_direct)
                 
-                # Simulator starten
+                # Start simulator
                 if self._direct_simulator.start():
-                    self._logger.addLog("Direkter Sensor-Simulator gestartet")
+                    self._logger.addLog("Direct sensor simulator started")
                     
-                    # Verbindung hergestellt - Status setzen
+                    # Connection established - set status
                     self._connected = True
                     self.connectedChanged.emit(True)
-                    self._logger.addLog(f"Verbunden mit direktem Simulator") 
+                    self._logger.addLog(f"Connected to direct simulator") 
                     return True
                     
             except Exception as direct_error:
-                self._logger.addLog(f"Fehler beim Starten des direkten Simulators: {str(direct_error)}")
+                self._logger.addLog(f"Error starting the direct simulator: {str(direct_error)}")
             
-            # Alle Versuche fehlgeschlagen
-            raise ConnectionError("Alle Simulator-Optionen fehlgeschlagen")
+            # All attempts failed
+            raise ConnectionError("All simulator options failed")
             
         except Exception as e:
-            self._logger.addLog(f"Simulator-Verbindungsfehler: {str(e)}")
+            self._logger.addLog(f"Simulator connection error: {str(e)}")
             raise
 
     def _connect_to_serial_port(self):
-        """Verbindet mit einem physischen seriellen Port."""
+        """Connects to a physical serial port."""
         try:
             # MAVLink-Verbindung herstellen
             self._mavlink_connection = mavutil.mavlink_connection(self._port, self._baud_rate)
@@ -496,11 +500,11 @@ class SerialConnector(QObject):
             self.gps_msg.emit(lat, lon)
 
     def _log_info(self, message: str):
-        # Loggt eine Informationsnachricht.
+        # Logs an information message.
         self._logger.addLog(message)
 
     def _log_error(self, message: str):
-        # Loggt eine Fehlernachricht.
+        # Logs an error message.
         self._logger.addLog(message)
 
     def _handle_global_position_int(self, msg):
@@ -570,48 +574,48 @@ class SerialConnector(QObject):
     def _handle_attitude(self, msg):
         """Handle attitude message from simulator"""
         try:
-            # Validiere Eingabewerte, bevor sie konvertiert werden
+            # Validate input values before they are converted
             if not hasattr(msg, 'roll') or not hasattr(msg, 'pitch') or not hasattr(msg, 'yaw'):
-                self._logger.addLog("Attitude-Fehler: Fehlende Attitude-Daten in der Nachricht")
-                # Verwende Standardwerte für fehlende Daten
+                self._logger.addLog("Attitude error: Missing attitude data in the message")
+                # Use default values for missing data
                 roll_deg, pitch_deg, yaw_deg = 0.0, 0.0, 0.0
                 roll_rad, pitch_rad, yaw_rad = 0.0, 0.0, 0.0
             else:
-                # Konvertiere Radiant in Grad für bessere Lesbarkeit
+                # Convert radians to degrees for better readability
                 try:
                     import math
-                    PI = math.pi  # Genauerer Wert als 3.14159
+                    PI = math.pi  # More accurate value than 3.14159
                     
-                    # Sicherstellen, dass die Werte numerisch sind
+                    # Ensure the values are numeric
                     roll_rad = float(msg.roll)
                     pitch_rad = float(msg.pitch)
                     yaw_rad = float(msg.yaw)
                     
-                    # Konvertierung zu Grad
+                    # Conversion to degrees
                     roll_deg = round(roll_rad * 180.0 / PI, 1)
                     pitch_deg = round(pitch_rad * 180.0 / PI, 1)
                     yaw_deg = round(yaw_rad * 180.0 / PI, 1)
                 except Exception as e:
-                    self._logger.addLog(f"Attitude-Fehler mit Standardwerten: {str(e)}")
-                    # Verwende Standardwerte bei Konvertierungsproblemen
+                    self._logger.addLog(f"Attitude error with default values: {str(e)}")
+                    # Use default values for conversion problems
                     roll_deg, pitch_deg, yaw_deg = 0.0, 0.0, 0.0
                     roll_rad, pitch_rad, yaw_rad = 0.0, 0.0, 0.0
             
-            # Signale senden mit robusten Werten
+            # Send signals with robust values
             self.attitudeChanged.emit(float(roll_rad), float(pitch_rad), float(yaw_rad))
             
-            # Sensoren aktualisieren
+            # Update sensors
             if self._sensor_model:
                 self._sensor_model.update_sensor("roll", float(roll_deg))
                 self._sensor_model.update_sensor("pitch", float(pitch_deg))
                 self._sensor_model.update_sensor("yaw", float(yaw_deg))
                 
-                # Nur loggen wenn gültige Daten vorhanden sind
+                # Only log when valid data is present
                 if roll_deg != 0.0 or pitch_deg != 0.0 or yaw_deg != 0.0:
-                    self._logger.addLog(f"[INFO] Attitude-Sensoren aktualisiert: Roll={roll_deg}°, Pitch={pitch_deg}°, Yaw={yaw_deg}°")
+                    self._logger.addLog(f"[INFO] Attitude sensors updated: Roll={roll_deg}°, Pitch={pitch_deg}°, Yaw={yaw_deg}°")
         except Exception as e:
-            self._logger.addLog(f"Attitude-Fehler: {str(e)}")
-            # Standardwerte verwenden
+            self._logger.addLog(f"Attitude error: {str(e)}")
+            # Use default values
             if self._sensor_model:
                 self._sensor_model.update_sensor("roll", 0.0)
                 self._sensor_model.update_sensor("pitch", 0.0)
@@ -620,58 +624,58 @@ class SerialConnector(QObject):
     def _handle_gps(self, msg):
         """Handle GPS message from simulator"""
         try:
-            # Validiere Eingabewerte, bevor sie konvertiert werden
+            # Validate input values before they are converted
             if not hasattr(msg, 'lat') or not hasattr(msg, 'lon') or not hasattr(msg, 'relative_alt'):
-                self._logger.addLog("GPS-Fehler: Fehlende GPS-Daten in der Nachricht")
-                # Verwende Standardwerte für fehlende Daten
+                self._logger.addLog("GPS error: Missing GPS data in the message")
+                # Use default values for missing data
                 lat, lon, alt = 0.0, 0.0, 0.0
                 groundspeed = 0.0
             else:
-                # Konvertiere die Werte in die richtigen Einheiten
+                # Convert the values to the correct units
                 try:
-                    lat = float(msg.lat) / 1e7  # degE7 zu Grad
-                    lon = float(msg.lon) / 1e7  # degE7 zu Grad
-                    alt = float(msg.relative_alt) / 1000.0  # mm zu m
+                    lat = float(msg.lat) / 1e7  # degE7 to degrees
+                    lon = float(msg.lon) / 1e7  # degE7 to degrees
+                    alt = float(msg.relative_alt) / 1000.0  # mm to m
                     
-                    # Geschwindigkeiten (falls vorhanden)
-                    vx = float(getattr(msg, 'vx', 0)) / 100.0  # cm/s zu m/s
-                    vy = float(getattr(msg, 'vy', 0)) / 100.0  # cm/s zu m/s
-                    vz = float(getattr(msg, 'vz', 0)) / 100.0  # cm/s zu m/s
+                    # Velocities (if available)
+                    vx = float(getattr(msg, 'vx', 0)) / 100.0  # cm/s to m/s
+                    vy = float(getattr(msg, 'vy', 0)) / 100.0  # cm/s to m/s
+                    vz = float(getattr(msg, 'vz', 0)) / 100.0  # cm/s to m/s
                     
-                    # Berechne Groundspeed aus vx und vy
+                    # Calculate groundspeed from vx and vy
                     import math
                     groundspeed = round(math.sqrt(vx*vx + vy*vy), 1)
                 except Exception as e:
-                    self._logger.addLog(f"GPS-Fehler mit Standardwerten: {str(e)}")
-                    # Verwende Standardwerte bei Konvertierungsproblemen
+                    self._logger.addLog(f"GPS error with default values: {str(e)}")
+                    # Use default values for conversion problems
                     lat, lon, alt = 0.0, 0.0, 0.0
                     groundspeed = 0.0
             
-            # Signale senden mit robusten Werten
+            # Send signals with robust values
             self.gpsChanged.emit(float(lat), float(lon), float(alt))
             
-            # Sensoren aktualisieren
+            # Update sensors
             if self._sensor_model:
                 self._sensor_model.update_sensor("gps_lat", float(round(lat, 6)))
                 self._sensor_model.update_sensor("gps_lon", float(round(lon, 6)))
                 self._sensor_model.update_sensor("altitude", float(round(alt, 1)))
                 self._sensor_model.update_sensor("groundspeed", float(groundspeed))
                 
-                # Heading (falls vorhanden)
+                # Heading (if available)
                 if hasattr(msg, 'hdg') and msg.hdg != 0:
                     try:
-                        heading = float(msg.hdg) / 100.0  # cdeg zu deg
+                        heading = float(msg.hdg) / 100.0  # cdeg to deg
                         self._sensor_model.update_sensor("heading", float(round(heading, 1)))
                     except:
-                        # Ignoriere Heading-Fehler
+                        # Ignore heading errors
                         pass
                 
-                # Nur loggen wenn gültige Daten vorhanden sind
+                # Only log when valid data is present
                 if lat != 0.0 or lon != 0.0:
-                    self._logger.addLog(f"[INFO] GPS-Sensoren aktualisiert: Lat={lat:.6f}, Lon={lon:.6f}, Alt={alt:.1f}m, Speed={groundspeed}m/s")
+                    self._logger.addLog(f"[INFO] GPS sensors updated: Lat={lat:.6f}, Lon={lon:.6f}, Alt={alt:.1f}m, Speed={groundspeed}m/s")
         except Exception as e:
-            self._logger.addLog(f"GPS-Fehler: {str(e)}")
-            # Standardwerte verwenden
+            self._logger.addLog(f"GPS error: {str(e)}")
+            # Use default values
             if self._sensor_model:
                 self._sensor_model.update_sensor("gps_lat", 0.0)
                 self._sensor_model.update_sensor("gps_lon", 0.0)
@@ -681,23 +685,23 @@ class SerialConnector(QObject):
     def _handle_battery(self, msg):
         """Handle battery message from simulator"""
         try:
-            # Konvertiere die Werte in die richtigen Einheiten
-            voltage = msg.voltage_battery / 1000.0  # mV zu V
-            current = msg.current_battery / 100.0   # cA zu A
-            remaining = msg.battery_remaining       # Prozent
+            # Convert the values to the correct units
+            voltage = msg.voltage_battery / 1000.0  # mV to V
+            current = msg.current_battery / 100.0   # cA to A
+            remaining = msg.battery_remaining       # Percent
             
-            # Signale senden
+            # Send signals
             self.batteryChanged.emit(voltage, current, remaining)
             
-            # Sensoren aktualisieren
+            # Update sensors
             if self._sensor_model:
                 self._sensor_model.update_sensor("battery_voltage", round(voltage, 1))
                 self._sensor_model.update_sensor("battery_current", round(current, 1))
                 self._sensor_model.update_sensor("battery_remaining", round(remaining, 0))
                 
-                self._logger.addLog(f"[INFO] Batterie-Sensoren aktualisiert: {voltage:.1f}V, {current:.1f}A, {remaining}%")
+                self._logger.addLog(f"[INFO] Battery sensors updated: {voltage:.1f}V, {current:.1f}A, {remaining}%")
         except Exception as e:
-            self._logger.addLog(f"⚠️ Fehler beim Verarbeiten der Batterie-Daten: {str(e)}")
+            self._logger.addLog(f"⚠️ Error processing battery data: {str(e)}")
 
     def _handle_status_text(self, msg):
         """Handle status text message from simulator"""
@@ -716,9 +720,9 @@ class SerialConnector(QObject):
                 "desc": ""
             })
             
-    # Event-Handler für SimulatorConnector
+    # Event handlers for SimulatorConnector
     def _on_simulator_connection_changed(self, connected):
-        """Behandelt Änderungen des Verbindungsstatus vom SimulatorConnector"""
+        """Handles connection status changes from the SimulatorConnector"""
         if connected != self._connected:
             self._connected = connected
             self.connectedChanged.emit(connected)
@@ -729,14 +733,14 @@ class SerialConnector(QObject):
                 self._logger.addLog(f"Disconnected from {self._port}")
     
     def _on_simulator_message(self, msg):
-        """Behandelt eingehende MAVLink-Nachrichten vom SimulatorConnector"""
-        # Nachrichtentyp bestimmen und an entsprechende Handler weiterleiten
+        """Handles incoming MAVLink messages from the SimulatorConnector"""
+        # Determine message type and forward to corresponding handlers
         try:
-            # Nachrichtentyp ermitteln
+            # Get message type
             msgtype = msg.get_type()
-            self._logger.addLog(f"Empfange MAVLink-Nachricht: {msgtype}")
+            self._logger.addLog(f"Receiving MAVLink message: {msgtype}")
             
-            # Je nach Nachrichtentyp verarbeiten
+            # Process based on message type
             if msgtype == "HEARTBEAT":
                 self._handle_heartbeat(msg)
             elif msgtype == "ATTITUDE":
@@ -753,45 +757,45 @@ class SerialConnector(QObject):
                 voltage = msg.voltage_battery / 1000.0
                 current = msg.current_battery / 100.0
                 remaining = msg.battery_remaining
-                self._logger.addLog(f"📊 Batterie: {voltage:.1f}V, {current:.1f}A, {remaining}%")
+                self._logger.addLog(f"📊 Battery: {voltage:.1f}V, {current:.1f}A, {remaining}%")
             elif msgtype == "STATUSTEXT":
                 self._handle_status_text(msg)
             elif msgtype == "PARAM_VALUE":
                 self._handle_parameter(msg)
                 
-            # Erzwinge ein Update des Modells
+            # Force a model update
             if self._sensor_model:
-                # Debug-Ausgabe der aktuellen Sensorwerte
+                # Debug output of current sensor values
                 sensors = self._sensor_model.get_all_sensors()
-                self._logger.addLog(f"📊 Sensor-Update: {len(sensors)} Sensoren im Modell")
+                self._logger.addLog(f"📊 Sensor update: {len(sensors)} sensors in model")
                 
-                # Erzwinge UI-Update
+                # Force UI update
                 self._sensor_model.dataChanged.emit(self._sensor_model.index(0), 
                                                 self._sensor_model.index(self._sensor_model.rowCount() - 1))
         except Exception as e:
-            self._logger.addLog(f"⚠️ Fehler bei Verarbeitung von {msgtype}: {str(e)}")
+            self._logger.addLog(f"⚠️ Error processing {msgtype}: {str(e)}")
             import traceback
             self._logger.addLog(traceback.format_exc())
             
     def _on_simulator_error(self, error_msg):
-        """Behandelt Fehlermeldungen vom SimulatorConnector"""
+        """Handles error messages from the SimulatorConnector"""
         self.errorOccurred.emit(error_msg)
         
     @Slot(str)
     def setFlightMode(self, mode):
-        """Setzt den Flugmodus des Fluggeräts."""
+        """Sets the flight mode of the aircraft."""
         if not self._connected:
-            self._logger.addLog("[ERR] Nicht verbunden - kann Flugmodus nicht ändern")
+            self._logger.addLog("[ERR] Not connected - cannot change flight mode")
             return
             
         try:
-            self._logger.addLog(f"🚀 Setze Flugmodus auf {mode}...")
+            self._logger.addLog(f"🚀 Setting flight mode to {mode}...")
             
-            # Unterscheide zwischen Simulator und normaler Verbindung
+            # Distinguish between simulator and normal connection
             if self._port == "Simulator":
-                # Bei Simulator direkt über den SimulatorConnector
+                # For simulator, directly via the SimulatorConnector
                 if self._simulator_connector:
-                    # Flugmodus-Mapping
+                    # Flight mode mapping
                     mode_mapping = {
                         "STABILIZE": 0,
                         "ALT_HOLD": 2,
@@ -801,17 +805,17 @@ class SerialConnector(QObject):
                         "GUIDED": 4
                     }
                     
-                    # Sende SET_MODE Nachricht
+                    # Send SET_MODE message
                     if mode in mode_mapping:
                         mode_id = mode_mapping[mode]
-                        # Direkt an den Simulator-Connector weiterleiten
-                        self._logger.addLog(f"Setze Flugmodus auf {mode} (ID: {mode_id})")
+                        # Forward directly to the simulator connector
+                        self._logger.addLog(f"Setting flight mode to {mode} (ID: {mode_id})")
                     else:
-                        self._logger.addLog(f"⚠️ Unbekannter Flugmodus: {mode}")
+                        self._logger.addLog(f"⚠️ Unknown flight mode: {mode}")
             else:
-                # Bei normaler Verbindung über MAVLink
+                # For normal connection via MAVLink
                 if self._mavlink_connection:
-                    # Flugmodus-Mapping
+                    # Flight mode mapping
                     mode_mapping = {
                         "STABILIZE": 0,
                         "ALT_HOLD": 2,
@@ -821,44 +825,44 @@ class SerialConnector(QObject):
                         "GUIDED": 4
                     }
                     
-                    # Sende SET_MODE Nachricht
+                    # Send SET_MODE message
                     if mode in mode_mapping:
                         mode_id = mode_mapping[mode]
                         self._mavlink_connection.set_mode(mode_id)
-                        self._logger.addLog(f"Flugmodus auf {mode} gesetzt")
+                        self._logger.addLog(f"Flight mode set to {mode}")
                     else:
-                        self._logger.addLog(f"⚠️ Unbekannter Flugmodus: {mode}")
+                        self._logger.addLog(f"⚠️ Unknown flight mode: {mode}")
                 else:
-                    self._logger.addLog("[ERR] Keine MAVLink-Verbindung verfügbar")
+                    self._logger.addLog("[ERR] No MAVLink connection available")
         except Exception as e:
-            self._logger.addLog(f"[ERR] Fehler beim Setzen des Flugmodus: {str(e)}")
+            self._logger.addLog(f"[ERR] Error setting flight mode: {str(e)}")
             
     @Slot(bool)
     def armDisarm(self, arm):
-        """Armt oder disarmt das Fluggerät."""
+        """Arms or disarms the aircraft."""
         if not self._connected:
-            self._logger.addLog("[ERR] Nicht verbunden - kann nicht armen/disarmen")
+            self._logger.addLog("[ERR] Not connected - cannot arm/disarm")
             return
             
         try:
-            action = "Armen" if arm else "Disarmen"
-            self._logger.addLog(f"🔒 Versuche {action}...")
+            action = "Arming" if arm else "Disarming"
+            self._logger.addLog(f"🔒 Attempting {action}...")
             
-            # Unterscheide zwischen Simulator und normaler Verbindung
+            # Distinguish between simulator and normal connection
             if self._port == "Simulator":
-                # Bei Simulator direkt über den SimulatorConnector
+                # For simulator, directly via the SimulatorConnector
                 if self._simulator_connector:
-                    # Direkt an den Simulator-Connector weiterleiten
-                    self._logger.addLog(f"Sende {action}-Befehl an Simulator")
-                    # Erfolg simulieren
-                    self._logger.addLog(f"[OK] Fluggerät erfolgreich {'gearmt' if arm else 'disarmt'}")
+                    # Directly forward to the simulator connector
+                    self._logger.addLog(f"Sending {action} command to simulator")
+                    # Simulate success
+                    self._logger.addLog(f"[OK] Aircraft successfully {'armed' if arm else 'disarmed'}")
             else:
-                # Bei normaler Verbindung über MAVLink
+                # For normal connection via MAVLink
                 if self._mavlink_connection:
-                    # Sende ARM_DISARM Kommando
+                    # Send ARM_DISARM command
                     self._mavlink_connection.arducopter_arm() if arm else self._mavlink_connection.arducopter_disarm()
-                    self._logger.addLog(f"[OK] Fluggerät erfolgreich {'gearmt' if arm else 'disarmt'}")
+                    self._logger.addLog(f"[OK] Aircraft successfully {'armed' if arm else 'disarmed'}")
                 else:
-                    self._logger.addLog("[ERR] Keine MAVLink-Verbindung verfügbar")
+                    self._logger.addLog("[ERR] No MAVLink connection available")
         except Exception as e:
-            self._logger.addLog(f"[ERR] Fehler beim {action}: {str(e)}")
+            self._logger.addLog(f"[ERR] Error during {action}: {str(e)}")
