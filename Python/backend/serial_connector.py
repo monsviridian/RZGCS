@@ -99,8 +99,12 @@ class SerialConnector(QObject):
         return self._port
 
     @Property(int, notify=baudRateChanged)
-    def baudRate(self):
+    def baud_rate(self):
         return self._baud_rate
+
+    def get_message_handler(self):
+        """Gibt den MessageHandler zurück für die Kalibrierung"""
+        return self._message_handler
 
     @Property('QVariantList', notify=availablePortsChanged)
     def availablePorts(self):

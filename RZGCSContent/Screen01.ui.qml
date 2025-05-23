@@ -138,6 +138,9 @@ Item {
                                 serialConnector.disconnect()
                             } else {
                                 serialConnector.connect()
+                                // Nach erfolgreichem Verbinden zum Animation-Tab wechseln
+                                // Index 7 ist der Animation-Tab (0-basierter Index)
+                                tabBar.currentIndex = 7
                             }
                         }
                     }
@@ -387,6 +390,34 @@ Item {
                     border.width: parent.checked ? 1 : 0
                 }
             }
+            TabButton {
+                text: "Animation"
+                contentItem: Text {
+                    text: parent.text
+                    color: "white"
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+                background: Rectangle {
+                    color: parent.checked ? "#303030" : "black"
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                }
+            }
+            TabButton {
+                text: "Angel Mode"
+                contentItem: Text {
+                    text: parent.text
+                    color: "white"
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+                background: Rectangle {
+                    color: parent.checked ? "#303030" : "black"
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                }
+            }
         }
 
         // Content
@@ -410,7 +441,7 @@ Item {
             RZGCS.CalibrationView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                controller: calibrationViewController
+                controller: calibrationViewController // Setze die controller-Eigenschaft
             }
             RZGCS.MotorTestView {
                 Layout.fillWidth: true
@@ -422,6 +453,14 @@ Item {
                 Layout.fillHeight: true
             }
             RZGCS.StoreView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+            RZGCS.AnimationView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+            RZGCS.AngelView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }

@@ -15,8 +15,8 @@ ListView {
     clip: true
     spacing: 0
 
-    // Connect to the logger from Python backend
-    model: logger ? logger.logs : []
+    // Connect to the logger from Python backend - zeige nur Systeminformationen
+    model: logger ? logger.system_info_logs : []
 
     // Background
     Rectangle {
@@ -34,12 +34,12 @@ ListView {
         policy: ScrollBar.AsNeeded
     }
 
-    // Listen for log changes from Python
+    // Listen for system info log changes from Python
     Connections {
         target: logger
-        function onLogAdded(log) {
-            console.log("New log added:", log)
-            logsList.model = logger.logs
+        function onSystemInfoLogsChanged() {
+            console.log("System info logs updated")
+            logsList.model = logger.system_info_logs
             // Scroll to bottom
             logsList.positionViewAtEnd()
         }
@@ -48,8 +48,8 @@ ListView {
     // Update model when logger is available
     Component.onCompleted: {
         if (logger) {
-            console.log("LogsList initialized with logger")
-            model = logger.logs
+            console.log("LogsList initialized with system info filter")
+            model = logger.system_info_logs
             positionViewAtEnd()
         } else {
             console.log("No logger available")

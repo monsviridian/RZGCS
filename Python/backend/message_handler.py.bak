@@ -1,0 +1,1254 @@
+from PySide6.QtCore import QObject, Signal, Slot, QTimer
+from pymavlink import mavutil
+from .logger import Logger
+import time
+import math
+import re
+
+class MessageHandler(QObject):
+    """Handles MAVLink message processing and distribution"""
+    
+    # Signals for different message types
+    heartbeat_received = Signal(object)
+    attitude_received = Signal(object)
+    gps_received = Signal(object)
+    battery_received = Signal(object)
+    status_text_received = Signal(object)
+    parameter_received = Signal(object)
+    vfr_hud_received = Signal(object)  # New signal for VFR_HUD
+    error_occurred = Signal(str)
+    
+    def __init__(self, logger: Logger):
+        super().__init__()
+        self._logger = logger
+        self._running = False
+        self._mavlink_connection = None
+        self._is_simulator = False
+        
+        # Timer für die verzögerte Aktualisierung bestimmter Meldungen
+        self._delayed_message_timer = QTimer(self)
+        self._delayed_message_timer.timeout.connect(self._update_delayed_messages)
+        self._delayed_message_timer.start(60000)  # Alle 60 Sekunden aktualisieren
+        
+        # Cache für verzögerte Nachrichten
+        self._servo_output_raw_cache = None
+        self._rc_channels_cache = None
+        self._mission_current_cache = None
+        self._sys_status_cache = None
+        
+        # Zeitpunkt der letzten UI-Aktualisierung
+        self._last_ui_update_time = time.time()
+        
+    def set_connection(self, connection, is_simulator=False):
+        """Set the MAVLink connection to use"""
+        self._mavlink_connection = connection
+        self._is_simulator = is_simulator
+        
+    def start(self):
+        """Start message handling"""
+        if not self._mavlink_connection:
+            error_msg = "❌ No MAVLink connection available"
+            self._logger.addLog(error_msg)
+            self.error_occurred.emit(error_msg)
+            
+    def _update_delayed_messages(self):
+        """Aktualisiert die UI mit den gecachten Nachrichten (wird alle 60 Sekunden aufgerufen)"""
+        try:
+            current_time = time.time()
+            time_diff = current_time - self._last_ui_update_time
+            
+            # Nur aktualisieren, wenn mindestens 60 Sekunden vergangen sind
+            if time_diff < 60:
+                return
+                
+            self._last_ui_update_time = current_time
+            self._logger.addLog("Updating delayed message display...")
+            
+            # SERVO_OUTPUT_RAW verarbeiten
+            if self._servo_output_raw_cache:
+                try:
+                    # Formatiere SERVO_OUTPUT_RAW-Daten
+                    servo_values = []
+                    for i in range(1, 9):  # Servo 1-8
+                        attr_name = f'servo{i}_raw'
+                        if hasattr(self._servo_output_raw_cache, attr_name):
+                            servo_values.append(f"S{i}={getattr(self._servo_output_raw_cache, attr_name)}")
+                    
+                    if servo_values:
+                        servo_info = "SERVO: " + ", ".join(servo_values)
+                        self._logger.addSystemInfoLog(servo_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SERVO_OUTPUT_RAW: {str(e)}")
+            
+            # RC_CHANNELS verarbeiten
+            if self._rc_channels_cache:
+                try:
+                    # Formatiere RC_CHANNELS-Daten
+                    rc_values = []
+                    for i in range(1, 9):  # RC 1-8
+                        attr_name = f'chan{i}_raw'
+                        if hasattr(self._rc_channels_cache, attr_name):
+                            rc_values.append(f"RC{i}={getattr(self._rc_channels_cache, attr_name)}")
+                    
+                    if rc_values:
+                        rc_info = "RC: " + ", ".join(rc_values)
+                        self._logger.addSystemInfoLog(rc_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing RC_CHANNELS: {str(e)}")
+            
+            # MISSION_CURRENT verarbeiten
+            if self._mission_current_cache:
+                try:
+                    mission_info = f"Mission: WP#{self._mission_current_cache.seq}"
+                    self._logger.addSystemInfoLog(mission_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing MISSION_CURRENT: {str(e)}")
+                    
+            # SYS_STATUS verarbeiten (nur für System-Status, nicht Batterie)
+            if self._sys_status_cache:
+                try:
+                    # Formatiere SYS_STATUS-Daten (ohne Batterie)
+                    errors = []
+                    if hasattr(self._sys_status_cache, 'errors_count1') and self._sys_status_cache.errors_count1 > 0:
+                        errors.append(f"Errors: {self._sys_status_cache.errors_count1}")
+                    
+                    # CPU Last
+                    if hasattr(self._sys_status_cache, 'load'):
+                        cpu_load = self._sys_status_cache.load / 10.0  # In Prozent
+                        status_info = f"CPU: {cpu_load:.1f}%"
+                        if errors:
+                            status_info += " | " + ", ".join(errors)
+                        self._logger.addSystemInfoLog(status_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SYS_STATUS: {str(e)}")
+        except Exception as e:
+            self._logger.addLog(f"Error in delayed message update: {str(e)}")
+            return False
+            
+        try:
+            self._running = True
+            self._logger.addLog("✅ Message handler started")
+            
+            # For simulator, send initial messages
+            if self._is_simulator:
+                self._send_simulator_messages()
+                
+            return True
+        except Exception as e:
+            error_msg = f"❌ Error starting message handler: {str(e)}"
+            self._logger.addLog(error_msg)
+            self.error_occurred.emit(error_msg)
+            
+    def _update_delayed_messages(self):
+        """Aktualisiert die UI mit den gecachten Nachrichten (wird alle 60 Sekunden aufgerufen)"""
+        try:
+            current_time = time.time()
+            time_diff = current_time - self._last_ui_update_time
+            
+            # Nur aktualisieren, wenn mindestens 60 Sekunden vergangen sind
+            if time_diff < 60:
+                return
+                
+            self._last_ui_update_time = current_time
+            self._logger.addLog("Updating delayed message display...")
+            
+            # SERVO_OUTPUT_RAW verarbeiten
+            if self._servo_output_raw_cache:
+                try:
+                    # Formatiere SERVO_OUTPUT_RAW-Daten
+                    servo_values = []
+                    for i in range(1, 9):  # Servo 1-8
+                        attr_name = f'servo{i}_raw'
+                        if hasattr(self._servo_output_raw_cache, attr_name):
+                            servo_values.append(f"S{i}={getattr(self._servo_output_raw_cache, attr_name)}")
+                    
+                    if servo_values:
+                        servo_info = "SERVO: " + ", ".join(servo_values)
+                        self._logger.addSystemInfoLog(servo_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SERVO_OUTPUT_RAW: {str(e)}")
+            
+            # RC_CHANNELS verarbeiten
+            if self._rc_channels_cache:
+                try:
+                    # Formatiere RC_CHANNELS-Daten
+                    rc_values = []
+                    for i in range(1, 9):  # RC 1-8
+                        attr_name = f'chan{i}_raw'
+                        if hasattr(self._rc_channels_cache, attr_name):
+                            rc_values.append(f"RC{i}={getattr(self._rc_channels_cache, attr_name)}")
+                    
+                    if rc_values:
+                        rc_info = "RC: " + ", ".join(rc_values)
+                        self._logger.addSystemInfoLog(rc_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing RC_CHANNELS: {str(e)}")
+            
+            # MISSION_CURRENT verarbeiten
+            if self._mission_current_cache:
+                try:
+                    mission_info = f"Mission: WP#{self._mission_current_cache.seq}"
+                    self._logger.addSystemInfoLog(mission_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing MISSION_CURRENT: {str(e)}")
+                    
+            # SYS_STATUS verarbeiten (nur für System-Status, nicht Batterie)
+            if self._sys_status_cache:
+                try:
+                    # Formatiere SYS_STATUS-Daten (ohne Batterie)
+                    errors = []
+                    if hasattr(self._sys_status_cache, 'errors_count1') and self._sys_status_cache.errors_count1 > 0:
+                        errors.append(f"Errors: {self._sys_status_cache.errors_count1}")
+                    
+                    # CPU Last
+                    if hasattr(self._sys_status_cache, 'load'):
+                        cpu_load = self._sys_status_cache.load / 10.0  # In Prozent
+                        status_info = f"CPU: {cpu_load:.1f}%"
+                        if errors:
+                            status_info += " | " + ", ".join(errors)
+                        self._logger.addSystemInfoLog(status_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SYS_STATUS: {str(e)}")
+        except Exception as e:
+            self._logger.addLog(f"Error in delayed message update: {str(e)}")
+            return False
+        
+    def stop(self):
+        """Stop message handling"""
+        self._running = False
+        self._logger.addLog("🛑 Message handler stopped")
+        
+        # Reset simulator state
+        self._last_sim_time = None
+        self._last_sim_position = None
+        
+    def _send_simulated_data(self):
+        """Send simulated sensor data"""
+        try:
+            # Get current time
+            current_time = time.time()
+            
+            # Initialize position if not set
+            if not hasattr(self, '_last_sim_position'):
+                self._last_sim_position = {
+                    'lat': 511657000,  # Start position
+                    'lon': 104515000,
+                    'alt': 100000,     # Start altitude in cm
+                    'time': current_time
+                }
+            
+            # Calculate movement
+            time_diff = current_time - self._last_sim_position['time']
+            
+            # Update GPS position (move slowly)
+            self._last_sim_position['lat'] += int(100 * time_diff)  # Move 0.1m/s
+            self._last_sim_position['lon'] += int(100 * time_diff)  # Move 0.1m/s
+            self._last_sim_position['alt'] += int(100 * math.sin(time_diff / 10))  # Sinusoidal altitude
+
+            # Clamp to valid MAVLink ranges
+            # lat/lon: -90*1e7 ... +90*1e7 / -180*1e7 ... +180*1e7
+            self._last_sim_position['lat'] = max(min(self._last_sim_position['lat'], 900000000), -900000000)
+            self._last_sim_position['lon'] = max(min(self._last_sim_position['lon'], 1800000000), -1800000000)
+            # alt: -1000000 ... +10000000 (in mm or cm, here cm)
+            self._last_sim_position['alt'] = max(min(self._last_sim_position['alt'], 10000000), -1000000)
+
+            # Send GPS position
+            self._mavlink_connection.mav.global_position_int_send(
+                int(current_time * 1e3),  # timestamp
+                self._last_sim_position['lat'],  # lat
+                self._last_sim_position['lon'],  # lon
+                self._last_sim_position['alt'],  # alt
+                0, 0, 0, 0, 0, 0
+            )
+            
+            # Update attitude (smooth variations)
+            self._mavlink_connection.mav.attitude_send(
+                int(current_time * 1e3),  # timestamp
+                0.1 * math.sin(current_time),  # roll
+                0.1 * math.cos(current_time),  # pitch
+                0.1 * math.sin(2 * current_time),  # yaw
+                0, 0, 0
+            )
+            
+            # Update battery status
+            self._mavlink_connection.mav.sys_status_send(
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            )
+            
+            # Update last position time
+            self._last_sim_position['time'] = current_time
+            
+        except Exception as e:
+            error_msg = f"❌ Error sending simulated data: {str(e)}"
+            self._logger.addLog(error_msg)
+            self.error_occurred.emit(error_msg)
+            
+    def _update_delayed_messages(self):
+        """Aktualisiert die UI mit den gecachten Nachrichten (wird alle 60 Sekunden aufgerufen)"""
+        try:
+            current_time = time.time()
+            time_diff = current_time - self._last_ui_update_time
+            
+            # Nur aktualisieren, wenn mindestens 60 Sekunden vergangen sind
+            if time_diff < 60:
+                return
+                
+            self._last_ui_update_time = current_time
+            self._logger.addLog("Updating delayed message display...")
+            
+            # SERVO_OUTPUT_RAW verarbeiten
+            if self._servo_output_raw_cache:
+                try:
+                    # Formatiere SERVO_OUTPUT_RAW-Daten
+                    servo_values = []
+                    for i in range(1, 9):  # Servo 1-8
+                        attr_name = f'servo{i}_raw'
+                        if hasattr(self._servo_output_raw_cache, attr_name):
+                            servo_values.append(f"S{i}={getattr(self._servo_output_raw_cache, attr_name)}")
+                    
+                    if servo_values:
+                        servo_info = "SERVO: " + ", ".join(servo_values)
+                        self._logger.addSystemInfoLog(servo_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SERVO_OUTPUT_RAW: {str(e)}")
+            
+            # RC_CHANNELS verarbeiten
+            if self._rc_channels_cache:
+                try:
+                    # Formatiere RC_CHANNELS-Daten
+                    rc_values = []
+                    for i in range(1, 9):  # RC 1-8
+                        attr_name = f'chan{i}_raw'
+                        if hasattr(self._rc_channels_cache, attr_name):
+                            rc_values.append(f"RC{i}={getattr(self._rc_channels_cache, attr_name)}")
+                    
+                    if rc_values:
+                        rc_info = "RC: " + ", ".join(rc_values)
+                        self._logger.addSystemInfoLog(rc_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing RC_CHANNELS: {str(e)}")
+            
+            # MISSION_CURRENT verarbeiten
+            if self._mission_current_cache:
+                try:
+                    mission_info = f"Mission: WP#{self._mission_current_cache.seq}"
+                    self._logger.addSystemInfoLog(mission_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing MISSION_CURRENT: {str(e)}")
+                    
+            # SYS_STATUS verarbeiten (nur für System-Status, nicht Batterie)
+            if self._sys_status_cache:
+                try:
+                    # Formatiere SYS_STATUS-Daten (ohne Batterie)
+                    errors = []
+                    if hasattr(self._sys_status_cache, 'errors_count1') and self._sys_status_cache.errors_count1 > 0:
+                        errors.append(f"Errors: {self._sys_status_cache.errors_count1}")
+                    
+                    # CPU Last
+                    if hasattr(self._sys_status_cache, 'load'):
+                        cpu_load = self._sys_status_cache.load / 10.0  # In Prozent
+                        status_info = f"CPU: {cpu_load:.1f}%"
+                        if errors:
+                            status_info += " | " + ", ".join(errors)
+                        self._logger.addSystemInfoLog(status_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SYS_STATUS: {str(e)}")
+        except Exception as e:
+            self._logger.addLog(f"Error in delayed message update: {str(e)}")
+        
+    def process_messages(self):
+        """Process incoming MAVLink messages"""
+        if not self._running or not self._mavlink_connection:
+            return
+        
+        # Process multiple messages in one cycle for better performance
+        messages_processed = 0
+        max_messages_per_cycle = 10  # Process up to 10 messages per cycle
+            
+        try:
+            while messages_processed < max_messages_per_cycle:
+                msg = self._mavlink_connection.recv_match(blocking=False)
+                if not msg:
+                    break  # No more messages in the queue
+                    
+                messages_processed += 1
+                msg_type = msg.get_type()
+                
+                # Add important debug output for sensor values
+                self._logger.addLog(f"Receiving MAVLink message: {msg_type}")
+                
+                if msg_type == 'HEARTBEAT':
+                    self.heartbeat_received.emit(msg)
+                    self._handle_heartbeat(msg)
+                    
+                    # Flugmodus als Systeminfo hinzufügen
+                    try:
+                        mode = mavutil.mode_string_v10(msg)
+                        armed = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
+                        status = "ARMED" if armed else "DISARMED"
+                        self._logger.addSystemInfoLog(f"Flight Mode: {mode} | System {status}")
+                    except Exception as e:
+                        pass
+                    
+                elif msg_type == 'ATTITUDE':
+                    self.attitude_received.emit(msg)
+                    # Debug
+                    try:
+                        roll_deg = round(msg.roll * 180 / 3.14159, 1)
+                        pitch_deg = round(msg.pitch * 180 / 3.14159, 1)
+                        yaw_deg = round(msg.yaw * 180 / 3.14159, 1)
+                        attitude_msg = f"Attitude: Roll={roll_deg}°, Pitch={pitch_deg}°, Yaw={yaw_deg}°"
+                        self._logger.addLog(f"[DEBUG] {attitude_msg}")
+                        
+                        # Lagewinkel nicht mehr als Systeminfo hinzufügen
+                        # (auf Wunsch des Benutzers entfernt)
+                    except Exception as e:
+                        pass
+                    
+                elif msg_type == 'GLOBAL_POSITION_INT':
+                    self.gps_received.emit(msg)
+                    # Debug
+                    try:
+                        lat = msg.lat / 1e7
+                        lon = msg.lon / 1e7
+                        alt = msg.relative_alt / 1000.0
+                        gps_msg = f"GPS: Lat={lat:.6f}, Lon={lon:.6f}, Alt={alt:.1f}m"
+                        self._logger.addLog(f"[DEBUG] {gps_msg}")
+                        
+                        # GPS-Position nicht mehr als Systeminfo hinzufügen
+                        # (auf Wunsch des Benutzers entfernt)
+                    except Exception as e:
+                        pass
+                        
+                elif msg_type == 'SYS_STATUS':
+                    self.battery_received.emit(msg)
+                    # Debug
+                    try:
+                        voltage = msg.voltage_battery / 1000.0
+                        current = msg.current_battery / 100.0
+                        remaining = msg.battery_remaining
+                        battery_msg = f"Battery: {voltage:.1f}V, {current:.1f}A, {remaining}%"
+                        self._logger.addLog(f"[DEBUG] {battery_msg}")
+                        
+                        # Cache SYS_STATUS-Nachricht für verzögerte Aktualisierung
+                        self._sys_status_cache = msg
+                        
+                        # Batteriestatus nicht mehr als Systeminfo hinzufügen
+                        # (auf Wunsch des Benutzers entfernt)
+                    except Exception as e:
+                        pass
+                    
+                elif msg_type == 'VFR_HUD':
+                    # Add direct signal for VFR_HUD
+                    try:
+                        airspeed = msg.airspeed
+                        groundspeed = msg.groundspeed
+                        alt = msg.alt
+                        speed_msg = f"Speed: Air={airspeed:.1f}m/s, Ground={groundspeed:.1f}m/s, Alt={alt:.1f}m"
+                        self._logger.addLog(f"[DEBUG] {speed_msg}")
+                        
+                        # Geschwindigkeiten und Höhe nicht mehr als Systeminfo hinzufügen
+                        # (auf Wunsch des Benutzers entfernt)
+                        
+                        # Forward VFR_HUD signal directly to SensorModel
+                        self.vfr_hud_received.emit(msg)
+                    except Exception as vfr_error:
+                        self._logger.addLog(f"Error with VFR_HUD: {str(vfr_error)}")
+                        pass
+                    
+                elif msg_type == 'STATUSTEXT':
+                    self.status_text_received.emit(msg)
+                    self._handle_statustext(msg)
+                    
+                elif msg_type == 'PARAM_VALUE':
+                    self.parameter_received.emit(msg)
+                    
+                elif msg_type == 'SERVO_OUTPUT_RAW':
+                    # Cache SERVO_OUTPUT_RAW-Nachricht für verzögerte Aktualisierung
+                    self._servo_output_raw_cache = msg
+                    self._logger.addLog(f"SERVO_OUTPUT_RAW cached for delayed display")
+                    
+                elif msg_type == 'RC_CHANNELS':
+                    # Cache RC_CHANNELS-Nachricht für verzögerte Aktualisierung
+                    self._rc_channels_cache = msg
+                    self._logger.addLog(f"RC_CHANNELS cached for delayed display")
+                    
+                elif msg_type == 'MISSION_CURRENT':
+                    # Cache MISSION_CURRENT-Nachricht für verzögerte Aktualisierung
+                    self._mission_current_cache = msg
+                    self._logger.addLog(f"MISSION_CURRENT cached for delayed display")
+        except Exception as e:
+            error_msg = f"Error in message processing: {str(e)}"
+            self._logger.addLog(error_msg)
+            self.error_occurred.emit(error_msg)
+            
+    def _handle_heartbeat(self, msg):
+        """Handle heartbeat message"""
+        try:
+            armed = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
+            mode = mavutil.mode_string_v10(msg)
+            
+            if not hasattr(self, '_last_mode') or self._last_mode != mode:
+                self._logger.addLog(f"✈️ Flight Mode: {mode}")
+                self._last_mode = mode
+                
+            if not hasattr(self, '_last_armed') or self._last_armed != armed:
+                status = "ARMED" if armed else "DISARMED"
+                self._logger.addLog(f"🔒 System {status}")
+                self._last_armed = armed
+                
+        except Exception as e:
+            error_msg = f"❌ Error handling heartbeat: {str(e)}"
+            self._logger.addLog(error_msg)
+            self.error_occurred.emit(error_msg)
+            
+    def _update_delayed_messages(self):
+        """Aktualisiert die UI mit den gecachten Nachrichten (wird alle 60 Sekunden aufgerufen)"""
+        try:
+            current_time = time.time()
+            time_diff = current_time - self._last_ui_update_time
+            
+            # Nur aktualisieren, wenn mindestens 60 Sekunden vergangen sind
+            if time_diff < 60:
+                return
+                
+            self._last_ui_update_time = current_time
+            self._logger.addLog("Updating delayed message display...")
+            
+            # SERVO_OUTPUT_RAW verarbeiten
+            if self._servo_output_raw_cache:
+                try:
+                    # Formatiere SERVO_OUTPUT_RAW-Daten
+                    servo_values = []
+                    for i in range(1, 9):  # Servo 1-8
+                        attr_name = f'servo{i}_raw'
+                        if hasattr(self._servo_output_raw_cache, attr_name):
+                            servo_values.append(f"S{i}={getattr(self._servo_output_raw_cache, attr_name)}")
+                    
+                    if servo_values:
+                        servo_info = "SERVO: " + ", ".join(servo_values)
+                        self._logger.addSystemInfoLog(servo_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SERVO_OUTPUT_RAW: {str(e)}")
+            
+            # RC_CHANNELS verarbeiten
+            if self._rc_channels_cache:
+                try:
+                    # Formatiere RC_CHANNELS-Daten
+                    rc_values = []
+                    for i in range(1, 9):  # RC 1-8
+                        attr_name = f'chan{i}_raw'
+                        if hasattr(self._rc_channels_cache, attr_name):
+                            rc_values.append(f"RC{i}={getattr(self._rc_channels_cache, attr_name)}")
+                    
+                    if rc_values:
+                        rc_info = "RC: " + ", ".join(rc_values)
+                        self._logger.addSystemInfoLog(rc_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing RC_CHANNELS: {str(e)}")
+            
+            # MISSION_CURRENT verarbeiten
+            if self._mission_current_cache:
+                try:
+                    mission_info = f"Mission: WP#{self._mission_current_cache.seq}"
+                    self._logger.addSystemInfoLog(mission_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing MISSION_CURRENT: {str(e)}")
+                    
+            # SYS_STATUS verarbeiten (nur für System-Status, nicht Batterie)
+            if self._sys_status_cache:
+                try:
+                    # Formatiere SYS_STATUS-Daten (ohne Batterie)
+                    errors = []
+                    if hasattr(self._sys_status_cache, 'errors_count1') and self._sys_status_cache.errors_count1 > 0:
+                        errors.append(f"Errors: {self._sys_status_cache.errors_count1}")
+                    
+                    # CPU Last
+                    if hasattr(self._sys_status_cache, 'load'):
+                        cpu_load = self._sys_status_cache.load / 10.0  # In Prozent
+                        status_info = f"CPU: {cpu_load:.1f}%"
+                        if errors:
+                            status_info += " | " + ", ".join(errors)
+                        self._logger.addSystemInfoLog(status_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SYS_STATUS: {str(e)}")
+        except Exception as e:
+            self._logger.addLog(f"Error in delayed message update: {str(e)}")
+            
+    def request_data_streams(self):
+        """Request data streams from the flight controller"""
+        if not self._mavlink_connection:
+            error_msg = "❌ No MAVLink connection available"
+            self._logger.addLog(error_msg)
+            self.error_occurred.emit(error_msg)
+            
+    def _update_delayed_messages(self):
+        """Aktualisiert die UI mit den gecachten Nachrichten (wird alle 60 Sekunden aufgerufen)"""
+        try:
+            current_time = time.time()
+            time_diff = current_time - self._last_ui_update_time
+            
+            # Nur aktualisieren, wenn mindestens 60 Sekunden vergangen sind
+            if time_diff < 60:
+                return
+                
+            self._last_ui_update_time = current_time
+            self._logger.addLog("Updating delayed message display...")
+            
+            # SERVO_OUTPUT_RAW verarbeiten
+            if self._servo_output_raw_cache:
+                try:
+                    # Formatiere SERVO_OUTPUT_RAW-Daten
+                    servo_values = []
+                    for i in range(1, 9):  # Servo 1-8
+                        attr_name = f'servo{i}_raw'
+                        if hasattr(self._servo_output_raw_cache, attr_name):
+                            servo_values.append(f"S{i}={getattr(self._servo_output_raw_cache, attr_name)}")
+                    
+                    if servo_values:
+                        servo_info = "SERVO: " + ", ".join(servo_values)
+                        self._logger.addSystemInfoLog(servo_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SERVO_OUTPUT_RAW: {str(e)}")
+            
+            # RC_CHANNELS verarbeiten
+            if self._rc_channels_cache:
+                try:
+                    # Formatiere RC_CHANNELS-Daten
+                    rc_values = []
+                    for i in range(1, 9):  # RC 1-8
+                        attr_name = f'chan{i}_raw'
+                        if hasattr(self._rc_channels_cache, attr_name):
+                            rc_values.append(f"RC{i}={getattr(self._rc_channels_cache, attr_name)}")
+                    
+                    if rc_values:
+                        rc_info = "RC: " + ", ".join(rc_values)
+                        self._logger.addSystemInfoLog(rc_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing RC_CHANNELS: {str(e)}")
+            
+            # MISSION_CURRENT verarbeiten
+            if self._mission_current_cache:
+                try:
+                    mission_info = f"Mission: WP#{self._mission_current_cache.seq}"
+                    self._logger.addSystemInfoLog(mission_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing MISSION_CURRENT: {str(e)}")
+                    
+            # SYS_STATUS verarbeiten (nur für System-Status, nicht Batterie)
+            if self._sys_status_cache:
+                try:
+                    # Formatiere SYS_STATUS-Daten (ohne Batterie)
+                    errors = []
+                    if hasattr(self._sys_status_cache, 'errors_count1') and self._sys_status_cache.errors_count1 > 0:
+                        errors.append(f"Errors: {self._sys_status_cache.errors_count1}")
+                    
+                    # CPU Last
+                    if hasattr(self._sys_status_cache, 'load'):
+                        cpu_load = self._sys_status_cache.load / 10.0  # In Prozent
+                        status_info = f"CPU: {cpu_load:.1f}%"
+                        if errors:
+                            status_info += " | " + ", ".join(errors)
+                        self._logger.addSystemInfoLog(status_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SYS_STATUS: {str(e)}")
+        except Exception as e:
+            self._logger.addLog(f"Error in delayed message update: {str(e)}")
+            return
+            
+        try:
+            self._mavlink_connection.mav.request_data_stream_send(
+                self._mavlink_connection.target_system,
+                self._mavlink_connection.target_component,
+                mavutil.mavlink.MAV_DATA_STREAM_ALL,
+                10,  # 10 Hz
+                1    # Enable
+            )
+            self._logger.addLog("📡 Data stream request sent")
+            
+            # Request system information after successful data stream request
+            self.request_system_info()
+        except Exception as e:
+            error_msg = f"❌ Error requesting data streams: {str(e)}"
+            self._logger.addLog(error_msg)
+            self.error_occurred.emit(error_msg)
+            
+    def _update_delayed_messages(self):
+        """Aktualisiert die UI mit den gecachten Nachrichten (wird alle 60 Sekunden aufgerufen)"""
+        try:
+            current_time = time.time()
+            time_diff = current_time - self._last_ui_update_time
+            
+            # Nur aktualisieren, wenn mindestens 60 Sekunden vergangen sind
+            if time_diff < 60:
+                return
+                
+            self._last_ui_update_time = current_time
+            self._logger.addLog("Updating delayed message display...")
+            
+            # SERVO_OUTPUT_RAW verarbeiten
+            if self._servo_output_raw_cache:
+                try:
+                    # Formatiere SERVO_OUTPUT_RAW-Daten
+                    servo_values = []
+                    for i in range(1, 9):  # Servo 1-8
+                        attr_name = f'servo{i}_raw'
+                        if hasattr(self._servo_output_raw_cache, attr_name):
+                            servo_values.append(f"S{i}={getattr(self._servo_output_raw_cache, attr_name)}")
+                    
+                    if servo_values:
+                        servo_info = "SERVO: " + ", ".join(servo_values)
+                        self._logger.addSystemInfoLog(servo_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SERVO_OUTPUT_RAW: {str(e)}")
+            
+            # RC_CHANNELS verarbeiten
+            if self._rc_channels_cache:
+                try:
+                    # Formatiere RC_CHANNELS-Daten
+                    rc_values = []
+                    for i in range(1, 9):  # RC 1-8
+                        attr_name = f'chan{i}_raw'
+                        if hasattr(self._rc_channels_cache, attr_name):
+                            rc_values.append(f"RC{i}={getattr(self._rc_channels_cache, attr_name)}")
+                    
+                    if rc_values:
+                        rc_info = "RC: " + ", ".join(rc_values)
+                        self._logger.addSystemInfoLog(rc_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing RC_CHANNELS: {str(e)}")
+            
+            # MISSION_CURRENT verarbeiten
+            if self._mission_current_cache:
+                try:
+                    mission_info = f"Mission: WP#{self._mission_current_cache.seq}"
+                    self._logger.addSystemInfoLog(mission_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing MISSION_CURRENT: {str(e)}")
+                    
+            # SYS_STATUS verarbeiten (nur für System-Status, nicht Batterie)
+            if self._sys_status_cache:
+                try:
+                    # Formatiere SYS_STATUS-Daten (ohne Batterie)
+                    errors = []
+                    if hasattr(self._sys_status_cache, 'errors_count1') and self._sys_status_cache.errors_count1 > 0:
+                        errors.append(f"Errors: {self._sys_status_cache.errors_count1}")
+                    
+                    # CPU Last
+                    if hasattr(self._sys_status_cache, 'load'):
+                        cpu_load = self._sys_status_cache.load / 10.0  # In Prozent
+                        status_info = f"CPU: {cpu_load:.1f}%"
+                        if errors:
+                            status_info += " | " + ", ".join(errors)
+                        self._logger.addSystemInfoLog(status_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SYS_STATUS: {str(e)}")
+        except Exception as e:
+            self._logger.addLog(f"Error in delayed message update: {str(e)}")
+            
+    def request_system_info(self):
+        """Request system information from the flight controller"""
+        if not self._mavlink_connection:
+            error_msg = "❌ No MAVLink connection available"
+            self._logger.addLog(error_msg)
+            self.error_occurred.emit(error_msg)
+            
+    def _update_delayed_messages(self):
+        """Aktualisiert die UI mit den gecachten Nachrichten (wird alle 60 Sekunden aufgerufen)"""
+        try:
+            current_time = time.time()
+            time_diff = current_time - self._last_ui_update_time
+            
+            # Nur aktualisieren, wenn mindestens 60 Sekunden vergangen sind
+            if time_diff < 60:
+                return
+                
+            self._last_ui_update_time = current_time
+            self._logger.addLog("Updating delayed message display...")
+            
+            # SERVO_OUTPUT_RAW verarbeiten
+            if self._servo_output_raw_cache:
+                try:
+                    # Formatiere SERVO_OUTPUT_RAW-Daten
+                    servo_values = []
+                    for i in range(1, 9):  # Servo 1-8
+                        attr_name = f'servo{i}_raw'
+                        if hasattr(self._servo_output_raw_cache, attr_name):
+                            servo_values.append(f"S{i}={getattr(self._servo_output_raw_cache, attr_name)}")
+                    
+                    if servo_values:
+                        servo_info = "SERVO: " + ", ".join(servo_values)
+                        self._logger.addSystemInfoLog(servo_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SERVO_OUTPUT_RAW: {str(e)}")
+            
+            # RC_CHANNELS verarbeiten
+            if self._rc_channels_cache:
+                try:
+                    # Formatiere RC_CHANNELS-Daten
+                    rc_values = []
+                    for i in range(1, 9):  # RC 1-8
+                        attr_name = f'chan{i}_raw'
+                        if hasattr(self._rc_channels_cache, attr_name):
+                            rc_values.append(f"RC{i}={getattr(self._rc_channels_cache, attr_name)}")
+                    
+                    if rc_values:
+                        rc_info = "RC: " + ", ".join(rc_values)
+                        self._logger.addSystemInfoLog(rc_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing RC_CHANNELS: {str(e)}")
+            
+            # MISSION_CURRENT verarbeiten
+            if self._mission_current_cache:
+                try:
+                    mission_info = f"Mission: WP#{self._mission_current_cache.seq}"
+                    self._logger.addSystemInfoLog(mission_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing MISSION_CURRENT: {str(e)}")
+                    
+            # SYS_STATUS verarbeiten (nur für System-Status, nicht Batterie)
+            if self._sys_status_cache:
+                try:
+                    # Formatiere SYS_STATUS-Daten (ohne Batterie)
+                    errors = []
+                    if hasattr(self._sys_status_cache, 'errors_count1') and self._sys_status_cache.errors_count1 > 0:
+                        errors.append(f"Errors: {self._sys_status_cache.errors_count1}")
+                    
+                    # CPU Last
+                    if hasattr(self._sys_status_cache, 'load'):
+                        cpu_load = self._sys_status_cache.load / 10.0  # In Prozent
+                        status_info = f"CPU: {cpu_load:.1f}%"
+                        if errors:
+                            status_info += " | " + ", ".join(errors)
+                        self._logger.addSystemInfoLog(status_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SYS_STATUS: {str(e)}")
+        except Exception as e:
+            self._logger.addLog(f"Error in delayed message update: {str(e)}")
+            return
+            
+        try:
+            # Send command to request system information
+            self._logger.addLog("📋 Requesting system information...")
+            
+            # Manuell die gewünschten Systeminfos in das Log eintragen
+            # Diese werden später durch die tatsächlichen Informationen überschrieben
+            self._logger.addSystemInfoLog("Waiting for Frame information...")
+            self._logger.addSystemInfoLog("Waiting for RCOut information...")
+            self._logger.addSystemInfoLog("Waiting for Hardware information...")
+            self._logger.addSystemInfoLog("Waiting for Firmware information...")
+            self._logger.addSystemInfoLog("Waiting for PreArm checks...")
+            # GPS und Batterie wurden auf Wunsch des Benutzers entfernt
+            
+            # Request ArduPilot specific system information using MAVLink command
+            self._mavlink_connection.mav.command_long_send(
+                self._mavlink_connection.target_system,
+                self._mavlink_connection.target_component,
+                mavutil.mavlink.MAV_CMD_DO_SEND_BANNER,  # Request system banner
+                0,  # Confirmation
+                0, 0, 0, 0, 0, 0, 0  # Parameters (not used)
+            )
+            
+            # Request parameter list (this often triggers additional system info messages)
+            self._mavlink_connection.param_fetch_list()
+            
+            # Request specific parameters that might contain system info
+            param_list = ["FRAME_CLASS", "FRAME_TYPE", "HW_TYPE", "INS_PRODUCT_ID"]
+            for param in param_list:
+                self._mavlink_connection.param_fetch_one(param)
+                
+            # Fordere einen Status-Report an, um Systeminformationen zu bekommen
+            self._mavlink_connection.mav.statustext_send(
+                mavutil.mavlink.MAV_SEVERITY_INFO,
+                b"REQUEST_SYSINFO"
+            )
+                
+            self._logger.addLog("📋 System information requested")
+        except Exception as e:
+            error_msg = f"❌ Error requesting system info: {str(e)}"
+            self._logger.addLog(error_msg)
+            self.error_occurred.emit(error_msg)
+            
+    def _update_delayed_messages(self):
+        """Aktualisiert die UI mit den gecachten Nachrichten (wird alle 60 Sekunden aufgerufen)"""
+        try:
+            current_time = time.time()
+            time_diff = current_time - self._last_ui_update_time
+            
+            # Nur aktualisieren, wenn mindestens 60 Sekunden vergangen sind
+            if time_diff < 60:
+                return
+                
+            self._last_ui_update_time = current_time
+            self._logger.addLog("Updating delayed message display...")
+            
+            # SERVO_OUTPUT_RAW verarbeiten
+            if self._servo_output_raw_cache:
+                try:
+                    # Formatiere SERVO_OUTPUT_RAW-Daten
+                    servo_values = []
+                    for i in range(1, 9):  # Servo 1-8
+                        attr_name = f'servo{i}_raw'
+                        if hasattr(self._servo_output_raw_cache, attr_name):
+                            servo_values.append(f"S{i}={getattr(self._servo_output_raw_cache, attr_name)}")
+                    
+                    if servo_values:
+                        servo_info = "SERVO: " + ", ".join(servo_values)
+                        self._logger.addSystemInfoLog(servo_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SERVO_OUTPUT_RAW: {str(e)}")
+            
+            # RC_CHANNELS verarbeiten
+            if self._rc_channels_cache:
+                try:
+                    # Formatiere RC_CHANNELS-Daten
+                    rc_values = []
+                    for i in range(1, 9):  # RC 1-8
+                        attr_name = f'chan{i}_raw'
+                        if hasattr(self._rc_channels_cache, attr_name):
+                            rc_values.append(f"RC{i}={getattr(self._rc_channels_cache, attr_name)}")
+                    
+                    if rc_values:
+                        rc_info = "RC: " + ", ".join(rc_values)
+                        self._logger.addSystemInfoLog(rc_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing RC_CHANNELS: {str(e)}")
+            
+            # MISSION_CURRENT verarbeiten
+            if self._mission_current_cache:
+                try:
+                    mission_info = f"Mission: WP#{self._mission_current_cache.seq}"
+                    self._logger.addSystemInfoLog(mission_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing MISSION_CURRENT: {str(e)}")
+                    
+            # SYS_STATUS verarbeiten (nur für System-Status, nicht Batterie)
+            if self._sys_status_cache:
+                try:
+                    # Formatiere SYS_STATUS-Daten (ohne Batterie)
+                    errors = []
+                    if hasattr(self._sys_status_cache, 'errors_count1') and self._sys_status_cache.errors_count1 > 0:
+                        errors.append(f"Errors: {self._sys_status_cache.errors_count1}")
+                    
+                    # CPU Last
+                    if hasattr(self._sys_status_cache, 'load'):
+                        cpu_load = self._sys_status_cache.load / 10.0  # In Prozent
+                        status_info = f"CPU: {cpu_load:.1f}%"
+                        if errors:
+                            status_info += " | " + ", ".join(errors)
+                        self._logger.addSystemInfoLog(status_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SYS_STATUS: {str(e)}")
+        except Exception as e:
+            self._logger.addLog(f"Error in delayed message update: {str(e)}")
+            
+    def _handle_statustext(self, msg):
+        """Handle status text message"""
+        try:
+            # Extract the text from the message
+            text = msg.text
+            
+            # Look for specific system information patterns in status text
+            if any(pattern in text for pattern in ["Frame:", "RCOut:", "MicoAir", "ChibiOS:", "ArduCopter", "PreArm:"]):
+                # This is a system information message we're looking for
+                self._logger.addLog(f"🔍 {text}")
+                # Add to system info logs directly
+                self._logger.addSystemInfoLog(text)
+                
+            # Auch weitere wichtige Statustexte hinzufügen
+            elif text.startswith("EKF") or "ready to arm" in text.lower() or "armed" in text.lower():
+                self._logger.addLog(f"🔍 {text}")
+                self._logger.addSystemInfoLog(text)
+                
+        except Exception as e:
+            error_msg = f"❌ Error handling status text: {str(e)}"
+            self._logger.addLog(error_msg)
+            self.error_occurred.emit(error_msg)
+            
+    def _update_delayed_messages(self):
+        """Aktualisiert die UI mit den gecachten Nachrichten (wird alle 60 Sekunden aufgerufen)"""
+        try:
+            current_time = time.time()
+            time_diff = current_time - self._last_ui_update_time
+            
+            # Nur aktualisieren, wenn mindestens 60 Sekunden vergangen sind
+            if time_diff < 60:
+                return
+                
+            self._last_ui_update_time = current_time
+            self._logger.addLog("Updating delayed message display...")
+            
+            # SERVO_OUTPUT_RAW verarbeiten
+            if self._servo_output_raw_cache:
+                try:
+                    # Formatiere SERVO_OUTPUT_RAW-Daten
+                    servo_values = []
+                    for i in range(1, 9):  # Servo 1-8
+                        attr_name = f'servo{i}_raw'
+                        if hasattr(self._servo_output_raw_cache, attr_name):
+                            servo_values.append(f"S{i}={getattr(self._servo_output_raw_cache, attr_name)}")
+                    
+                    if servo_values:
+                        servo_info = "SERVO: " + ", ".join(servo_values)
+                        self._logger.addSystemInfoLog(servo_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SERVO_OUTPUT_RAW: {str(e)}")
+            
+            # RC_CHANNELS verarbeiten
+            if self._rc_channels_cache:
+                try:
+                    # Formatiere RC_CHANNELS-Daten
+                    rc_values = []
+                    for i in range(1, 9):  # RC 1-8
+                        attr_name = f'chan{i}_raw'
+                        if hasattr(self._rc_channels_cache, attr_name):
+                            rc_values.append(f"RC{i}={getattr(self._rc_channels_cache, attr_name)}")
+                    
+                    if rc_values:
+                        rc_info = "RC: " + ", ".join(rc_values)
+                        self._logger.addSystemInfoLog(rc_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing RC_CHANNELS: {str(e)}")
+            
+            # MISSION_CURRENT verarbeiten
+            if self._mission_current_cache:
+                try:
+                    mission_info = f"Mission: WP#{self._mission_current_cache.seq}"
+                    self._logger.addSystemInfoLog(mission_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing MISSION_CURRENT: {str(e)}")
+                    
+            # SYS_STATUS verarbeiten (nur für System-Status, nicht Batterie)
+            if self._sys_status_cache:
+                try:
+                    # Formatiere SYS_STATUS-Daten (ohne Batterie)
+                    errors = []
+                    if hasattr(self._sys_status_cache, 'errors_count1') and self._sys_status_cache.errors_count1 > 0:
+                        errors.append(f"Errors: {self._sys_status_cache.errors_count1}")
+                    
+                    # CPU Last
+                    if hasattr(self._sys_status_cache, 'load'):
+                        cpu_load = self._sys_status_cache.load / 10.0  # In Prozent
+                        status_info = f"CPU: {cpu_load:.1f}%"
+                        if errors:
+                            status_info += " | " + ", ".join(errors)
+                        self._logger.addSystemInfoLog(status_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SYS_STATUS: {str(e)}")
+        except Exception as e:
+            self._logger.addLog(f"Error in delayed message update: {str(e)}")
+            
+    def _send_simulator_messages(self):
+        """Send initial messages to the simulator"""
+        try:
+            if not self._mavlink_connection:
+                self._logger.addLog("⚠️ No MAVLink connection available for simulator messages")
+                return
+                
+            # Send initial heartbeat
+            self._mavlink_connection.mav.heartbeat_send(
+                mavutil.mavlink.MAV_TYPE_QUADROTOR,
+                mavutil.mavlink.MAV_AUTOPILOT_GENERIC,
+                0, 0, 0
+            )
+            
+            # Send initial GPS position
+            self._mavlink_connection.mav.global_position_int_send(
+                int(time.time() * 1e3),  # timestamp
+                511657000,  # lat (51.1657)
+                104515000,  # lon (10.4515)
+                0, 0, 0, 0, 0, 0
+            )
+            
+            # Send initial attitude
+            self._mavlink_connection.mav.attitude_send(
+                int(time.time() * 1e3),  # timestamp
+                0, 0, 0,  # roll, pitch, yaw
+                0, 0, 0  # rollspeed, pitchspeed, yawspeed
+            )
+            
+            # Send initial battery status
+            self._mavlink_connection.mav.sys_status_send(
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            )
+            
+        except Exception as e:
+            error_msg = f"❌ Error sending simulator messages: {str(e)}"
+            self._logger.addLog(error_msg)
+            self.error_occurred.emit(error_msg)
+            
+    def _update_delayed_messages(self):
+        """Aktualisiert die UI mit den gecachten Nachrichten (wird alle 60 Sekunden aufgerufen)"""
+        try:
+            current_time = time.time()
+            time_diff = current_time - self._last_ui_update_time
+            
+            # Nur aktualisieren, wenn mindestens 60 Sekunden vergangen sind
+            if time_diff < 60:
+                return
+                
+            self._last_ui_update_time = current_time
+            self._logger.addLog("Updating delayed message display...")
+            
+            # SERVO_OUTPUT_RAW verarbeiten
+            if self._servo_output_raw_cache:
+                try:
+                    # Formatiere SERVO_OUTPUT_RAW-Daten
+                    servo_values = []
+                    for i in range(1, 9):  # Servo 1-8
+                        attr_name = f'servo{i}_raw'
+                        if hasattr(self._servo_output_raw_cache, attr_name):
+                            servo_values.append(f"S{i}={getattr(self._servo_output_raw_cache, attr_name)}")
+                    
+                    if servo_values:
+                        servo_info = "SERVO: " + ", ".join(servo_values)
+                        self._logger.addSystemInfoLog(servo_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SERVO_OUTPUT_RAW: {str(e)}")
+            
+            # RC_CHANNELS verarbeiten
+            if self._rc_channels_cache:
+                try:
+                    # Formatiere RC_CHANNELS-Daten
+                    rc_values = []
+                    for i in range(1, 9):  # RC 1-8
+                        attr_name = f'chan{i}_raw'
+                        if hasattr(self._rc_channels_cache, attr_name):
+                            rc_values.append(f"RC{i}={getattr(self._rc_channels_cache, attr_name)}")
+                    
+                    if rc_values:
+                        rc_info = "RC: " + ", ".join(rc_values)
+                        self._logger.addSystemInfoLog(rc_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing RC_CHANNELS: {str(e)}")
+            
+            # MISSION_CURRENT verarbeiten
+            if self._mission_current_cache:
+                try:
+                    mission_info = f"Mission: WP#{self._mission_current_cache.seq}"
+                    self._logger.addSystemInfoLog(mission_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing MISSION_CURRENT: {str(e)}")
+                    
+            # SYS_STATUS verarbeiten (nur für System-Status, nicht Batterie)
+            if self._sys_status_cache:
+                try:
+                    # Formatiere SYS_STATUS-Daten (ohne Batterie)
+                    errors = []
+                    if hasattr(self._sys_status_cache, 'errors_count1') and self._sys_status_cache.errors_count1 > 0:
+                        errors.append(f"Errors: {self._sys_status_cache.errors_count1}")
+                    
+                    # CPU Last
+                    if hasattr(self._sys_status_cache, 'load'):
+                        cpu_load = self._sys_status_cache.load / 10.0  # In Prozent
+                        status_info = f"CPU: {cpu_load:.1f}%"
+                        if errors:
+                            status_info += " | " + ", ".join(errors)
+                        self._logger.addSystemInfoLog(status_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SYS_STATUS: {str(e)}")
+        except Exception as e:
+            self._logger.addLog(f"Error in delayed message update: {str(e)}")
+
+    def _send_simulated_data(self):
+        """Send simulated sensor data"""
+        try:
+            # Update GPS position (move slightly)
+            self._mavlink_connection.mav.global_position_int_send(
+                int(time.time() * 1e3),
+                511657000 + int(time.time() * 1000),  # lat with slight movement
+                104515000 + int(time.time() * 1000),  # lon with slight movement
+                0, 0, 0, 0, 0, 0
+            )
+            
+            # Update attitude (add some variation)
+            self._mavlink_connection.mav.attitude_send(
+                int(time.time() * 1e3),
+                0.1 * math.sin(time.time()),  # roll
+                0.1 * math.cos(time.time()),  # pitch
+                0.1 * math.sin(2 * time.time()),  # yaw
+                0, 0, 0
+            )
+            
+            # Update battery status
+            self._mavlink_connection.mav.sys_status_send(
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            )
+            
+        except Exception as e:
+            error_msg = f"❌ Error sending simulated data: {str(e)}"
+            self._logger.addLog(error_msg)
+            self.error_occurred.emit(error_msg)
+            
+    def _update_delayed_messages(self):
+        """Aktualisiert die UI mit den gecachten Nachrichten (wird alle 60 Sekunden aufgerufen)"""
+        try:
+            current_time = time.time()
+            time_diff = current_time - self._last_ui_update_time
+            
+            # Nur aktualisieren, wenn mindestens 60 Sekunden vergangen sind
+            if time_diff < 60:
+                return
+                
+            self._last_ui_update_time = current_time
+            self._logger.addLog("Updating delayed message display...")
+            
+            # SERVO_OUTPUT_RAW verarbeiten
+            if self._servo_output_raw_cache:
+                try:
+                    # Formatiere SERVO_OUTPUT_RAW-Daten
+                    servo_values = []
+                    for i in range(1, 9):  # Servo 1-8
+                        attr_name = f'servo{i}_raw'
+                        if hasattr(self._servo_output_raw_cache, attr_name):
+                            servo_values.append(f"S{i}={getattr(self._servo_output_raw_cache, attr_name)}")
+                    
+                    if servo_values:
+                        servo_info = "SERVO: " + ", ".join(servo_values)
+                        self._logger.addSystemInfoLog(servo_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SERVO_OUTPUT_RAW: {str(e)}")
+            
+            # RC_CHANNELS verarbeiten
+            if self._rc_channels_cache:
+                try:
+                    # Formatiere RC_CHANNELS-Daten
+                    rc_values = []
+                    for i in range(1, 9):  # RC 1-8
+                        attr_name = f'chan{i}_raw'
+                        if hasattr(self._rc_channels_cache, attr_name):
+                            rc_values.append(f"RC{i}={getattr(self._rc_channels_cache, attr_name)}")
+                    
+                    if rc_values:
+                        rc_info = "RC: " + ", ".join(rc_values)
+                        self._logger.addSystemInfoLog(rc_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing RC_CHANNELS: {str(e)}")
+            
+            # MISSION_CURRENT verarbeiten
+            if self._mission_current_cache:
+                try:
+                    mission_info = f"Mission: WP#{self._mission_current_cache.seq}"
+                    self._logger.addSystemInfoLog(mission_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing MISSION_CURRENT: {str(e)}")
+                    
+            # SYS_STATUS verarbeiten (nur für System-Status, nicht Batterie)
+            if self._sys_status_cache:
+                try:
+                    # Formatiere SYS_STATUS-Daten (ohne Batterie)
+                    errors = []
+                    if hasattr(self._sys_status_cache, 'errors_count1') and self._sys_status_cache.errors_count1 > 0:
+                        errors.append(f"Errors: {self._sys_status_cache.errors_count1}")
+                    
+                    # CPU Last
+                    if hasattr(self._sys_status_cache, 'load'):
+                        cpu_load = self._sys_status_cache.load / 10.0  # In Prozent
+                        status_info = f"CPU: {cpu_load:.1f}%"
+                        if errors:
+                            status_info += " | " + ", ".join(errors)
+                        self._logger.addSystemInfoLog(status_info)
+                except Exception as e:
+                    self._logger.addLog(f"Error processing SYS_STATUS: {str(e)}")
+        except Exception as e:
+            self._logger.addLog(f"Error in delayed message update: {str(e)}")
