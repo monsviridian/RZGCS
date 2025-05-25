@@ -12,9 +12,11 @@ from backend.logger import Logger
 from backend.serial_connector import SerialConnector
 from backend.sensorviewmodel import SensorViewModel
 from backend.parameter_model import ParameterTableModel
+from backend.parameter_manager import ParameterManager
 from backend.flight_view_controller import FlightViewController
 from backend.calibration_view_controller import CalibrationViewController
 from backend.motor_test_controller import MotorTestController
+from backend.license_ui import LicenseController
 
 class Backend(QObject):
     def __init__(self):
@@ -22,7 +24,14 @@ class Backend(QObject):
         self.logger = Logger()
         self.sensor_model = SensorViewModel()
         self.parameter_model = ParameterTableModel()
+        self.parameter_manager = ParameterManager(self.parameter_model, self.logger)
         self.serial_connector = SerialConnector(self.sensor_model, self.logger, self.parameter_model)
+        
+        # Lizenzcontroller initialisieren
+        self.license_controller = LicenseController()
+        
+        # Verbinde den ParameterManager mit dem SerialConnector
+        self.parameter_manager.set_connection(self.serial_connector.get_mavlink_connection())
         # Set simulator as port
         self.serial_connector.setPort("Simulator")
         # Set baudrate (not used for simulator, but required)
@@ -41,12 +50,20 @@ def main():
     
     # Create QML engine
     engine = QQmlApplicationEngine()
+    
+    # Add QML import paths for modules
+    qml_dir = Path(__file__).parent.parent
+    rzgcs_import_path = str(qml_dir / "RZGCSContent")
+    print(f"Adding QML import path: {rzgcs_import_path}")
+    engine.addImportPath(rzgcs_import_path)
 
     # Expose Python objects to QML
     engine.rootContext().setContextProperty("logger", backend.logger)
     engine.rootContext().setContextProperty("serialConnector", backend.serial_connector)
     engine.rootContext().setContextProperty("sensorModel", backend.sensor_model)
     engine.rootContext().setContextProperty("parameterModel", backend.parameter_model)
+    engine.rootContext().setContextProperty("parameterController", backend.parameter_manager)
+    engine.rootContext().setContextProperty("licenseController", backend.license_controller)
     
     # Load main QML file first
     qml_file = Path(__file__).parent.parent / "RZGCSContent" / "App.qml"
@@ -97,8 +114,8 @@ def main():
         # Registriere den Controller im QML-Kontext
         engine.rootContext().setContextProperty("calibrationViewController", calibration_controller)
         
-        # Initialisiere mit dem message_handler vom SerialConnector
-        if calibration_controller.initialize(backend.serial_connector.get_message_handler()):
+        # Initialisiere mit dem message_handler vom SerialConnector und dem SensorViewModel
+        if calibration_controller.initialize(backend.serial_connector.get_message_handler(), backend.sensor_model):
             print("Kalibrierungsansicht erfolgreich initialisiert")
         else:
             print("Warnung: Kalibrierungsansicht konnte nicht initialisiert werden")
