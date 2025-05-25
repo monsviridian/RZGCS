@@ -6,9 +6,15 @@ Item {
     id: root
     property var controller: null  // Controller-Referenz, die von außen gesetzt werden kann
     
+    // Feature-Status basierend auf Lizenz prüfen
+    property bool isFeatureEnabled: licenseController ? licenseController.isFeatureEnabled("angel_mode") : false
+    
+    // Angel Mode Inhalt (nur sichtbar mit Enterprise-Lizenz)
     Rectangle {
+        id: angelModeContent
         anchors.fill: parent
         color: "#2c2c2c"
+        visible: root.isFeatureEnabled
         
         // Fullscreen Terrain Visualization
         Image {
