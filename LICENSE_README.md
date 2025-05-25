@@ -56,10 +56,12 @@ RZGCS verwendet ein Freemium-Modell mit gestaffelten Lizenzen:
 - Erweiterte Protokollierung
 - Drohnenanimation
 - Motortests
+- 3D Mad& Call Of Duty type Map
 
 #### Enterprise (€299/Jahr)
 - Alle Professional-Funktionen
 - Angel Mode für vordefinierte Flugpfade
+- AI Tools und Autonome Mission 
 - Benutzerdefinierte Flugpfadprogrammierung
 - Branding-Anpassungen
 - Prioritätssupport
@@ -137,8 +139,8 @@ Die Funktion `isFeatureEnabled("feature_name")` kann verwendet werden, um zu pr�
 
 Bei Fragen zur Lizenzierung wenden Sie sich bitte an:
 
-E-Mail: license@rzgcs.com
-Telefon: +49 123 45678
+E-Mail: joel-rz@rzsolutions.com
+
 
 ---
 
