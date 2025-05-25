@@ -4,3 +4,4 @@ EventListSimulator 1.0 EventListSimulator.qml
 EventListModel 1.0 EventListModel.qml
 AngelView 1.0 ../RZGCSContent/AngelView.ui.qml
 Screen01 1.0 ../RZGCSContent/Screen01.ui.qml
+MotorTestView 1.0 ../RZGCSContent/MotorTestView.qml
