@@ -62,6 +62,7 @@ class MAVSDKDroneViewModel(QObject):
         
         # Port management
         self._available_ports = []
+        self._selected_port = ""
         self._connection_status = "Disconnected"
         self._status_message = "Ready to connect"
         
@@ -127,6 +128,29 @@ class MAVSDKDroneViewModel(QObject):
         """Gibt die aktuelle Statusmeldung zurück"""
         return self._status_message
     
+    @Slot()
+    def load_ports(self) -> None:
+        """Alias for refreshPorts to maintain compatibility with QML"""
+        self.refreshPorts()
+    
+    @Slot(str)
+    def setPort(self, port: str) -> None:
+        """Setzt den ausgewählten Port (wird von der UI aufgerufen)
+        
+        Args:
+            port: Der ausgewählte COM-Port (z.B. "COM3")
+        """
+        if port and port != self._selected_port:
+            self._selected_port = port
+            self._update_status(f"Port ausgewählt: {port}")
+    
+    @Slot()
+    def update_connection_status(self) -> None:
+        """Aktualisiert den Verbindungsstatus (wird von der UI aufgerufen)"""
+        # Diese Methode wird von der UI aufgerufen, aber wir aktualisieren den Status bereits über die Callbacks
+        # Hier können wir die Logik für die Statusaktualisierung hinzufügen, falls benötigt
+        pass
+        
     @Slot()
     def refreshPorts(self) -> None:
         """Aktualisiert die Liste der verfügbaren COM-Ports"""
