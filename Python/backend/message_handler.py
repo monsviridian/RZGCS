@@ -36,14 +36,405 @@ class MessageHandler(QObject):
         self._mission_current_cache = None
         self._sys_status_cache = None
         
+        # Cache für Kalibrierungsstatus
+        self._calibration_status = {
+            'compass': {'needed': False, 'in_progress': False, 'last_update': 0},
+            'accel': {'needed': False, 'in_progress': False, 'last_update': 0},
+            'level': {'needed': False, 'in_progress': False, 'last_update': 0}
+        }
+        
         # Zeitpunkt der letzten UI-Aktualisierung
         self._last_ui_update_time = time.time()
         
+    def _handle_statustext(self, msg):
+        """
+        Process STATUSTEXT messages from the flight controller
+        
+        Args:
+            msg (MAVLink_statustext_message): The received STATUSTEXT message
+        """
+        try:
+            # Extract text from the message and decode it
+            # Handle both string and byte array formats
+            if isinstance(msg.text, str):
+                text = msg.text
+            else:
+                # For byte arrays, convert each byte to char
+                text = "".join([chr(x) for x in msg.text if x != 0])
+            
+            # Ensure severity is an integer
+            try:
+                severity = int(msg.severity)
+            except (ValueError, TypeError):
+                severity = 6  # Default to INFO level
+            
+            # Log the message based on severity
+            severity_text = "INFO"
+            if severity < 4:
+                severity_text = "ERROR"
+            elif severity < 5:
+                severity_text = "WARNING"
+            elif severity < 7:
+                severity_text = "INFO"
+            else:
+                severity_text = "DEBUG"
+                
+            log_message = f"[{severity_text}] {text}"
+            self._logger.addLog(log_message)
+            
+            # Send signal for further processing
+            self.status_text_received.emit({
+                'text': text,
+                'severity': severity,
+                'severity_text': severity_text
+            })
+            
+            # Systeminformationen an SensorManager weiterleiten
+            if hasattr(self, '_sensor_manager') and self._sensor_manager:
+                # Prüfe, ob es sich um relevante Systeminformationen handelt
+                if "ArduCopter" in text or "ArduPlane" in text or "Frame:" in text or \
+                   "Frame Type:" in text or "MicroAir" in text or "ChibiOS" in text or \
+                   "NuttX" in text or "VERSION" in text:
+                    self._sensor_manager.handle_system_info(text)
+                    
+                    # SensorView initialisiert, falls noch nicht geschehen
+                    if not self._sensor_view_initialized and not self._sensor_update_timer.isActive():
+                        self._start_sensor_view_updates()
+            
+        except Exception as e:
+            self._logger.addLog(f"Error processing STATUSTEXT: {str(e)}")
+            
+    def _update_sensor_view(self):
+        """Aktualisiert die SensorView mit den aktuellen Daten"""
+        try:
+            # Wenn kein SensorManager vorhanden ist, abbrechen
+            if not hasattr(self, '_sensor_manager') or not self._sensor_manager:
+                return
+                
+            # Wenn keine Verbindung vorhanden ist, abbrechen
+            if not self._mavlink_connection or not self._running:
+                return
+                
+            # Wenn noch nicht initialisiert, Systeminformationen anfordern
+            if not self._sensor_view_initialized:
+                self._request_sensor_view_data()
+                self._sensor_view_initialized = True
+                
+        except Exception as e:
+            self._logger.addLog(f"Error updating sensor view: {str(e)}")
+            
+    def _start_sensor_view_updates(self):
+        """Startet den Timer für regelmäßige Updates der SensorView"""
+        if hasattr(self, '_sensor_update_timer'):
+            self._sensor_update_timer.start()
+            self._logger.addLog("✅ SensorView updates started")
+            
+    def _request_sensor_view_data(self):
+        """Fordert Daten vom Flugcontroller für die SensorView an"""
+        try:
+            self._logger.addLog("📊 Requesting data for SensorView...")
+            
+            # Request system banner (ArduPilot-spezifisch)
+            self._mavlink_connection.mav.command_long_send(
+                self._mavlink_connection.target_system,
+                self._mavlink_connection.target_component,
+                mavutil.mavlink.MAV_CMD_DO_SEND_BANNER,  # Request system banner
+                0,  # Confirmation
+                0, 0, 0, 0, 0, 0, 0  # Parameters (not used)
+            )
+            
+            # Request parameter list (enthält oft Systeminfos)
+            self._mavlink_connection.param_fetch_list()
+            
+            # Request specific parameters that might contain system info
+            param_list = ["FRAME_CLASS", "FRAME_TYPE", "HW_TYPE", "INS_PRODUCT_ID"]
+            for param in param_list:
+                self._mavlink_connection.param_fetch_one(param)
+                
+            # Fordere einen Status-Report an, um Systeminformationen zu bekommen
+            self._mavlink_connection.mav.statustext_send(
+                mavutil.mavlink.MAV_SEVERITY_INFO,
+                b"REQUEST_SYSINFO"
+            )
+            
+            # Fordere den SensorManager auf, Systeminformationen anzufordern
+            if hasattr(self, '_sensor_manager') and self._sensor_manager:
+                self._sensor_manager.request_system_info()
+                
+        except Exception as e:
+            self._logger.addLog(f"Error requesting sensor view data: {str(e)}")
+        
+    def set_sensor_manager(self, sensor_manager):
+        """Setzt den SensorManager für die Kommunikation mit der SensorView"""
+        self._sensor_manager = sensor_manager
+        # Timer für die Aktualisierung der SensorView einrichten
+        self._sensor_update_timer = QTimer(self)
+        self._sensor_update_timer.timeout.connect(self._update_sensor_view)
+        self._sensor_update_timer.setInterval(500)  # Alle 0.5 Sekunden aktualisieren
+        
+        # Verbinde Signale mit dem SensorManager
+        self.attitude_received.connect(self._sensor_manager.handle_attitude)
+        self.gps_received.connect(self._sensor_manager.handle_gps)
+        self.battery_received.connect(self._sensor_manager.handle_battery)
+        self.vfr_hud_received.connect(self._sensor_manager.handle_vfr_hud)
+        
+        self._logger.addLog("✅ SensorManager für SensorView registriert")
+
     def set_connection(self, connection, is_simulator=False):
         """Set the MAVLink connection to use"""
         self._mavlink_connection = connection
         self._is_simulator = is_simulator
         
+        # Flag zur Nachverfolgung, ob SensorView-Daten bereits einmal abgefragt wurden
+        self._sensor_view_initialized = False
+        
+    def _send_message(self, msg):
+        """Send a message via the MAVLink connection"""
+        if not self._mavlink_connection:
+            return False
+            
+    def send_reboot_command(self):
+        """
+        Sendet einen Neustart-Befehl an den Flugcontroller.
+        Verwendet den MAVLink-Befehl COMMAND_LONG mit MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN.
+        
+        Returns:
+            bool: True, wenn der Befehl erfolgreich gesendet wurde, sonst False.
+        """
+        if not self._mavlink_connection:
+            self._logger.addLog("[ERROR] Keine MAVLink-Verbindung zum Senden des Neustart-Befehls")
+            return False
+            
+        try:
+            # MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN = 246
+            # Parameter 1: 1 = Reboot autopilot, 0 = Do nothing for autopilot
+            # Parameter 2: 0 = Do nothing for onboard computer
+            # Parameter 3: 0 = Do nothing for camera
+            # Parameter 4: 0 = Do nothing for mount
+            # Parameter 5-7: 0 (unused)
+            self._logger.addLog("[INFO] Sende Neustart-Befehl an Flugcontroller...")
+            
+            # target_system und target_component sind in der Regel 1 und 1 für den Haupt-Flugcontroller
+            target_system = 1
+            target_component = 1
+            
+            # Sende den MAVLink-Befehl
+            self._mavlink_connection.mav.command_long_send(
+                target_system,          # target_system
+                target_component,       # target_component
+                246,                    # command (MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN)
+                0,                      # confirmation (0 = first transmission)
+                1,                      # param1 (1 = reboot autopilot)
+                0,                      # param2 (0 = do nothing for onboard computer)
+                0,                      # param3 (0 = do nothing for camera)
+                0,                      # param4 (0 = do nothing for mount)
+                0, 0, 0                 # param5-7 (unused)
+            )
+            
+            self._logger.addLog("[OK] Neustart-Befehl erfolgreich gesendet")
+            return True
+            
+        except Exception as e:
+            self._logger.addLog(f"[ERROR] Fehler beim Senden des Neustart-Befehls: {str(e)}")
+            return False
+            
+        try:
+            self._mavlink_connection.write(msg.pack(self._mavlink_connection.mav))
+            return True
+        except Exception as e:
+            self._logger.addLog(f"❌ Failed to send MAVLink message: {str(e)}")
+            return False
+            
+    def start_compass_calibration(self):
+        """
+        Startet die Kompass-Kalibrierung.
+        
+        Returns:
+            bool: True wenn der Befehl erfolgreich gesendet wurde, sonst False
+        """
+        try:
+            if not self._mavlink_connection:
+                self._logger.addLog("❌ Keine MAVLink-Verbindung verfügbar")
+                return False
+                
+            # MAV_CMD_DO_START_MAG_CAL command
+            # param1: Mask für Kompass (0xFF für alle Kompasse)
+            # param2: 1 = Kalibrierung starten (0 = beenden)
+            # param3: 0 = automatisch speichern (1 = nicht speichern)
+            # param4: 0 = Startverzögerung
+            # param5-7: nicht benutzt
+            command = self._mavlink_connection.mav.command_long_encode(
+                self._mavlink_connection.target_system,
+                self._mavlink_connection.target_component,
+                mavutil.mavlink.MAV_CMD_DO_START_MAG_CAL,
+                0,  # confirmation
+                0xFF,  # Alle Kompasse
+                1,     # Starten
+                0,     # Auto-speichern
+                0,     # Keine Verzögerung
+                0, 0, 0  # Nicht benutzt
+            )
+            
+            result = self._send_message(command)
+            if result:
+                self._logger.addLog("✅ Kompass-Kalibrierung gestartet")
+            else:
+                self._logger.addLog("❌ Fehler beim Senden des Kompass-Kalibrierungsbefehls")
+            return result
+            
+        except Exception as e:
+            self._logger.addLog(f"❌ Fehler beim Starten der Kompass-Kalibrierung: {str(e)}")
+            return False
+            
+    def cancel_compass_calibration(self):
+        """
+        Bricht die Kompass-Kalibrierung ab.
+        
+        Returns:
+            bool: True wenn der Befehl erfolgreich gesendet wurde, sonst False
+        """
+        try:
+            if not self._mavlink_connection:
+                self._logger.addLog("❌ Keine MAVLink-Verbindung verfügbar")
+                return False
+                
+            # MAV_CMD_DO_CANCEL_MAG_CAL command
+            # param1: Mask für Kompass (0xFF für alle Kompasse)
+            # param2-7: nicht benutzt
+            command = self._mavlink_connection.mav.command_long_encode(
+                self._mavlink_connection.target_system,
+                self._mavlink_connection.target_component,
+                mavutil.mavlink.MAV_CMD_DO_CANCEL_MAG_CAL,
+                0,  # confirmation
+                0xFF,  # Alle Kompasse
+                0, 0, 0, 0, 0, 0  # Nicht benutzt
+            )
+            
+            result = self._send_message(command)
+            if result:
+                self._logger.addLog("✅ Kompass-Kalibrierung abgebrochen")
+            else:
+                self._logger.addLog("❌ Fehler beim Senden des Abbruchbefehls")
+            return result
+            
+        except Exception as e:
+            self._logger.addLog(f"❌ Fehler beim Abbrechen der Kompass-Kalibrierung: {str(e)}")
+            return False
+            
+    def accept_compass_calibration(self):
+        """
+        Akzeptiert und speichert die Kompass-Kalibrierung.
+        
+        Returns:
+            bool: True wenn der Befehl erfolgreich gesendet wurde, sonst False
+        """
+        try:
+            if not self._mavlink_connection:
+                self._logger.addLog("❌ Keine MAVLink-Verbindung verfügbar")
+                return False
+                
+            # MAV_CMD_DO_ACCEPT_MAG_CAL command
+            # param1: Mask für Kompass (0xFF für alle Kompasse)
+            # param2-7: nicht benutzt
+            command = self._mavlink_connection.mav.command_long_encode(
+                self._mavlink_connection.target_system,
+                self._mavlink_connection.target_component,
+                mavutil.mavlink.MAV_CMD_DO_ACCEPT_MAG_CAL,
+                0,  # confirmation
+                0xFF,  # Alle Kompasse
+                0, 0, 0, 0, 0, 0  # Nicht benutzt
+            )
+            
+            result = self._send_message(command)
+            if result:
+                self._logger.addLog("✅ Kompass-Kalibrierung akzeptiert und gespeichert")
+            else:
+                self._logger.addLog("❌ Fehler beim Speichern der Kalibrierungsdaten")
+            return result
+            
+        except Exception as e:
+            self._logger.addLog(f"❌ Fehler beim Akzeptieren der Kompass-Kalibrierung: {str(e)}")
+            return False
+            
+    def start_accel_calibration(self):
+        """
+        Startet die Beschleunigungssensor-Kalibrierung.
+        
+        Returns:
+            bool: True wenn der Befehl erfolgreich gesendet wurde, sonst False
+        """
+        try:
+            if not self._mavlink_connection:
+                self._logger.addLog("❌ Keine MAVLink-Verbindung verfügbar")
+                return False
+                
+            # MAV_CMD_PREFLIGHT_CALIBRATION command
+            # param1: Gyro (0 = nicht kalibrieren)
+            # param2: Magnetometer (0 = nicht kalibrieren)
+            # param3: Nullpunkt Barometer (0 = nicht kalibrieren)
+            # param4: Nullpunkt RC (0 = nicht kalibrieren)
+            # param5: Accelerometer (1 = kalibrieren)
+            # param6: Kompass/Motor Interferenz (0 = nicht kalibrieren)
+            # param7: nicht benutzt
+            command = self._mavlink_connection.mav.command_long_encode(
+                self._mavlink_connection.target_system,
+                self._mavlink_connection.target_component,
+                mavutil.mavlink.MAV_CMD_PREFLIGHT_CALIBRATION,
+                0,  # confirmation
+                0,   # Gyro
+                0,   # Magnetometer
+                0,   # Barometer
+                0,   # RC
+                1,   # Accelerometer
+                0,   # Compass/Motor
+                0    # Nicht benutzt
+            )
+            
+            result = self._send_message(command)
+            if result:
+                self._logger.addLog("✅ Accelerometer-Kalibrierung gestartet")
+            else:
+                self._logger.addLog("❌ Fehler beim Senden des Accelerometer-Kalibrierungsbefehls")
+            return result
+            
+        except Exception as e:
+            self._logger.addLog(f"❌ Fehler beim Starten der Accelerometer-Kalibrierung: {str(e)}")
+            return False
+            
+    def next_accel_calibration_step(self):
+        """
+        Bestätigt den aktuellen Schritt der Accelerometer-Kalibrierung und geht zum nächsten Schritt.
+        
+        Returns:
+            bool: True wenn der Befehl erfolgreich gesendet wurde, sonst False
+        """
+        try:
+            if not self._mavlink_connection:
+                self._logger.addLog("❌ Keine MAVLink-Verbindung verfügbar")
+                return False
+                
+            # MAV_CMD_ACCELCAL_VEHICLE_POS command
+            # param1: Position (1-6 für verschiedene Positionen)
+            command = self._mavlink_connection.mav.command_long_encode(
+                self._mavlink_connection.target_system,
+                self._mavlink_connection.target_component,
+                mavutil.mavlink.MAV_CMD_ACCELCAL_VEHICLE_POS,
+                0,  # confirmation
+                1,  # Position (wird ignoriert, der Flugcontroller kennt den aktuellen Schritt)
+                0, 0, 0, 0, 0, 0  # Nicht benutzt
+            )
+            
+            result = self._send_message(command)
+            if result:
+                self._logger.addLog("✅ Nächster Schritt der Accelerometer-Kalibrierung")
+            else:
+                self._logger.addLog("❌ Fehler beim Senden des Befehls zum nächsten Kalibrierungsschritt")
+            return result
+            
+        except Exception as e:
+            self._logger.addLog(f"❌ Fehler beim Fortfahren mit der Accelerometer-Kalibrierung: {str(e)}")
+            return False
+            
     def start(self):
         """Start message handling"""
         if not self._mavlink_connection:
@@ -371,12 +762,11 @@ class MessageHandler(QObject):
                     self.heartbeat_received.emit(msg)
                     self._handle_heartbeat(msg)
                     
-                    # Flugmodus als Systeminfo hinzufügen
+                    # Nur Armed/Disarmed Status als Systeminfo hinzufügen, Flugmodus entfernt
                     try:
-                        mode = mavutil.mode_string_v10(msg)
                         armed = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
                         status = "ARMED" if armed else "DISARMED"
-                        self._logger.addSystemInfoLog(f"Flight Mode: {mode} | System {status}")
+                        self._logger.addSystemInfoLog(f"System {status}")
                     except Exception as e:
                         pass
                     
@@ -411,22 +801,27 @@ class MessageHandler(QObject):
                         pass
                         
                 elif msg_type == 'SYS_STATUS':
+                    # SYS_STATUS-Nachricht direkt an UI weitergeben für Batterieanzeige
                     self.battery_received.emit(msg)
-                    # Debug
+                    
+                    # Batterieinformationen verarbeiten
                     try:
                         voltage = msg.voltage_battery / 1000.0
                         current = msg.current_battery / 100.0
                         remaining = msg.battery_remaining
-                        battery_msg = f"Battery: {voltage:.1f}V, {current:.1f}A, {remaining}%"
-                        self._logger.addLog(f"[DEBUG] {battery_msg}")
                         
-                        # Cache SYS_STATUS-Nachricht für verzögerte Aktualisierung
+                        # Cache SYS_STATUS-Nachricht für spätere Verwendung
                         self._sys_status_cache = msg
                         
-                        # Batteriestatus nicht mehr als Systeminfo hinzufügen
-                        # (auf Wunsch des Benutzers entfernt)
+                        # Batterieinformationen an SensorModel weitergeben für bessere PreflightView-Integration
+                        if hasattr(self, '_sensor_manager') and self._sensor_manager:
+                            self._sensor_manager.handle_battery(msg)
+                        
+                        # Nur Debug-Log, keine System-Info mehr (auf Wunsch des Benutzers)
+                        battery_msg = f"Battery: {voltage:.1f}V, {current:.1f}A, {remaining}%"
+                        self._logger.addLog(f"[DEBUG] {battery_msg}")
                     except Exception as e:
-                        pass
+                        self._logger.addLog(f"Error processing battery status: {str(e)}")
                     
                 elif msg_type == 'VFR_HUD':
                     # Add direct signal for VFR_HUD
@@ -458,15 +853,27 @@ class MessageHandler(QObject):
                     self._servo_output_raw_cache = msg
                     self._logger.addLog(f"SERVO_OUTPUT_RAW cached for delayed display")
                     
+                    # Wenn SensorManager vorhanden, SERVO_OUTPUT direkt weitergeben
+                    if hasattr(self, '_sensor_manager') and self._sensor_manager:
+                        self._sensor_manager.handle_servo_output(msg)
+                    
                 elif msg_type == 'RC_CHANNELS':
                     # Cache RC_CHANNELS-Nachricht für verzögerte Aktualisierung
                     self._rc_channels_cache = msg
                     self._logger.addLog(f"RC_CHANNELS cached for delayed display")
                     
+                    # Wenn SensorManager vorhanden, RC_CHANNELS direkt weitergeben
+                    if hasattr(self, '_sensor_manager') and self._sensor_manager:
+                        self._sensor_manager.handle_rc_channels(msg)
+                    
                 elif msg_type == 'MISSION_CURRENT':
                     # Cache MISSION_CURRENT-Nachricht für verzögerte Aktualisierung
                     self._mission_current_cache = msg
                     self._logger.addLog(f"MISSION_CURRENT cached for delayed display")
+                    
+                    # Wenn SensorManager vorhanden, MISSION_CURRENT direkt weitergeben
+                    if hasattr(self, '_sensor_manager') and self._sensor_manager and hasattr(self._sensor_manager, 'handle_mission'):
+                        self._sensor_manager.handle_mission(msg)
         except Exception as e:
             error_msg = f"Error in message processing: {str(e)}"
             self._logger.addLog(error_msg)
@@ -478,14 +885,27 @@ class MessageHandler(QObject):
             armed = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
             mode = mavutil.mode_string_v10(msg)
             
-            if not hasattr(self, '_last_mode') or self._last_mode != mode:
-                self._logger.addLog(f"✈️ Flight Mode: {mode}")
-                self._last_mode = mode
+            # Flugmodus nicht mehr loggen (auf Wunsch des Benutzers entfernt)
+            self._last_mode = mode
                 
-            if not hasattr(self, '_last_armed') or self._last_armed != armed:
-                status = "ARMED" if armed else "DISARMED"
-                self._logger.addLog(f"🔒 System {status}")
-                self._last_armed = armed
+            # Nur loggen, wenn sich der Status geändert hat und nicht beim ersten Aufruf
+            if hasattr(self, '_last_armed'):
+                if self._last_armed != armed:
+                    status = "ARMED" if armed else "DISARMED"
+                    # Zeitstempel für letzte Statusmeldung speichern
+                    current_time = time.time()
+                    if not hasattr(self, '_last_arm_status_time'):
+                        self._last_arm_status_time = 0
+                    
+                    # Status nur loggen, wenn sich tatsächlich etwas geändert hat
+                    # und nicht zu häufig (mindestens 1 Sekunde Abstand)
+                    # Aber nicht als [SYSTEM INFO] loggen, damit es nicht in den wichtigen Nachrichten erscheint
+                    if current_time - self._last_arm_status_time > 1.0:
+                        self._logger.addLog(f"System ist jetzt {status}")  # Normale Log-Meldung statt [SYSTEM INFO]
+                        self._last_arm_status_time = current_time
+            
+            # Status immer aktualisieren, aber nicht immer loggen
+            self._last_armed = armed
                 
         except Exception as e:
             error_msg = f"❌ Error handling heartbeat: {str(e)}"
@@ -1061,28 +1481,33 @@ class MessageHandler(QObject):
         except Exception as e:
             self._logger.addLog(f"Error in delayed message update: {str(e)}")
             
-    def _handle_statustext(self, msg):
-        """Handle status text message"""
-        try:
-            # Extract the text from the message
-            text = msg.text
-            
-            # Look for specific system information patterns in status text
-            if any(pattern in text for pattern in ["Frame:", "RCOut:", "MicoAir", "ChibiOS:", "ArduCopter", "PreArm:"]):
-                # This is a system information message we're looking for
-                self._logger.addLog(f"🔍 {text}")
-                # Add to system info logs directly
-                self._logger.addSystemInfoLog(text)
-                
-            # Auch weitere wichtige Statustexte hinzufügen
-            elif text.startswith("EKF") or "ready to arm" in text.lower() or "armed" in text.lower():
-                self._logger.addLog(f"🔍 {text}")
-                self._logger.addSystemInfoLog(text)
-                
-        except Exception as e:
-            error_msg = f"❌ Error handling status text: {str(e)}"
-            self._logger.addLog(error_msg)
-            self.error_occurred.emit(error_msg)
+    def __init__(self, logger: Logger):
+        super().__init__()
+        self._logger = logger
+        self._running = False
+        self._mavlink_connection = None
+        self._is_simulator = False
+        
+        # Timer für die verzögerte Aktualisierung bestimmter Meldungen
+        self._delayed_message_timer = QTimer(self)
+        self._delayed_message_timer.timeout.connect(self._update_delayed_messages)
+        self._delayed_message_timer.start(60000)  # Alle 60 Sekunden aktualisieren
+        
+        # Cache für verzögerte Nachrichten
+        self._servo_output_raw_cache = None
+        self._rc_channels_cache = None
+        self._mission_current_cache = None
+        self._sys_status_cache = None
+        
+        # Cache für Kalibrierungsstatus
+        self._calibration_status = {
+            'compass': {'needed': False, 'in_progress': False, 'last_update': 0},
+            'accel': {'needed': False, 'in_progress': False, 'last_update': 0},
+            'level': {'needed': False, 'in_progress': False, 'last_update': 0}
+        }
+        
+        # Zeitpunkt der letzten UI-Aktualisierung
+        self._last_ui_update_time = time.time()
             
     def _update_delayed_messages(self):
         """Aktualisiert die UI mit den gecachten Nachrichten (wird alle 60 Sekunden aufgerufen)"""
