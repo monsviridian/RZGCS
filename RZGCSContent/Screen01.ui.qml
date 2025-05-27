@@ -1,4 +1,3 @@
-
 /*
 This is a UI file (.ui.qml) that is intended to be edited in Qt Design Studio only.
 It is supposed to be strictly declarative and only uses a subset of QML. If you edit
@@ -8,7 +7,6 @@ Check out https://doc.qt.io/qtcreator/creator-quick-ui-forms.html for details on
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import "./Components" as Components
 import QtQuick.Window
 
 // Lokale Komponenten importieren
@@ -18,23 +16,6 @@ Item {
     id: root
     width: 800
     height: 600
-    
-    // Timer fu00fcr den BusyIndicator-Test
-    Timer {
-        id: busyTestTimer
-        interval: 3000  // 3 Sekunden
-        repeat: false
-        onTriggered: {
-            // Test beenden, BusyIndicator ausblenden
-            Components.BusyIndicatorManager.hideBusy()
-        }
-    }
-    
-    Rectangle {
-        anchors.fill: parent
-        color: "black"
-        z: -1 // Behind all elements
-    }
 
     // Ensure serialConnector is available
     Component.onCompleted: {
@@ -51,8 +32,8 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             color: "black"
-            implicitHeight: connectionControlsRow.implicitHeight + 16 // Add some padding
-
+            implicitHeight: connectionControlsRow.implicitHeight + 16  // Add some padding
+            
             RowLayout {
                 id: connectionControlsRow
                 anchors {
@@ -96,15 +77,13 @@ Item {
                         }
                         highlighted: portComboBox.highlightedIndex === index
                     }
-                    onCurrentTextChanged: if (serialConnector)
-                                              serialConnector.setPort(
-                                                          currentText)
+                    onCurrentTextChanged: if (serialConnector) serialConnector.setPort(currentText)
                 }
 
                 ComboBox {
                     id: baudComboBox
                     model: serialConnector ? serialConnector.availableBaudRates : []
-                    currentIndex: 4 // 115200
+                    currentIndex: 4  // 115200
                     Layout.preferredWidth: 100
                     background: Rectangle {
                         color: "black"
@@ -135,37 +114,11 @@ Item {
                         }
                         highlighted: baudComboBox.highlightedIndex === index
                     }
-                    onCurrentTextChanged: if (serialConnector)
-                                              serialConnector.setBaudRate(
-                                                          parseInt(currentText))
+                    onCurrentTextChanged: if (serialConnector) serialConnector.setBaudRate(parseInt(currentText))
                 }
 
-                // Test-Button für BusyIndicator
                 Button {
-                    text: "Test Busy"
-                    Layout.preferredWidth: 100
-                    background: Rectangle {
-                        color: "#330000"
-                        border.color: "#880000"
-                        border.width: 1
-                        radius: 4
-                    }
-                    contentItem: Text {
-                        text: parent.text
-                        color: "white"
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    onClicked: {
-                        // Test des BusyIndicators für 3 Sekunden
-                        Components.BusyIndicatorManager.showBusy("Test des BusyIndicators...")
-                        busyTestTimer.start()
-                    }
-                }
-                
-                Button {
-                    text: serialConnector
-                          && serialConnector.connected ? "Disconnect" : "Connect"
+                    text: serialConnector && serialConnector.connected ? "Disconnect" : "Connect"
                     Layout.preferredWidth: 80
                     background: Rectangle {
                         color: "black"
@@ -208,10 +161,9 @@ Item {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    onClicked: if (serialConnector)
-                                   serialConnector.load_ports()
+                    onClicked: if (serialConnector) serialConnector.load_ports()
                 }
-
+                
                 // Flugmodus-Auswahl
                 ComboBox {
                     id: flightModeCombo
@@ -255,7 +207,7 @@ Item {
                         }
                     }
                 }
-
+                
                 // Arm/Disarm Buttons
                 Button {
                     text: "ARM"
@@ -280,7 +232,7 @@ Item {
                         }
                     }
                 }
-
+                
                 Button {
                     text: "DISARM"
                     Layout.preferredWidth: 80
@@ -304,7 +256,7 @@ Item {
                         }
                     }
                 }
-
+                
                 Button {
                     text: window.visibility === Window.FullScreen ? "Exit Fullscreen" : "Fullscreen"
                     Layout.preferredWidth: 120
@@ -438,9 +390,8 @@ Item {
                     border.width: parent.checked ? 1 : 0
                 }
             }
-
             TabButton {
-                text: "Angel Mode"
+                text: "Animation"
                 contentItem: Text {
                     text: parent.text
                     color: "white"
@@ -453,9 +404,8 @@ Item {
                     border.width: parent.checked ? 1 : 0
                 }
             }
-            
             TabButton {
-                text: "Lizenz"
+                text: "Angel Mode"
                 contentItem: Text {
                     text: parent.text
                     color: "white"
@@ -487,7 +437,6 @@ Item {
             RZGCS.SensorView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                isConnected: serialConnector ? serialConnector.connected : false
             }
             RZGCS.CalibrationView {
                 Layout.fillWidth: true
@@ -507,13 +456,11 @@ Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
-
-            RZGCS.AngelView {
+            RZGCS.AnimationView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
-            
-            LicenseView {
+            RZGCS.AngelView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }

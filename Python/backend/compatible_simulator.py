@@ -20,10 +20,10 @@ class CompatibleSensorSimulator(QObject):
         self._running = False
         self._thread: Optional[threading.Thread] = None
         
-        # Initialisiere Startwerte
-        self._lat = 52.520008  # Berlin
-        self._lon = 13.404954
-        self._alt = 100.0
+        # Initialisiere Startwerte - Ingolstadt (nahe dem BMW Testgelände)
+        self._lat = 48.744101  # Ingolstadt
+        self._lon = 11.446327
+        self._alt = 374.0
         self._roll = 0.0
         self._pitch = 0.0
         self._yaw = 0.0
@@ -33,6 +33,13 @@ class CompatibleSensorSimulator(QObject):
         self._airspeed = 5.0
         self._groundspeed = 6.0
         self._heading = 0.0
+        
+        # Flugmuster-Parameter
+        self._flight_time = 0.0
+        self._flight_radius = 0.001  # ca. 100m Radius
+        self._flight_pattern = "circle"  # circle, figure8, hover
+        self._center_lat = self._lat
+        self._center_lon = self._lon
         
         print("Kompatibler Sensor-Simulator initialisiert")
     
@@ -93,22 +100,74 @@ class CompatibleSensorSimulator(QObject):
         print("Daten-Generierung startet...")
         while self._running:
             try:
-                # GPS-Daten aktualisieren
-                self._lat += random.uniform(-0.00001, 0.00001)
-                self._lon += random.uniform(-0.00001, 0.00001)
-                self._alt += random.uniform(-0.5, 0.5)
-                self._alt = max(0.0, min(1000.0, self._alt))
+                # Flugzeit hochzählen
+                self._flight_time += 0.1
                 
-                # Attitude-Daten aktualisieren
-                self._roll = 0.1 * math.sin(time.time())
-                self._pitch = 0.1 * math.cos(time.time()) 
-                self._yaw = (self._yaw + 0.01) % (2 * math.pi)
+                # GPS-Daten basierend auf Flugmuster aktualisieren
+                if self._flight_pattern == "circle":
+                    # Kreisförmige Bewegung
+                    angle = self._flight_time * 0.05  # Langsamere Bewegung
+                    self._lat = self._center_lat + self._flight_radius * math.sin(angle)
+                    self._lon = self._center_lon + self._flight_radius * math.cos(angle) * 1.5  # Ellipse statt Kreis wegen Projektion
+                    
+                    # Flugausrichtung basierend auf Bewegungsrichtung
+                    # In einem Kreis ändert sich der Heading kontinuierlich
+                    self._heading = (angle * 180 / math.pi + 90) % 360
+                    
+                    # Roll anpassen (in einer Kurve leicht neigen)
+                    self._roll = math.radians(10)  # 10° Neigung in der Kurve
+                    
+                elif self._flight_pattern == "figure8":
+                    # Achterbahn-Bewegung mit Lemniskate (Achterschleife)
+                    t = self._flight_time * 0.05
+                    denom = 1 + math.sin(t) ** 2
+                    self._lat = self._center_lat + self._flight_radius * math.cos(t) / denom
+                    self._lon = self._center_lon + self._flight_radius * math.sin(t) * math.cos(t) / denom * 1.5
+                    
+                    # Roll und Heading basierend auf Position in der 8
+                    self._heading = (t * 180 / math.pi) % 360
+                    self._roll = math.radians(15 * math.sin(t))  # Neigung variiert
+                    
+                else:  # hover oder andere Muster
+                    # Leichte Bewegung um einen Punkt (Hover-Modus)
+                    self._lat = self._center_lat + random.uniform(-0.000005, 0.000005)
+                    self._lon = self._center_lon + random.uniform(-0.000005, 0.000005)
+                    self._heading = (self._heading + random.uniform(-1, 1)) % 360
+                    self._roll = math.radians(random.uniform(-3, 3))
+                
+                # Höhe mit leichten Schwankungen
+                self._alt += random.uniform(-0.2, 0.2)
+                self._alt = max(370.0, min(380.0, self._alt))  # Höhe zwischen 370-380m halten
+                
+                # Pitch an Flugmuster anpassen (leichte Steig- und Sinkflüge)
+                self._pitch = math.radians(2 * math.sin(self._flight_time * 0.02))
+                
+                # Yaw aus Heading in Radiant umrechnen
+                self._yaw = math.radians(self._heading)
+                
+                # Geschwindigkeiten anpassen
+                if self._flight_pattern == "hover":
+                    self._groundspeed = random.uniform(0, 1.0)  # Langsam im Hover
+                    self._airspeed = random.uniform(0, 1.5)
+                else:
+                    self._groundspeed = 5.0 + random.uniform(-0.5, 1.0)  # ~5 m/s
+                    self._airspeed = 6.0 + random.uniform(-0.5, 1.0)    # ~6 m/s
                 
                 # Batterie-Daten aktualisieren
                 self._voltage -= random.uniform(0, 0.001)  # Sehr langsam entladen
                 self._voltage = max(10.0, self._voltage)  # Nicht unter 10V
                 self._current = max(0, 8.0 + random.uniform(-0.5, 0.5))  # ~8A
-                self._remaining = max(0, min(100, 75.0 - random.uniform(0, 0.01)))  # ~75%
+                self._remaining = max(0, min(100, 75.0 - (self._flight_time * 0.01)))  # Langsam entladen
+                
+                # Alle 30 Sekunden Flugmuster wechseln
+                if int(self._flight_time) % 30 == 0 and int(self._flight_time) > 0 and random.random() < 0.05:
+                    patterns = ["circle", "figure8", "hover"]
+                    old_pattern = self._flight_pattern
+                    self._flight_pattern = random.choice([p for p in patterns if p != old_pattern])
+                    print(f"Flugmuster geändert von {old_pattern} zu {self._flight_pattern}")
+                    # Aktuelle Position als neues Zentrum
+                    self._center_lat = self._lat
+                    self._center_lon = self._lon
                 
                 # Sende alle Daten
                 self._send_all_updates()
