@@ -1,0 +1,42 @@
+=== RZGCS Map Debug Log ===
+
+=== Starte RZGCS Map Debugging ===
+
+Python Version: 3.10.0 (tags/v3.10.0:b494f59, Oct  4 2021, 19:00:18) [MSC v.1929 64 bit (AMD64)]
+Executable: C:\Program Files\Python310\python.exe
+Pfad: C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS
+PySide6 Version: 6.8.2.1
+QtWebEngineWidgets ist verfu00fcgbar
+Suche nach Karten-HTML-Datei: C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\RZGCSContent\cesium\simple_3d_map.html
+Karten-HTML-Datei gefunden
+Teste SimpleMapView...
+SimpleMapView-Modul erfolgreich importiert
+SimpleMapView erfolgreich erstellt
+Drohnenposition erfolgreich aktualisiert
+SimpleMapView Test: ERFOLGREICH
+
+Teste WebEngine-Komponente...
+QWebEngineView erfolgreich erstellt
+HTML erfolgreich in WebEngine geladen
+WebEngine-Fenster angezeigt
+WebEngine Test: ERFOLGREICH
+
+Teste FlightMapView...
+FlightMapView erfolgreich erstellt
+Drohnenposition erfolgreich aktualisiert
+FlightMapView Test: ERFOLGREICH
+
+=== Ende des Debugging-Prozesses ===
+
+Kritischer Fehler: 'charmap' codec can't encode character '\u2713' in position 38: character maps to <undefined>
+Traceback (most recent call last):
+  File "C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\debug_map_fixed.py", line 177, in <module>
+    main()
+  File "C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\debug_map_fixed.py", line 170, in main
+    logger.log("Gesamtergebnis: " + " ".join(report))
+  File "C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\debug_map_fixed.py", line 22, in log
+    print(f"DEBUG: {message}")
+  File "C:\Program Files\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2713' in position 38: character maps to <undefined>
+

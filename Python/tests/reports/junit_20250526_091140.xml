@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="25" skipped="0" tests="38" time="2.853" timestamp="2025-05-26T09:11:40.830394+02:00" hostname="GTA3"><testcase classname="Python.tests.test_license_system.TestLicenseManager" name="test_activate_license" time="0.027"><failure message="AssertionError: 'Professional' != 'professional'&#10;- Professional&#10;? ^&#10;+ professional&#10;? ^">self = &lt;test_license_system.TestLicenseManager testMethod=test_activate_license&gt;
+
+    def test_activate_license(self):
+        """Test zur Aktivierung einer Lizenz"""
+        # Mock die _get_machine_id-Methode
+        with patch('backend.license_manager.LicenseManager._get_machine_id') as mock_get_machine_id:
+            mock_get_machine_id.return_value = "test-machine-id"
+    
+            # Test für Professional-Lizenz
+            result = self.license_manager.activate_license("RZGCS-PRO-1234-5678-9ABC-DEF0")
+            self.assertTrue(result)
+            self.assertTrue(self.license_manager.license_valid)
+&gt;           self.assertEqual(self.license_manager.license_type, "professional")
+E           AssertionError: 'Professional' != 'professional'
+E           - Professional
+E           ? ^
+E           + professional
+E           ? ^
+
+test_license_system.py:79: AssertionError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseManager" name="test_enterprise_license_features" time="0.003"><failure message="AssertionError: 'Enterprise' != 'enterprise'&#10;- Enterprise&#10;? ^&#10;+ enterprise&#10;? ^">self = &lt;test_license_system.TestLicenseManager testMethod=test_enterprise_license_features&gt;
+
+    def test_enterprise_license_features(self):
+        """Test für Enterprise-Lizenz-Features"""
+        # Mock die _get_machine_id-Methode
+        with patch('backend.license_manager.LicenseManager._get_machine_id') as mock_get_machine_id:
+            mock_get_machine_id.return_value = "test-machine-id"
+    
+            # Test für Enterprise-Lizenz
+            result = self.license_manager.activate_license("RZGCS-ENT-ABCD-EF12-3456-789A")
+            self.assertTrue(result)
+            self.assertTrue(self.license_manager.license_valid)
+&gt;           self.assertEqual(self.license_manager.license_type, "enterprise")
+E           AssertionError: 'Enterprise' != 'enterprise'
+E           - Enterprise
+E           ? ^
+E           + enterprise
+E           ? ^
+
+test_license_system.py:96: AssertionError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseManager" name="test_initialization" time="0.003"><failure message="AssertionError: 'Basic' != 'basic'&#10;- Basic&#10;? ^&#10;+ basic&#10;? ^">self = &lt;test_license_system.TestLicenseManager testMethod=test_initialization&gt;
+
+    def test_initialization(self):
+        """Test, ob der LicenseManager korrekt initialisiert wird"""
+        self.assertFalse(self.license_manager.license_valid)
+&gt;       self.assertEqual(self.license_manager.license_type, "basic")
+E       AssertionError: 'Basic' != 'basic'
+E       - Basic
+E       ? ^
+E       + basic
+E       ? ^
+
+test_license_system.py:54: AssertionError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseManager" name="test_validate_license_key_format" time="0.003"><failure message="AttributeError: 'LicenseManager' object has no attribute '_validate_license_key_format'">self = &lt;test_license_system.TestLicenseManager testMethod=test_validate_license_key_format&gt;
+
+    def test_validate_license_key_format(self):
+        """Test zur Validierung des Lizenzschlüsselformats"""
+        # Gültiges Format
+&gt;       self.assertTrue(self.license_manager._validate_license_key_format("RZGCS-PRO-1234-5678-9ABC-DEF0"))
+E       AttributeError: 'LicenseManager' object has no attribute '_validate_license_key_format'
+
+test_license_system.py:61: AttributeError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseController" name="test_activate_license" time="0.003"><failure message="TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given">self = &lt;test_license_system.TestLicenseController testMethod=test_activate_license&gt;
+
+    def setUp(self):
+        # Mock-Logger erstellen
+        self.logger = MockLogger()
+    
+        # Mock LicenseManager
+        self.license_manager = MagicMock(spec=LicenseManager)
+        self.license_manager.license_valid = False
+        self.license_manager.license_type = "basic"
+        self.license_manager.is_feature_enabled.return_value = False
+    
+        # LicenseController initialisieren
+&gt;       self.license_controller = LicenseController(self.license_manager, self.logger)
+E       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given
+
+test_license_system.py:117: TypeError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseController" name="test_feature_access" time="0.002"><failure message="TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given">self = &lt;test_license_system.TestLicenseController testMethod=test_feature_access&gt;
+
+    def setUp(self):
+        # Mock-Logger erstellen
+        self.logger = MockLogger()
+    
+        # Mock LicenseManager
+        self.license_manager = MagicMock(spec=LicenseManager)
+        self.license_manager.license_valid = False
+        self.license_manager.license_type = "basic"
+        self.license_manager.is_feature_enabled.return_value = False
+    
+        # LicenseController initialisieren
+&gt;       self.license_controller = LicenseController(self.license_manager, self.logger)
+E       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given
+
+test_license_system.py:117: TypeError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseController" name="test_initialization" time="0.002"><failure message="TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given">self = &lt;test_license_system.TestLicenseController testMethod=test_initialization&gt;
+
+    def setUp(self):
+        # Mock-Logger erstellen
+        self.logger = MockLogger()
+    
+        # Mock LicenseManager
+        self.license_manager = MagicMock(spec=LicenseManager)
+        self.license_manager.license_valid = False
+        self.license_manager.license_type = "basic"
+        self.license_manager.is_feature_enabled.return_value = False
+    
+        # LicenseController initialisieren
+&gt;       self.license_controller = LicenseController(self.license_manager, self.logger)
+E       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given
+
+test_license_system.py:117: TypeError</failure></testcase><testcase classname="Python.tests.test_platform_compatibility.TestConnectionManager" name="test_create_connection_string" time="0.003" /><testcase classname="Python.tests.test_platform_compatibility.TestConnectionManager" name="test_get_available_ports_macos" time="0.003" /><testcase classname="Python.tests.test_platform_compatibility.TestConnectionManager" name="test_get_available_ports_windows" time="0.023" /><testcase classname="Python.tests.test_platform_compatibility.TestConnectionManager" name="test_get_default_connection_params" time="0.002" /><testcase classname="Python.tests.test_platform_compatibility.TestMAVLinkConnector" name="test_mavsdk_server_path_macos" time="0.002"><failure message="TypeError: TestMAVLinkConnector.test_mavsdk_server_path_macos.&lt;locals&gt;.&lt;lambda&gt;() missing 1 required positional argument: 'p'">self = &lt;test_platform_compatibility.TestMAVLinkConnector testMethod=test_mavsdk_server_path_macos&gt;
+
+    def test_mavsdk_server_path_macos(self):
+        """Test des MAVSDK-Server-Pfads unter macOS"""
+        with patch('sys.platform', 'darwin'):
+            with patch('pathlib.Path.exists', side_effect=lambda p: 'mac' in str(p)):
+                from backend.mavlink_connector import get_mavsdk_server_path
+&gt;               server_path = get_mavsdk_server_path()
+
+test_platform_compatibility.py:128: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\backend\mavlink_connector.py:36: in get_mavsdk_server_path
+    if server_path_1.exists():
+C:\Program Files\Python310\lib\unittest\mock.py:1105: in __call__
+    return self._mock_call(*args, **kwargs)
+C:\Program Files\Python310\lib\unittest\mock.py:1109: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;MagicMock name='exists' id='2675095110080'&gt;, args = (), kwargs = {}
+effect = &lt;function TestMAVLinkConnector.test_mavsdk_server_path_macos.&lt;locals&gt;.&lt;lambda&gt; at 0x0000026ED8121900&gt;
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+                raise effect
+            elif not _callable(effect):
+                result = next(effect)
+                if _is_exception(result):
+                    raise result
+            else:
+&gt;               result = effect(*args, **kwargs)
+E               TypeError: TestMAVLinkConnector.test_mavsdk_server_path_macos.&lt;locals&gt;.&lt;lambda&gt;() missing 1 required positional argument: 'p'
+
+C:\Program Files\Python310\lib\unittest\mock.py:1170: TypeError</failure></testcase><testcase classname="Python.tests.test_platform_compatibility.TestMAVLinkConnector" name="test_mavsdk_server_path_windows" time="0.002" /><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_connector_initialization" time="0.004"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000026ED7CD9C00&gt;
+mock_serial = &lt;MagicMock name='Serial()' id='2675095012640'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2675094971888'&gt;
+
+    def test_connector_initialization(self, mock_serial, mock_logger):
+        """Testet die korrekte Initialisierung des MAVLink-Connectors."""
+        # Arranges
+        port = 'COM1'
+        baudrate = 57600
+    
+        # Act
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params(port, baudrate)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:45: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_connect_success" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000026ED7CD9DB0&gt;
+mock_serial = &lt;MagicMock name='Serial()' id='2675095029696'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2675094178592'&gt;
+
+    def test_connect_success(self, mock_serial, mock_logger):
+        """Testet die erfolgreiche Verbindungsherstellung."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:57: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_connect_failure" time="0.002"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000026ED7CD9FC0&gt;
+mock_serial_error = &lt;MagicMock name='Serial' id='2674692156352'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2674707220128'&gt;
+
+    @patch('backend.mavlink_connector.serial.Serial', side_effect=Exception('Connection failed'))
+    def test_connect_failure(self, mock_serial_error, mock_logger):
+        """Testet den Fehlerfall bei der Verbindungsherstellung."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:71: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_disconnect" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000026ED7CDA1D0&gt;
+mock_serial = &lt;MagicMock name='Serial()' id='2675095089360'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2675094742368'&gt;
+
+    def test_disconnect(self, mock_serial, mock_logger):
+        """Testet das korrekte Trennen der Verbindung."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:83: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_factory_method_mavlink" time="0.002"><failure message="AttributeError: &lt;module 'backend.mavlink_connector' from 'C:\\Users\\fuckheinerkleinehack\\Documents\\RZGS2\\RZGCS\\Python\\backend\\mavlink_connector.py'&gt; does not have the attribute 'Logger'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000026ED7CDA3E0&gt;
+
+    def test_factory_method_mavlink(self):
+        """Testet die Factory-Methode für die Erstellung eines MAVLink-Connectors."""
+        # Arrange &amp; Act
+        with patch('backend.mavlink_connector.MAVLinkConnector') as mock_connector:
+&gt;           with patch('backend.mavlink_connector.Logger') as mock_logger_class:
+
+test_mavlink_connector.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Program Files\Python310\lib\unittest\mock.py:1438: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;unittest.mock._patch object at 0x0000026ED812A800&gt;
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+&gt;           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: &lt;module 'backend.mavlink_connector' from 'C:\\Users\\fuckheinerkleinehack\\Documents\\RZGS2\\RZGCS\\Python\\backend\\mavlink_connector.py'&gt; does not have the attribute 'Logger'
+
+C:\Program Files\Python310\lib\unittest\mock.py:1411: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_factory_method_missing_params" time="0.002" /><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_send_message" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000026ED7CDAA10&gt;
+mock_serial = &lt;MagicMock name='Serial()' id='2675095221152'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2675095083120'&gt;
+
+    def test_send_message(self, mock_serial, mock_logger):
+        """Testet das Senden einer Nachricht."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:123: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_send_message_not_connected" time="0.002"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000026ED7D907F0&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2675094757504'&gt;
+
+    def test_send_message_not_connected(self, mock_logger):
+        """Testet das Senden einer Nachricht ohne Verbindung."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:140: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_receive_messages" time="0.004"><failure message="AttributeError: &lt;class 'backend.mavlink_connector.MAVLinkConnector'&gt; does not have the attribute 'process_messages'">item = &lt;Function test_receive_messages&gt;
+
+    @pytest.hookimpl(wrapper=True, tryfirst=True)
+    def pytest_runtest_call(item):
+&gt;       result = yield
+
+..\..\..\..\..\AppData\Roaming\Python\Python310\site-packages\pytestqt\plugin.py:189: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Program Files\Python310\lib\unittest\mock.py:1367: in patched
+    with self.decoration_helper(patched,
+C:\Program Files\Python310\lib\contextlib.py:135: in __enter__
+    return next(self.gen)
+C:\Program Files\Python310\lib\unittest\mock.py:1349: in decoration_helper
+    arg = exit_stack.enter_context(patching)
+C:\Program Files\Python310\lib\contextlib.py:492: in enter_context
+    result = _cm_type.__enter__(cm)
+C:\Program Files\Python310\lib\unittest\mock.py:1438: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;unittest.mock._patch object at 0x0000026ED7CD9090&gt;
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+&gt;           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: &lt;class 'backend.mavlink_connector.MAVLinkConnector'&gt; does not have the attribute 'process_messages'
+
+C:\Program Files\Python310\lib\unittest\mock.py:1411: AttributeError</failure></testcase><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_initialization" time="0.001" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_set_parameters" time="0.003" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_rowCount" time="0.001" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_data_valid_index" time="0.004"><failure message="AssertionError: assert '' == 'Roll rate control P gain'&#10;  &#10;  - Roll rate control P gain">self = &lt;test_parameter_model.TestParameterTableModel object at 0x0000026ED809EE30&gt;
+model = &lt;backend.parameter_model.ParameterTableModel(0x26ec09c4120) at 0x0000026EC0F7A640&gt;
+sample_params = [{'defaultValue': '0.1', 'description': 'Roll rate control P gain', 'name': 'RATE_RLL_P', 'options': [], ...}, {'defau...[], ...}, {'defaultValue': '0.15', 'description': 'Yaw rate control P gain', 'name': 'RATE_YAW_P', 'options': [], ...}]
+
+    def test_data_valid_index(self, model, sample_params):
+        """Testet die data-Methode mit gültigen Indizes."""
+        # Arrange
+        model.set_parameters(sample_params)
+    
+        # Act &amp; Assert - Verschiedene Rollen testen
+        index = model.index(0, 0)
+        assert model.data(index, ParameterTableModel.NameRole) == 'RATE_RLL_P'
+        assert model.data(index, ParameterTableModel.ValueRole) == '0.15'
+        assert model.data(index, ParameterTableModel.DefaultValueRole) == '0.1'
+        assert model.data(index, ParameterTableModel.UnitRole) == ''
+        assert model.data(index, ParameterTableModel.OptionsRole) == []
+&gt;       assert model.data(index, ParameterTableModel.DescRole) == 'Roll rate control P gain'
+E       AssertionError: assert '' == 'Roll rate control P gain'
+E         
+E         - Roll rate control P gain
+
+test_parameter_model.py:96: AssertionError</failure></testcase><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_data_invalid_index" time="0.001" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_roleNames" time="0.003"><failure message="AssertionError: assert b'desc' == b'description'&#10;  &#10;  Use -v to get more diff">self = &lt;test_parameter_model.TestParameterTableModel object at 0x0000026ED809EAA0&gt;
+model = &lt;backend.parameter_model.ParameterTableModel(0x26ec09c66f0) at 0x0000026ED80EEBC0&gt;
+
+    def test_roleNames(self, model):
+        """Testet die roleNames-Methode."""
+        # Act
+        roles = model.roleNames()
+    
+        # Assert
+        expected_roles = {
+            ParameterTableModel.NameRole: b'name',
+            ParameterTableModel.ValueRole: b'value',
+            ParameterTableModel.DefaultValueRole: b'defaultValue',
+            ParameterTableModel.UnitRole: b'unit',
+            ParameterTableModel.OptionsRole: b'options',
+            ParameterTableModel.DescRole: b'description'
+        }
+    
+        for role, name in expected_roles.items():
+&gt;           assert roles[role] == name
+E           AssertionError: assert b'desc' == b'description'
+E             
+E             Use -v to get more diff
+
+test_parameter_model.py:127: AssertionError</failure></testcase><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_set_parameter_value" time="0.003" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_set_parameter_value_nonexistent" time="0.003" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_get_parameter_value" time="0.002"><failure message="AttributeError: 'ParameterTableModel' object has no attribute 'get_parameter_value'. Did you mean: 'set_parameter_value'?">self = &lt;test_parameter_model.TestParameterTableModel object at 0x0000026ED809E500&gt;
+model = &lt;backend.parameter_model.ParameterTableModel(0x26ec09c2fa0) at 0x0000026ED8130600&gt;
+sample_params = [{'defaultValue': '0.1', 'description': 'Roll rate control P gain', 'name': 'RATE_RLL_P', 'options': [], ...}, {'defau...[], ...}, {'defaultValue': '0.15', 'description': 'Yaw rate control P gain', 'name': 'RATE_YAW_P', 'options': [], ...}]
+
+    def test_get_parameter_value(self, model, sample_params):
+        """Testet das Abrufen eines Parameterwerts."""
+        # Arrange
+        model.set_parameters(sample_params)
+    
+        # Act &amp; Assert
+&gt;       assert model.get_parameter_value('RATE_RLL_P') == '0.15'
+E       AttributeError: 'ParameterTableModel' object has no attribute 'get_parameter_value'. Did you mean: 'set_parameter_value'?
+
+test_parameter_model.py:163: AttributeError</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_initial_sensor_count" time="0.002"><failure message="assert 0 == 13&#10; +  where 0 = rowCount()&#10; +    where rowCount = &lt;backend.sensorviewmodel.SensorViewModel(0x26ec09c66a0) at 0x0000026ED81B92C0&gt;.rowCount">model = &lt;backend.sensorviewmodel.SensorViewModel(0x26ec09c66a0) at 0x0000026ED81B92C0&gt;
+
+    def test_initial_sensor_count(model):
+        """Test, dass die initiale Anzahl der Sensoren korrekt ist."""
+&gt;       assert model.rowCount() == 13  # Anzahl der vordefinierten Sensoren
+E       assert 0 == 13
+E        +  where 0 = rowCount()
+E        +    where rowCount = &lt;backend.sensorviewmodel.SensorViewModel(0x26ec09c66a0) at 0x0000026ED81B92C0&gt;.rowCount
+
+test_sensorviewmodel.py:13: AssertionError</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_sensor_roles" time="0.001"><failure message="AttributeError: 'SensorViewModel' object has no attribute 'FormattedValueRole'">model = &lt;backend.sensorviewmodel.SensorViewModel(0x26ec09c2c80) at 0x0000026EC0FA4E80&gt;
+
+    def test_sensor_roles(model):
+        """Test, dass alle Rollen korrekt definiert sind."""
+        roles = model.roleNames()
+        assert roles[model.NameRole] == b"name"
+        assert roles[model.ValueRole] == b"value"
+&gt;       assert roles[model.FormattedValueRole] == b"formattedValue"
+E       AttributeError: 'SensorViewModel' object has no attribute 'FormattedValueRole'
+
+test_sensorviewmodel.py:20: AttributeError</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_sensor_data_access" time="0.001"><failure message="AssertionError: assert None == 'Roll'">model = &lt;backend.sensorviewmodel.SensorViewModel(0x26ec09c3270) at 0x0000026ED8146540&gt;
+
+    def test_sensor_data_access(model):
+        """Test des Zugriffs auf Sensordaten."""
+        index = model.index(0)  # Erster Sensor (Roll)
+    
+        # Test Sensor Name
+        name = model.data(index, model.NameRole)
+&gt;       assert name == "Roll"
+E       AssertionError: assert None == 'Roll'
+
+test_sensorviewmodel.py:28: AssertionError</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_update_sensor" time="0.001"><failure message="AttributeError: 'SensorViewModel' object has no attribute 'FormattedValueRole'">model = &lt;backend.sensorviewmodel.SensorViewModel(0x26ec09c36d0) at 0x0000026ED81B0E00&gt;
+
+    def test_update_sensor(model):
+        """Test der Sensor-Aktualisierung."""
+        model.update_sensor("Roll", 45.123)
+    
+        index = model.index(0)
+        value = model.data(index, model.ValueRole)
+&gt;       formatted = model.data(index, model.FormattedValueRole)
+E       AttributeError: 'SensorViewModel' object has no attribute 'FormattedValueRole'
+
+test_sensorviewmodel.py:44: AttributeError</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_invalid_sensor_update" time="0.002"><failure message="Failed: DID NOT RAISE &lt;class 'backend.exceptions.SensorException'&gt;">model = &lt;backend.sensorviewmodel.SensorViewModel(0x26ec09c3a40) at 0x0000026ED80EE900&gt;
+
+    def test_invalid_sensor_update(model):
+        """Test, dass eine Exception bei ungültigem Sensor geworfen wird."""
+&gt;       with pytest.raises(SensorException):
+E       Failed: DID NOT RAISE &lt;class 'backend.exceptions.SensorException'&gt;
+
+test_sensorviewmodel.py:51: Failed</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_invalid_index" time="0.001" /><testcase classname="Python.tests.test_sensorviewmodel" name="test_formatted_value_with_invalid_data" time="0.002"><failure message="IndexError: list index out of range">model = &lt;backend.sensorviewmodel.SensorViewModel(0x26ec09c3c70) at 0x0000026ED819E880&gt;
+
+    def test_formatted_value_with_invalid_data(model):
+        """Test der Formatierung bei ungültigen Daten."""
+        # Simuliere ungültige Daten (würde in der Praxis nicht vorkommen)
+&gt;       model._sensors[0]["value"] = "invalid"
+E       IndexError: list index out of range
+
+test_sensorviewmodel.py:62: IndexError</failure></testcase></testsuite></testsuites>

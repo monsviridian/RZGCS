@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="10" skipped="0" tests="10" time="1.751" timestamp="2025-05-26T09:11:33.592568+02:00" hostname="GTA3"><testcase classname="Python.tests.test_license_system.TestLicenseManager" name="test_activate_license" time="0.013"><failure message="AssertionError: 'Professional' != 'professional'&#10;- Professional&#10;? ^&#10;+ professional&#10;? ^">self = &lt;test_license_system.TestLicenseManager testMethod=test_activate_license&gt;
+
+    def test_activate_license(self):
+        """Test zur Aktivierung einer Lizenz"""
+        # Mock die _get_machine_id-Methode
+        with patch('backend.license_manager.LicenseManager._get_machine_id') as mock_get_machine_id:
+            mock_get_machine_id.return_value = "test-machine-id"
+    
+            # Test für Professional-Lizenz
+            result = self.license_manager.activate_license("RZGCS-PRO-1234-5678-9ABC-DEF0")
+            self.assertTrue(result)
+            self.assertTrue(self.license_manager.license_valid)
+&gt;           self.assertEqual(self.license_manager.license_type, "professional")
+E           AssertionError: 'Professional' != 'professional'
+E           - Professional
+E           ? ^
+E           + professional
+E           ? ^
+
+test_license_system.py:79: AssertionError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseManager" name="test_enterprise_license_features" time="0.004"><failure message="AssertionError: 'Enterprise' != 'enterprise'&#10;- Enterprise&#10;? ^&#10;+ enterprise&#10;? ^">self = &lt;test_license_system.TestLicenseManager testMethod=test_enterprise_license_features&gt;
+
+    def test_enterprise_license_features(self):
+        """Test für Enterprise-Lizenz-Features"""
+        # Mock die _get_machine_id-Methode
+        with patch('backend.license_manager.LicenseManager._get_machine_id') as mock_get_machine_id:
+            mock_get_machine_id.return_value = "test-machine-id"
+    
+            # Test für Enterprise-Lizenz
+            result = self.license_manager.activate_license("RZGCS-ENT-ABCD-EF12-3456-789A")
+            self.assertTrue(result)
+            self.assertTrue(self.license_manager.license_valid)
+&gt;           self.assertEqual(self.license_manager.license_type, "enterprise")
+E           AssertionError: 'Enterprise' != 'enterprise'
+E           - Enterprise
+E           ? ^
+E           + enterprise
+E           ? ^
+
+test_license_system.py:96: AssertionError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseManager" name="test_initialization" time="0.003"><failure message="AssertionError: 'Basic' != 'basic'&#10;- Basic&#10;? ^&#10;+ basic&#10;? ^">self = &lt;test_license_system.TestLicenseManager testMethod=test_initialization&gt;
+
+    def test_initialization(self):
+        """Test, ob der LicenseManager korrekt initialisiert wird"""
+        self.assertFalse(self.license_manager.license_valid)
+&gt;       self.assertEqual(self.license_manager.license_type, "basic")
+E       AssertionError: 'Basic' != 'basic'
+E       - Basic
+E       ? ^
+E       + basic
+E       ? ^
+
+test_license_system.py:54: AssertionError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseManager" name="test_validate_license_key_format" time="0.003"><failure message="AttributeError: 'LicenseManager' object has no attribute '_validate_license_key_format'">self = &lt;test_license_system.TestLicenseManager testMethod=test_validate_license_key_format&gt;
+
+    def test_validate_license_key_format(self):
+        """Test zur Validierung des Lizenzschlüsselformats"""
+        # Gültiges Format
+&gt;       self.assertTrue(self.license_manager._validate_license_key_format("RZGCS-PRO-1234-5678-9ABC-DEF0"))
+E       AttributeError: 'LicenseManager' object has no attribute '_validate_license_key_format'
+
+test_license_system.py:61: AttributeError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseController" name="test_activate_license" time="0.002"><failure message="TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given">self = &lt;test_license_system.TestLicenseController testMethod=test_activate_license&gt;
+
+    def setUp(self):
+        # Mock-Logger erstellen
+        self.logger = MockLogger()
+    
+        # Mock LicenseManager
+        self.license_manager = MagicMock(spec=LicenseManager)
+        self.license_manager.license_valid = False
+        self.license_manager.license_type = "basic"
+        self.license_manager.is_feature_enabled.return_value = False
+    
+        # LicenseController initialisieren
+&gt;       self.license_controller = LicenseController(self.license_manager, self.logger)
+E       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given
+
+test_license_system.py:117: TypeError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseController" name="test_feature_access" time="0.002"><failure message="TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given">self = &lt;test_license_system.TestLicenseController testMethod=test_feature_access&gt;
+
+    def setUp(self):
+        # Mock-Logger erstellen
+        self.logger = MockLogger()
+    
+        # Mock LicenseManager
+        self.license_manager = MagicMock(spec=LicenseManager)
+        self.license_manager.license_valid = False
+        self.license_manager.license_type = "basic"
+        self.license_manager.is_feature_enabled.return_value = False
+    
+        # LicenseController initialisieren
+&gt;       self.license_controller = LicenseController(self.license_manager, self.logger)
+E       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given
+
+test_license_system.py:117: TypeError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseController" name="test_initialization" time="0.002"><failure message="TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given">self = &lt;test_license_system.TestLicenseController testMethod=test_initialization&gt;
+
+    def setUp(self):
+        # Mock-Logger erstellen
+        self.logger = MockLogger()
+    
+        # Mock LicenseManager
+        self.license_manager = MagicMock(spec=LicenseManager)
+        self.license_manager.license_valid = False
+        self.license_manager.license_type = "basic"
+        self.license_manager.is_feature_enabled.return_value = False
+    
+        # LicenseController initialisieren
+&gt;       self.license_controller = LicenseController(self.license_manager, self.logger)
+E       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given
+
+test_license_system.py:117: TypeError</failure></testcase><testcase classname="Python.tests.test_angel_mode.TestAngelMode" name="test_angel_mode_basic_license" time="0.002"><failure message="TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given">self = &lt;test_angel_mode.TestAngelMode testMethod=test_angel_mode_basic_license&gt;
+
+    def setUp(self):
+        # Mock-Logger erstellen
+        self.logger = MockLogger()
+    
+        # LicenseManager initialisieren
+        self.license_manager = LicenseManager(self.logger)
+    
+        # LicenseController initialisieren
+&gt;       self.license_controller = LicenseController(self.license_manager, self.logger)
+E       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given
+
+test_angel_mode.py:53: TypeError</failure></testcase><testcase classname="Python.tests.test_angel_mode.TestAngelMode" name="test_angel_mode_enterprise_license" time="0.002"><failure message="TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given">self = &lt;test_angel_mode.TestAngelMode testMethod=test_angel_mode_enterprise_license&gt;
+
+    def setUp(self):
+        # Mock-Logger erstellen
+        self.logger = MockLogger()
+    
+        # LicenseManager initialisieren
+        self.license_manager = LicenseManager(self.logger)
+    
+        # LicenseController initialisieren
+&gt;       self.license_controller = LicenseController(self.license_manager, self.logger)
+E       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given
+
+test_angel_mode.py:53: TypeError</failure></testcase><testcase classname="Python.tests.test_angel_mode.TestAngelMode" name="test_angel_mode_professional_license" time="0.002"><failure message="TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given">self = &lt;test_angel_mode.TestAngelMode testMethod=test_angel_mode_professional_license&gt;
+
+    def setUp(self):
+        # Mock-Logger erstellen
+        self.logger = MockLogger()
+    
+        # LicenseManager initialisieren
+        self.license_manager = LicenseManager(self.logger)
+    
+        # LicenseController initialisieren
+&gt;       self.license_controller = LicenseController(self.license_manager, self.logger)
+E       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given
+
+test_angel_mode.py:53: TypeError</failure></testcase></testsuite></testsuites>

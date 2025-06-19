@@ -1,0 +1,558 @@
+/*
+This is a UI file (.ui.qml) that is intended to be edited in Qt Design Studio only.
+It is supposed to be strictly declarative and only uses a subset of QML. If you edit
+this file manually, you might introduce QML code that is not supported by Qt Design Studio.
+Check out https://doc.qt.io/qtcreator/creator-quick-ui-forms.html for details on .ui.qml files.
+*/
+import QtQuick
+import QtQuick.Controls
+import QtQuick3D 6.8
+import QtQuick3D.Helpers 6.8
+import QtQuick3D.AssetUtils
+import QtQuick.Window
+import QtQuick.Layouts
+
+Item {
+    id: preflightview
+    width: parent.width
+    height: parent.height
+
+    // Schwarzer Hintergrund
+    Rectangle {
+        anchors.fill: parent
+        color: "black"
+        z: -1  // Hinter allen Elementen
+    }
+
+    // Status Bar
+    Rectangle {
+        id: statusBar
+        width: parent.width
+        height: 30
+        color: "#2d2d2d"
+        
+        RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: 10
+            anchors.rightMargin: 10
+            spacing: 20
+            
+            Text {
+                id: connectionStatus
+                text: "Disconnected"
+                color: "#ff0000"
+                Layout.alignment: Qt.AlignVCenter
+            }
+            
+            Text {
+                id: gpsStatus
+                text: "GPS: No Fix"
+                color: "#ff0000"
+                Layout.alignment: Qt.AlignVCenter
+            }
+            
+            Text {
+                id: batteryStatus
+                text: "Battery: --"
+                color: "#ffffff"
+                Layout.alignment: Qt.AlignVCenter
+            }
+            
+            Item { Layout.fillWidth: true } // Spacer
+        }
+    }
+
+    // Hauptbereich
+    Item {
+        id: mainContent
+        anchors.top: statusBar.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: 10
+        
+        // Obere Zeile mit Logs und 3D-Modell
+        Row {
+            id: upperRow
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: parent.height * 0.7
+            spacing: 20
+
+            // Linke Seite: Logs-Bereich
+            Rectangle {
+                id: logsArea
+                width: parent.width * 0.4
+                height: parent.height
+                color: "transparent"
+                
+                Column {
+                    anchors.fill: parent
+                    spacing: 10
+                    
+                    // Logs-Titel und Buttons
+                    Row {
+                        width: parent.width
+                        height: 40
+                        spacing: 10
+                        
+                        Text {
+                            text: qsTr("Logs")
+                            color: "white"
+                            font.pixelSize: 16
+                            font.bold: true
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                        
+                        Button {
+                            text: qsTr("Clear Logs")
+                            width: 100
+                            height: 30
+                            anchors.verticalCenter: parent.verticalCenter
+                            background: Rectangle {
+                                color: "black"
+                                border.color: "gray"
+                                border.width: 1
+                                radius: 4
+                            }
+                            contentItem: Text {
+                                text: parent.text
+                                color: "white"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            onClicked: {
+                                if (logger) {
+                                    logger.clear()
+                                }
+                            }
+                        }
+                        
+                        Button {
+                            text: qsTr("Test Log")
+                            width: 100
+                            height: 30
+                            anchors.verticalCenter: parent.verticalCenter
+                            background: Rectangle {
+                                color: "black"
+                                border.color: "gray"
+                                border.width: 1
+                                radius: 4
+                            }
+                            contentItem: Text {
+                                text: parent.text
+                                color: "white"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            onClicked: {
+                                if (logger) {
+                                    logger.info("Test log message " + new Date().toLocaleTimeString())
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Logs-Liste
+                    Rectangle {
+                        width: parent.width
+                        height: parent.height - 40 - parent.spacing
+                        color: "#121212"
+                        border.color: "gray"
+                        border.width: 1
+                        
+                        LogsList {
+                            id: logslist
+                            anchors.fill: parent
+                            anchors.margins: 5
+                        }
+                    }
+                }
+            }
+            
+            // Rechte Seite: 3D-Modell und Verbindungskontrolle
+            Rectangle {
+                id: rightArea
+                width: parent.width * 0.6 - parent.spacing
+                height: parent.height
+                color: "transparent"
+                
+                Column {
+                    anchors.fill: parent
+                    spacing: 20
+                    
+                    // Verbindungs-Controls
+                    Rectangle {
+                        id: connectionControls
+                        width: 280
+                        height: 200
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        color: "#1a1a1a"
+                        border.color: "gray"
+                        border.width: 1
+                        radius: 5
+                        
+                        Column {
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            spacing: 15
+                            
+                            Text {
+                                text: qsTr("Connection Settings")
+                                color: "white"
+                                font.pixelSize: 14
+                                font.bold: true
+                                width: parent.width
+                                horizontalAlignment: Text.AlignHCenter
+                            }
+                            
+                            Row {
+                                width: parent.width
+                                height: 32
+                                spacing: 10
+                                
+                                ComboBox {
+                                    id: portSelector
+                                    width: 145
+                                    height: 32
+                                    model: []
+                                    
+                                    background: Rectangle {
+                                        color: "black"
+                                        border.color: "gray"
+                                        border.width: 1
+                                        radius: 4
+                                    }
+                                    contentItem: Text {
+                                        text: portSelector.displayText
+                                        color: "white"
+                                        verticalAlignment: Text.AlignVCenter
+                                        horizontalAlignment: Text.AlignLeft
+                                        leftPadding: 5
+                                    }
+                                    popup.background: Rectangle {
+                                        color: "black"
+                                        border.color: "gray"
+                                    }
+                                    delegate: ItemDelegate {
+                                        width: portSelector.width
+                                        contentItem: Text {
+                                            text: modelData
+                                            color: "white"
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+                                        background: Rectangle {
+                                            color: highlighted ? "gray" : "black"
+                                        }
+                                        highlighted: portSelector.highlightedIndex === index
+                                    }
+                                    
+                                    onCurrentTextChanged: {
+                                        if (serialConnector) {
+                                            serialConnector.setPort(currentText)
+                                        }
+                                    }
+                                }
+                                
+                                ComboBox {
+                                    id: baurate
+                                    width: 100
+                                    height: 32
+                                    model: ["115200", "57600", "38400", "19200", "9600"]
+                                    
+                                    background: Rectangle {
+                                        color: "black"
+                                        border.color: "gray"
+                                        border.width: 1
+                                        radius: 4
+                                    }
+                                    contentItem: Text {
+                                        text: baurate.displayText
+                                        color: "white"
+                                        verticalAlignment: Text.AlignVCenter
+                                        horizontalAlignment: Text.AlignLeft
+                                        leftPadding: 5
+                                    }
+                                    popup.background: Rectangle {
+                                        color: "black"
+                                        border.color: "gray"
+                                    }
+                                    delegate: ItemDelegate {
+                                        width: baurate.width
+                                        contentItem: Text {
+                                            text: modelData
+                                            color: "white"
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+                                        background: Rectangle {
+                                            color: highlighted ? "gray" : "black"
+                                        }
+                                        highlighted: baurate.highlightedIndex === index
+                                    }
+                                    
+                                    onCurrentTextChanged: {
+                                        if (serialConnector) {
+                                            serialConnector.setBaudRate(parseInt(currentText))
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            Row {
+                                width: parent.width
+                                height: 32
+                                spacing: 10
+                                
+                                Button {
+                                    id: connectButton
+                                    width: 120
+                                    height: 32
+                                    text: qsTr("Connect")
+                                    
+                                    background: Rectangle {
+                                        color: "black"
+                                        border.color: "gray"
+                                        border.width: 1
+                                        radius: 4
+                                    }
+                                    contentItem: Text {
+                                        text: connectButton.text
+                                        color: "white"
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                    
+                                    onClicked: {
+                                        if (serialConnector) {
+                                            if (connectButton.text === "Connect") {
+                                                serialConnector.connect()
+                                                connectButton.text = "Disconnect"
+                                            } else {
+                                                serialConnector.disconnect()
+                                                connectButton.text = "Connect"
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                Button {
+                                    id: refreshPortsButton
+                                    width: 120
+                                    height: 32
+                                    text: qsTr("Refresh Ports")
+                                    
+                                    background: Rectangle {
+                                        color: "black"
+                                        border.color: "gray"
+                                        border.width: 1
+                                        radius: 4
+                                    }
+                                    contentItem: Text {
+                                        text: refreshPortsButton.text
+                                        color: "white"
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                    
+                                    onClicked: {
+                                        if (serialConnector) {
+                                            serialConnector.load_ports()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 3D-Modell
+                    Rectangle {
+                        width: parent.width
+                        height: parent.height - connectionControls.height - parent.spacing
+                        color: "#121212"
+                        border.color: "gray"
+                        border.width: 1
+                        
+                        View3D {
+                            id: view3D
+                            anchors.fill: parent
+                            
+                            PerspectiveCamera {
+                                id: camera
+                                position: Qt.vector3d(0, 200, 500)
+                                eulerRotation: Qt.vector3d(-30, 0, 0)
+                            }
+                            
+                            DirectionalLight {
+                                id: light
+                                eulerRotation: Qt.vector3d(-45, 0, 0)
+                                brightness: 1
+                            }
+                            
+                            Node {
+                                id: droneModelNode
+                                
+                                Model {
+                                    id: droneModel
+                                    source: "Assets/meshes/mk4_v2_10_mesh.mesh"
+                                    scale: Qt.vector3d(0.5, 0.5, 0.5)
+                                    materials: [defaultMaterial]
+                                    
+                                    // Eigenschaften für die Rotation
+                                    property real rollDeg: 0
+                                    property real pitchDeg: 0
+                                    property real yawDeg: 0
+                                    
+                                    // Drohnenrotation
+                                    eulerRotation: Qt.vector3d(rollDeg, yawDeg, pitchDeg)
+                                }
+                            }
+                            
+                            PrincipledMaterial {
+                                id: defaultMaterial
+                                baseColor: "#cccccc"
+                                roughness: 0.5
+                                cullMode: PrincipledMaterial.NoCulling
+                                alphaMode: PrincipledMaterial.Opaque
+                            }
+                            
+                            camera: camera
+                        }
+                        
+                        // Rotationswerte anzeigen
+                        Text {
+                            anchors.bottom: parent.bottom
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottomMargin: 10
+                            color: "white"
+                            text: `Roll: ${droneModel.rollDeg.toFixed(2)}°, Pitch: ${droneModel.pitchDeg.toFixed(2)}°, Yaw: ${droneModel.yawDeg.toFixed(2)}°`
+                            font.pixelSize: 14
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Unterer Bereich: Sensordaten
+        Rectangle {
+            id: sensorDataArea
+            anchors.top: upperRow.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.topMargin: 20
+            color: "transparent"
+            
+            Column {
+                anchors.fill: parent
+                spacing: 10
+                
+                // Titel und Load-Button
+                Row {
+                    width: parent.width
+                    height: 32
+                    
+                    Text {
+                        text: qsTr("Sensor Data")
+                        color: "white"
+                        font.pixelSize: 16
+                        font.bold: true
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                    
+                    Item { width: parent.width - 200; height: 1 } // Spacer
+                    
+                    Button {
+                        id: loadSensorButton
+                        width: 120
+                        height: 32
+                        text: qsTr("Load Sensor")
+                        anchors.verticalCenter: parent.verticalCenter
+                        
+                        background: Rectangle {
+                            color: "black"
+                            border.color: "gray"
+                            border.width: 1
+                            radius: 4
+                        }
+                        contentItem: Text {
+                            text: loadSensorButton.text
+                            color: "white"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        
+                        onClicked: {
+                            sensorModel.update_sensor("GPS", Math.random() * 100)
+                        }
+                    }
+                }
+                
+                // SensorView
+                Rectangle {
+                    width: parent.width
+                    height: parent.height - 32 - parent.spacing
+                    color: "#121212"
+                    border.color: "gray"
+                    border.width: 1
+                    
+                    SensorView {
+                        id: sensorView
+                        anchors.fill: parent
+                        anchors.margins: 5
+                    }
+                }
+            }
+        }
+    }
+
+    // Connections
+    Connections {
+        target: serialConnector
+        function onConnectedChanged(connected) {
+            connectionStatus.text = connected ? "Connected" : "Disconnected"
+            connectionStatus.color = connected ? "#00ff00" : "#ff0000"
+            connectButton.text = connected ? "Disconnect" : "Connect"
+        }
+    }
+    
+    Connections {
+        target: serialConnector
+        function onAttitude_msg(roll, pitch, yaw) {
+            droneModel.rollDeg = roll * 180 / Math.PI
+            droneModel.pitchDeg = pitch * 180 / Math.PI
+            droneModel.yawDeg = yaw * 180 / Math.PI
+        }
+    }
+    
+    Connections {
+        target: serialConnector
+        function onGps_msg(lat, lon, alt) {
+            // Update GPS status
+            gpsStatus.text = `GPS: ${lat.toFixed(6)}, ${lon.toFixed(6)}`
+            gpsStatus.color = "#00ff00"
+        }
+    }
+    
+    Connections {
+        target: serialConnector
+        function onBatteryChanged(voltage, current, remaining) {
+            batteryStatus.text = `Battery: ${remaining}%`
+            batteryStatus.color = remaining > 20 ? "#00ff00" : "#ff0000"
+        }
+    }
+    
+    // Komponente initialisieren
+    Component.onCompleted: {
+        if (serialConnector) {
+            if (serialConnector.connected) {
+                connectionStatus.text = "Connected"
+                connectionStatus.color = "#00ff00"
+                connectButton.text = "Disconnect"
+            }
+            
+            // Kombobox mit verfügbaren Ports füllen
+            portSelector.model = serialConnector.availablePorts
+        }
+    }
+}

@@ -1,0 +1,85 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Window
+
+// Lokale Komponenten importieren
+import "./" as RZGCS
+
+Window {
+    id: window
+    visible: true
+    title: "RZGCS"
+    width: 800
+    height: 600
+    minimumWidth: 800
+    minimumHeight: 600
+    
+    // Eigenschaft für den Busy-Status
+    property bool isBusy: false
+    property string busyMessage: "Bitte warten..."
+    
+    // Funktion zum Anzeigen des Busy-Indikators
+    function showBusy(message) {
+        busyMessage = message || "Bitte warten..."
+        isBusy = true
+    }
+    
+    // Funktion zum Ausblenden des Busy-Indikators
+    function hideBusy() {
+        isBusy = false
+    }
+
+    RZGCS.Screen01 {
+        id: mainScreen
+        anchors.fill: parent
+    }
+    
+    // Globaler BusyIndicator, der garantiert über allem anderen liegt
+    GlobalBusyIndicator {
+        id: globalBusyIndicator
+    }
+    
+    // Verbindungen zum SerialConnector
+    Connections {
+        target: serialConnector
+        
+        // Zeige Busy-Indikator beim Verbinden/Trennen
+        function onConnecting() {
+            globalBusyIndicator.show("Verbindung wird hergestellt...")
+        }
+        
+        function onConnected() {
+            globalBusyIndicator.hide()
+        }
+        
+        function onDisconnected() {
+            globalBusyIndicator.hide()
+        }
+        
+        function onConnectionFailed(error) {
+            globalBusyIndicator.hide()
+        }
+    }
+    
+    // Verbindungen zum Parameter-Controller
+    Connections {
+        target: parameterController ? parameterController : null
+        
+        // Diese Signalnamen müssen mit denen im ParameterManager übereinstimmen
+        function onParametersLoading() {
+            console.log("Parameter-Ladevorgang gestartet")
+            globalBusyIndicator.show("Parameter werden geladen...")
+        }
+        
+        function onParametersLoaded(params) {
+            console.log("Parameter-Ladevorgang abgeschlossen: " + (params ? params.length : 0) + " Parameter")
+            globalBusyIndicator.hide()
+        }
+        
+        function onErrorOccurred(errorMsg) {
+            console.error("Fehler beim Laden der Parameter: " + errorMsg)
+            globalBusyIndicator.hide()
+        }
+    }
+}

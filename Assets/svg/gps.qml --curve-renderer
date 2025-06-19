@@ -1,0 +1,49 @@
+// Generated from SVG file C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Assets\svg\gps (2).svg
+import QtQuick
+import QtQuick.Shapes
+
+Item {
+    implicitWidth: 48
+    implicitHeight: 48
+    transform: [
+        Scale { xScale: width / 48; yScale: height / 48 }
+    ]
+    Shape {
+        ShapePath {
+            strokeColor: "#ff50c6ff"
+            strokeWidth: 3
+            capStyle: ShapePath.FlatCap
+            joinStyle: ShapePath.MiterJoin
+            miterLimit: 4
+            fillColor: "#ffffffff"
+            fillRule: ShapePath.WindingFill
+            PathSvg { path: "M 40 24 C 40 32.8366 32.8366 40 24 40 C 15.1634 40 8 32.8366 8 24 C 8 15.1634 15.1634 8 24 8 C 32.8366 8 40 15.1634 40 24 " }
+        }
+        ShapePath {
+            strokeColor: "transparent"
+            fillColor: "#ff50c6ff"
+            fillRule: ShapePath.WindingFill
+            PathSvg { path: "M 30 24 C 30 27.3137 27.3137 30 24 30 C 20.6863 30 18 27.3137 18 24 C 18 20.6863 20.6863 18 24 18 C 27.3137 18 30 20.6863 30 24 " }
+        }
+        ShapePath {
+            strokeColor: "#ff50c6ff"
+            strokeWidth: 2
+            capStyle: ShapePath.FlatCap
+            joinStyle: ShapePath.MiterJoin
+            miterLimit: 4
+            fillColor: "#ff000000"
+            fillRule: ShapePath.WindingFill
+            PathSvg { path: "M 24 8 L 24 40 " }
+        }
+        ShapePath {
+            strokeColor: "#ff50c6ff"
+            strokeWidth: 2
+            capStyle: ShapePath.FlatCap
+            joinStyle: ShapePath.MiterJoin
+            miterLimit: 4
+            fillColor: "#ff000000"
+            fillRule: ShapePath.WindingFill
+            PathSvg { path: "M 8 24 L 40 24 " }
+        }
+    }
+}

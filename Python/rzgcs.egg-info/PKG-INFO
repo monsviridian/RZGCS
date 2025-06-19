@@ -1,0 +1,18 @@
+Metadata-Version: 2.4
+Name: rzgcs
+Version: 0.1.0
+Summary: RZGCS - MAVSDK Ground Control Station
+Author: Your Name
+Author-email: your.email@example.com
+License: MIT
+Keywords: mavlink mavsdk drone ground-control-station
+Requires-Dist: PySide6>=6.0.0
+Requires-Dist: pymavlink>=2.4.0
+Requires-Dist: mavsdk>=0.12.0
+Requires-Dist: pyserial>=3.5
+Dynamic: author
+Dynamic: author-email
+Dynamic: keywords
+Dynamic: license
+Dynamic: requires-dist
+Dynamic: summary

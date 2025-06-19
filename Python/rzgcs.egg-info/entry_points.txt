@@ -1,0 +1,2 @@
+[console_scripts]
+rzgcs-mvvm = rzgcs.mvvm.__main__:main

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <g stroke="white" stroke-width="2" fill="none">
+    <!-- Main body -->
+    <circle cx="16" cy="16" r="4" fill="#3399ff"/>
+    <!-- Arms -->
+    <line x1="16" y1="16" x2="6" y2="6"/>
+    <line x1="16" y1="16" x2="26" y2="6"/>
+    <line x1="16" y1="16" x2="6" y2="26"/>
+    <line x1="16" y1="16" x2="26" y2="26"/>
+    <!-- Rotors -->
+    <circle cx="6" cy="6" r="2.5" fill="#ff9900"/>
+    <circle cx="26" cy="6" r="2.5" fill="#ff9900"/>
+    <circle cx="6" cy="26" r="2.5" fill="#ff9900"/>
+    <circle cx="26" cy="26" r="2.5" fill="#ff9900"/>
+    <!-- Direction indicator -->
+    <path d="M16,8 L18,12 L14,12 Z" fill="red" stroke="none"/>
+  </g>
+</svg>

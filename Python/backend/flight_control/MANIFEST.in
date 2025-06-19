@@ -1,0 +1,21 @@
+include LICENSE
+include README.md
+include requirements.txt
+include setup.py
+include MANIFEST.in
+include flight_control/__init__.py
+include flight_control/models/__init__.py
+include flight_control/services/__init__.py
+include flight_control/viewmodels/__init__.py
+include flight_control/views/__init__.py
+include flight_control/controllers/__init__.py
+include flight_control/tests/__init__.py
+include flight_control/docs/__init__.py
+include flight_control/docs/fleet.md
+include flight_control/docs/index.md
+include flight_control/docs/conf.py
+include flight_control/docs/mkdocs.yml
+recursive-include flight_control *.py
+recursive-include flight_control *.qml
+recursive-include tests *.py
+recursive-include tests *.qml 

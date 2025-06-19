@@ -1,0 +1,11 @@
+/*
+ * RZGCS - Remote Zone Ground Control Station
+ * Copyright (c) 2025 [Ihr Name/Ihre Organisation]
+ * 
+ * Diese Datei ist Teil der proprietären RZGCS-Software.
+ * Ohne ausdrückliche schriftliche Genehmigung ist es nicht gestattet,
+ * diese Software zu kopieren, zu modifizieren, zu verbreiten oder zu verkaufen.
+ * 
+ * Diese Software verwendet Komponenten unter verschiedenen Open-Source-Lizenzen.
+ * Weitere Informationen finden Sie in der Datei LICENSE.md im Hauptverzeichnis des Projekts.
+ */

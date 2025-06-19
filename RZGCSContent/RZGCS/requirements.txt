@@ -1,0 +1,6 @@
+pymavlink>=2.4.37
+PySide6>=6.2.0
+numpy>=1.21.0
+pyserial>=3.5
+pytest>=7.0.0
+pytest-qt>=4.2.0 

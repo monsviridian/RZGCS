@@ -1,0 +1,4 @@
+module Components
+StatusOverview 1.0 StatusOverview.ui.qml
+ErrorDialog 1.0 ErrorDialog.qml
+SafetyDialog 1.0 SafetyDialog.qml 

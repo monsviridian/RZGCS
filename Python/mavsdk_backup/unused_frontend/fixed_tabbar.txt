@@ -1,0 +1,253 @@
+        // Tab bar
+        TabBar {
+            background: Rectangle {
+                color: "black"
+            }
+            id: tabBar
+            Layout.fillWidth: true
+            currentIndex: 0
+            position: TabBar.Footer
+            
+            // TabButtons mit Hover-Effekt
+            
+            TabButton {
+                id: tabButton_preflight
+                text: "Preflight"
+                Material.foreground: "white"
+                
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 40
+                    color: parent.checked ? "#303030" : (parent.hovered ? "#404040" : "#2C2C2C")
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                    
+                    // Sanfter Übergangseffekt für Farben
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+            TabButton {
+                id: tabButton_parameters
+                text: "Parameters"
+                Material.foreground: "white"
+                
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 40
+                    color: parent.checked ? "#303030" : (parent.hovered ? "#404040" : "#2C2C2C")
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                    
+                    // Sanfter Übergangseffekt für Farben
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+            TabButton {
+                id: tabButton_sensors
+                text: "Sensors"
+                Material.foreground: "white"
+                
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 40
+                    color: parent.checked ? "#303030" : (parent.hovered ? "#404040" : "#2C2C2C")
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                    
+                    // Sanfter Übergangseffekt für Farben
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+            TabButton {
+                id: tabButton_calibration
+                text: "Calibration"
+                Material.foreground: "white"
+                
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 40
+                    color: parent.checked ? "#303030" : (parent.hovered ? "#404040" : "#2C2C2C")
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                    
+                    // Sanfter Übergangseffekt für Farben
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+            TabButton {
+                id: tabButton_motorTest
+                text: "Motor Test"
+                Material.foreground: "white"
+                
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 40
+                    color: parent.checked ? "#303030" : (parent.hovered ? "#404040" : "#2C2C2C")
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                    
+                    // Sanfter Übergangseffekt für Farben
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+            TabButton {
+                id: tabButton_flight
+                text: "Flight"
+                Material.foreground: "white"
+                
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 40
+                    color: parent.checked ? "#303030" : (parent.hovered ? "#404040" : "#2C2C2C")
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                    
+                    // Sanfter Übergangseffekt für Farben
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+            TabButton {
+                id: tabButton_angelMode
+                text: "Angel Mode"
+                Material.foreground: "white"
+                
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 40
+                    color: parent.checked ? "#303030" : (parent.hovered ? "#404040" : "#2C2C2C")
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                    
+                    // Sanfter Übergangseffekt für Farben
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+            TabButton {
+                id: tabButton_license
+                text: "License"
+                Material.foreground: "white"
+                
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 40
+                    color: parent.checked ? "#303030" : (parent.hovered ? "#404040" : "#2C2C2C")
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                    
+                    // Sanfter Übergangseffekt für Farben
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+            TabButton {
+                id: tabButton_support
+                text: "Support"
+                Material.foreground: "white"
+                
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 40
+                    color: parent.checked ? "#303030" : (parent.hovered ? "#404040" : "#2C2C2C")
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                    
+                    // Sanfter Übergangseffekt für Farben
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+            TabButton {
+                id: tabButton_sitl
+                text: "SITL"
+                Material.foreground: "white"
+                ToolTip.visible: hovered
+                ToolTip.text: "Software in the Loop Simulation"
+                
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 40
+                    color: parent.checked ? "#303030" : (parent.hovered ? "#404040" : "#2C2C2C")
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                    
+                    // Sanfter Übergangseffekt für Farben
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+            TabButton {
+                id: tabButton_rzstore
+                text: "RZ Store"
+                Material.foreground: "white"
+                
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 40
+                    color: parent.checked ? "#303030" : (parent.hovered ? "#404040" : "#2C2C2C")
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                    
+                    // Sanfter Übergangseffekt für Farben
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+            TabButton {
+                id: tabButton_missionPlanner
+                text: "Mission Planner"
+                Material.foreground: "white"
+                ToolTip.visible: hovered
+                ToolTip.text: "Mission Planner Style SITL"
+                
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 40
+                    color: parent.checked ? "#303030" : (parent.hovered ? "#404040" : "#2C2C2C")
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                    
+                    // Sanfter Übergangseffekt für Farben
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+            TabButton {
+                id: tabButton_firmware
+                text: "Firmware"
+                Material.foreground: "white"
+                ToolTip.visible: hovered
+                ToolTip.text: "Firmware-Installation und Updates"
+                
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 40
+                    color: parent.checked ? "#303030" : (parent.hovered ? "#404040" : "#2C2C2C")
+                    border.color: "gray"
+                    border.width: parent.checked ? 1 : 0
+                    
+                    // Sanfter Übergangseffekt für Farben
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+        }

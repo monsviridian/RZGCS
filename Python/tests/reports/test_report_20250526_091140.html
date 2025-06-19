@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title id="head-title">test_report_20250526_091140.html</title>
+      <style type="text/css">body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
+  min-width: 800px;
+  color: #999;
+}
+
+h1 {
+  font-size: 24px;
+  color: black;
+}
+
+h2 {
+  font-size: 16px;
+  color: black;
+}
+
+p {
+  color: black;
+}
+
+a {
+  color: #999;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/******************************
+ * SUMMARY INFORMATION
+ ******************************/
+#environment td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  vertical-align: top;
+}
+#environment tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+#environment ul {
+  margin: 0;
+  padding: 0 20px;
+}
+
+/******************************
+ * TEST RESULT COLORS
+ ******************************/
+span.passed,
+.passed .col-result {
+  color: green;
+}
+
+span.skipped,
+span.xfailed,
+span.rerun,
+.skipped .col-result,
+.xfailed .col-result,
+.rerun .col-result {
+  color: orange;
+}
+
+span.error,
+span.failed,
+span.xpassed,
+.error .col-result,
+.failed .col-result,
+.xpassed .col-result {
+  color: red;
+}
+
+.col-links__extra {
+  margin-right: 3px;
+}
+
+/******************************
+ * RESULTS TABLE
+ *
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
+ *
+ ******************************/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
+#results-table {
+  border: 1px solid #e6e6e6;
+  color: #999;
+  font-size: 12px;
+  width: 100%;
+}
+#results-table th,
+#results-table td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  text-align: left;
+}
+#results-table th {
+  font-weight: bold;
+}
+
+/*------------------
+ * 2. Extra
+ *------------------*/
+.logwrapper {
+  max-height: 230px;
+  overflow-y: scroll;
+  background-color: #e6e6e6;
+}
+.logwrapper.expanded {
+  max-height: none;
+}
+.logwrapper.expanded .logexpander:after {
+  content: "collapse [-]";
+}
+.logwrapper .logexpander {
+  z-index: 1;
+  position: sticky;
+  top: 10px;
+  width: max-content;
+  border: 1px solid;
+  border-radius: 3px;
+  padding: 5px 7px;
+  margin: 10px 0 10px calc(100% - 80px);
+  cursor: pointer;
+  background-color: #e6e6e6;
+}
+.logwrapper .logexpander:after {
+  content: "expand [+]";
+}
+.logwrapper .logexpander:hover {
+  color: #000;
+  border-color: #000;
+}
+.logwrapper .log {
+  min-height: 40px;
+  position: relative;
+  top: -50px;
+  height: calc(100% + 50px);
+  border: 1px solid #e6e6e6;
+  color: black;
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  padding: 5px;
+  padding-right: 80px;
+  white-space: pre-wrap;
+}
+
+div.media {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin: 0 5px;
+  overflow: hidden;
+  width: 320px;
+}
+
+.media-container {
+  display: grid;
+  grid-template-columns: 25px auto 25px;
+  align-items: center;
+  flex: 1 1;
+  overflow: hidden;
+  height: 200px;
+}
+
+.media-container--fullscreen {
+  grid-template-columns: 0px auto 0px;
+}
+
+.media-container__nav--right,
+.media-container__nav--left {
+  text-align: center;
+  cursor: pointer;
+}
+
+.media-container__viewport {
+  cursor: pointer;
+  text-align: center;
+  height: inherit;
+}
+.media-container__viewport img,
+.media-container__viewport video {
+  object-fit: cover;
+  width: 100%;
+  max-height: 100%;
+}
+
+.media__name,
+.media__counter {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  flex: 0 0 25px;
+  align-items: center;
+}
+
+.collapsible td:not(.col-links) {
+  cursor: pointer;
+}
+.collapsible td:not(.col-links):hover::after {
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+}
+
+.col-result {
+  width: 130px;
+}
+.col-result:hover::after {
+  content: " (hide details)";
+}
+
+.col-result.collapsed:hover::after {
+  content: " (show details)";
+}
+
+#environment-header h2:hover::after {
+  content: " (hide details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#environment-header.collapsed h2:hover::after {
+  content: " (show details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/*------------------
+ * 3. Sorting items
+ *------------------*/
+.sortable {
+  cursor: pointer;
+}
+.sortable.desc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: -12.5px;
+  border: 10px solid #4caf50;
+  border-bottom: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+.sortable.asc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: 12.5px;
+  border: 10px solid #4caf50;
+  border-top: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+
+.hidden, .summary__reload__button.hidden {
+  display: none;
+}
+
+.summary__data {
+  flex: 0 0 550px;
+}
+.summary__reload {
+  flex: 1 1;
+  display: flex;
+  justify-content: center;
+}
+.summary__reload__button {
+  flex: 0 0 300px;
+  display: flex;
+  color: white;
+  font-weight: bold;
+  background-color: #4caf50;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.summary__reload__button:hover {
+  background-color: #46a049;
+}
+.summary__spacer {
+  flex: 0 0 550px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+}
+
+.filters,
+.collapse {
+  display: flex;
+  align-items: center;
+}
+.filters button,
+.collapse button {
+  color: #999;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.filters button:hover,
+.collapse button:hover {
+  color: #ccc;
+}
+
+.filter__label {
+  margin-right: 10px;
+}
+
+      </style>
+    
+  </head>
+  <body>
+    <h1 id="title">test_report_20250526_091140.html</h1>
+    <p>Report generated on 26-May-2025 at 09:11:43 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a>
+        v4.1.1</p>
+    <div id="environment-header">
+      <h2>Environment</h2>
+    </div>
+    <table id="environment"></table>
+    <!-- TEMPLATES -->
+      <template id="template_environment_row">
+      <tr>
+        <td></td>
+        <td></td>
+      </tr>
+    </template>
+    <template id="template_results-table__body--empty">
+      <tbody class="results-table-row">
+        <tr id="not-found-message">
+          <td colspan="4">No results found. Check the filters.</th>
+        </tr>
+    </template>
+    <template id="template_results-table__tbody">
+      <tbody class="results-table-row">
+        <tr class="collapsible">
+        </tr>
+        <tr class="extras-row">
+          <td class="extra" colspan="4">
+            <div class="extraHTML"></div>
+            <div class="media">
+              <div class="media-container">
+                  <div class="media-container__nav--left"><</div>
+                  <div class="media-container__viewport">
+                    <img src="" />
+                    <video controls>
+                      <source src="" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="media-container__nav--right">></div>
+                </div>
+                <div class="media__name"></div>
+                <div class="media__counter"></div>
+            </div>
+            <div class="logwrapper">
+              <div class="logexpander"></div>
+              <div class="log"></div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </template>
+    <!-- END TEMPLATES -->
+    <div class="summary">
+      <div class="summary__data">
+        <h2>Summary</h2>
+        <div class="additional-summary prefix">
+        </div>
+        <p class="run-count">38 tests took 134 ms.</p>
+        <p class="filter">(Un)check the boxes to filter the results.</p>
+        <div class="summary__reload">
+          <div class="summary__reload__button hidden" onclick="location.reload()">
+            <div>There are still tests running. <br />Reload this page to get the latest results!</div>
+          </div>
+        </div>
+        <div class="summary__spacer"></div>
+        <div class="controls">
+          <div class="filters">
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="failed" />
+            <span class="failed">25 Failed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="passed" />
+            <span class="passed">13 Passed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="skipped" disabled/>
+            <span class="skipped">0 Skipped,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xfailed" disabled/>
+            <span class="xfailed">0 Expected failures,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xpassed" disabled/>
+            <span class="xpassed">0 Unexpected passes,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="error" disabled/>
+            <span class="error">0 Errors,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="rerun" disabled/>
+            <span class="rerun">0 Reruns</span>
+          </div>
+          <div class="collapse">
+            <button id="show_all_details">Show all details</button>&nbsp;/&nbsp;<button id="hide_all_details">Hide all details</button>
+          </div>
+        </div>
+      </div>
+      <div class="additional-summary summary">
+      </div>
+      <div class="additional-summary postfix">
+      </div>
+    </div>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable" data-column-type="result">Result</th>
+          <th class="sortable" data-column-type="testId">Test</th>
+          <th class="sortable" data-column-type="duration">Duration</th>
+          <th>Links</th>
+        </tr>
+      </thead>
+    </table>
+  </body>
+  <footer>
+    <div id="data-container" data-jsonblob="{&#34;environment&#34;: {&#34;Python&#34;: &#34;3.10.0&#34;, &#34;Platform&#34;: &#34;Windows-10-10.0.19045-SP0&#34;, &#34;Packages&#34;: {&#34;pytest&#34;: &#34;8.3.5&#34;, &#34;pluggy&#34;: &#34;1.6.0&#34;}, &#34;Plugins&#34;: {&#34;anyio&#34;: &#34;4.9.0&#34;, &#34;asyncio&#34;: &#34;0.26.0&#34;, &#34;cov&#34;: &#34;6.1.1&#34;, &#34;html&#34;: &#34;4.1.1&#34;, &#34;metadata&#34;: &#34;3.1.1&#34;, &#34;qt&#34;: &#34;4.4.0&#34;}}, &#34;tests&#34;: {&#34;Python/tests/test_license_system.py::TestLicenseManager::test_activate_license&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_license_system.py::TestLicenseManager::test_activate_license&#34;, &#34;duration&#34;: &#34;27 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_license_system.py::TestLicenseManager::test_activate_license&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;27 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_license_system.TestLicenseManager testMethod=test_activate_license&amp;gt;\n\n    def test_activate_license(self):\n        &amp;quot;&amp;quot;&amp;quot;Test zur Aktivierung einer Lizenz&amp;quot;&amp;quot;&amp;quot;\n        # Mock die _get_machine_id-Methode\n        with patch(&amp;#x27;backend.license_manager.LicenseManager._get_machine_id&amp;#x27;) as mock_get_machine_id:\n            mock_get_machine_id.return_value = &amp;quot;test-machine-id&amp;quot;\n    \n            # Test f\u00fcr Professional-Lizenz\n            result = self.license_manager.activate_license(&amp;quot;RZGCS-PRO-1234-5678-9ABC-DEF0&amp;quot;)\n            self.assertTrue(result)\n            self.assertTrue(self.license_manager.license_valid)\n&amp;gt;           self.assertEqual(self.license_manager.license_type, &amp;quot;professional&amp;quot;)\nE           AssertionError: &amp;#x27;Professional&amp;#x27; != &amp;#x27;professional&amp;#x27;\nE           - Professional\nE           ? ^\nE           + professional\nE           ? ^\n\ntest_license_system.py:79: AssertionError\n\n----------------------------- Captured stdout call -----------------------------\nFehler beim Speichern der Lizenz: Object of type MockLogger is not JSON serializable\n&#34;}], &#34;Python/tests/test_license_system.py::TestLicenseManager::test_enterprise_license_features&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_license_system.py::TestLicenseManager::test_enterprise_license_features&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_license_system.py::TestLicenseManager::test_enterprise_license_features&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_license_system.TestLicenseManager testMethod=test_enterprise_license_features&amp;gt;\n\n    def test_enterprise_license_features(self):\n        &amp;quot;&amp;quot;&amp;quot;Test f\u00fcr Enterprise-Lizenz-Features&amp;quot;&amp;quot;&amp;quot;\n        # Mock die _get_machine_id-Methode\n        with patch(&amp;#x27;backend.license_manager.LicenseManager._get_machine_id&amp;#x27;) as mock_get_machine_id:\n            mock_get_machine_id.return_value = &amp;quot;test-machine-id&amp;quot;\n    \n            # Test f\u00fcr Enterprise-Lizenz\n            result = self.license_manager.activate_license(&amp;quot;RZGCS-ENT-ABCD-EF12-3456-789A&amp;quot;)\n            self.assertTrue(result)\n            self.assertTrue(self.license_manager.license_valid)\n&amp;gt;           self.assertEqual(self.license_manager.license_type, &amp;quot;enterprise&amp;quot;)\nE           AssertionError: &amp;#x27;Enterprise&amp;#x27; != &amp;#x27;enterprise&amp;#x27;\nE           - Enterprise\nE           ? ^\nE           + enterprise\nE           ? ^\n\ntest_license_system.py:96: AssertionError\n\n----------------------------- Captured stdout call -----------------------------\nFehler beim Speichern der Lizenz: Object of type MockLogger is not JSON serializable\n&#34;}], &#34;Python/tests/test_license_system.py::TestLicenseManager::test_initialization&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_license_system.py::TestLicenseManager::test_initialization&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_license_system.py::TestLicenseManager::test_initialization&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_license_system.TestLicenseManager testMethod=test_initialization&amp;gt;\n\n    def test_initialization(self):\n        &amp;quot;&amp;quot;&amp;quot;Test, ob der LicenseManager korrekt initialisiert wird&amp;quot;&amp;quot;&amp;quot;\n        self.assertFalse(self.license_manager.license_valid)\n&amp;gt;       self.assertEqual(self.license_manager.license_type, &amp;quot;basic&amp;quot;)\nE       AssertionError: &amp;#x27;Basic&amp;#x27; != &amp;#x27;basic&amp;#x27;\nE       - Basic\nE       ? ^\nE       + basic\nE       ? ^\n\ntest_license_system.py:54: AssertionError\n&#34;}], &#34;Python/tests/test_license_system.py::TestLicenseManager::test_validate_license_key_format&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_license_system.py::TestLicenseManager::test_validate_license_key_format&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_license_system.py::TestLicenseManager::test_validate_license_key_format&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_license_system.TestLicenseManager testMethod=test_validate_license_key_format&amp;gt;\n\n    def test_validate_license_key_format(self):\n        &amp;quot;&amp;quot;&amp;quot;Test zur Validierung des Lizenzschl\u00fcsselformats&amp;quot;&amp;quot;&amp;quot;\n        # G\u00fcltiges Format\n&amp;gt;       self.assertTrue(self.license_manager._validate_license_key_format(&amp;quot;RZGCS-PRO-1234-5678-9ABC-DEF0&amp;quot;))\nE       AttributeError: &amp;#x27;LicenseManager&amp;#x27; object has no attribute &amp;#x27;_validate_license_key_format&amp;#x27;\n\ntest_license_system.py:61: AttributeError\n&#34;}], &#34;Python/tests/test_license_system.py::TestLicenseController::test_activate_license&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_license_system.py::TestLicenseController::test_activate_license&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_license_system.py::TestLicenseController::test_activate_license&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_license_system.TestLicenseController testMethod=test_activate_license&amp;gt;\n\n    def setUp(self):\n        # Mock-Logger erstellen\n        self.logger = MockLogger()\n    \n        # Mock LicenseManager\n        self.license_manager = MagicMock(spec=LicenseManager)\n        self.license_manager.license_valid = False\n        self.license_manager.license_type = &amp;quot;basic&amp;quot;\n        self.license_manager.is_feature_enabled.return_value = False\n    \n        # LicenseController initialisieren\n&amp;gt;       self.license_controller = LicenseController(self.license_manager, self.logger)\nE       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given\n\ntest_license_system.py:117: TypeError\n&#34;}], &#34;Python/tests/test_license_system.py::TestLicenseController::test_feature_access&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_license_system.py::TestLicenseController::test_feature_access&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_license_system.py::TestLicenseController::test_feature_access&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_license_system.TestLicenseController testMethod=test_feature_access&amp;gt;\n\n    def setUp(self):\n        # Mock-Logger erstellen\n        self.logger = MockLogger()\n    \n        # Mock LicenseManager\n        self.license_manager = MagicMock(spec=LicenseManager)\n        self.license_manager.license_valid = False\n        self.license_manager.license_type = &amp;quot;basic&amp;quot;\n        self.license_manager.is_feature_enabled.return_value = False\n    \n        # LicenseController initialisieren\n&amp;gt;       self.license_controller = LicenseController(self.license_manager, self.logger)\nE       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given\n\ntest_license_system.py:117: TypeError\n&#34;}], &#34;Python/tests/test_license_system.py::TestLicenseController::test_initialization&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_license_system.py::TestLicenseController::test_initialization&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_license_system.py::TestLicenseController::test_initialization&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_license_system.TestLicenseController testMethod=test_initialization&amp;gt;\n\n    def setUp(self):\n        # Mock-Logger erstellen\n        self.logger = MockLogger()\n    \n        # Mock LicenseManager\n        self.license_manager = MagicMock(spec=LicenseManager)\n        self.license_manager.license_valid = False\n        self.license_manager.license_type = &amp;quot;basic&amp;quot;\n        self.license_manager.is_feature_enabled.return_value = False\n    \n        # LicenseController initialisieren\n&amp;gt;       self.license_controller = LicenseController(self.license_manager, self.logger)\nE       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given\n\ntest_license_system.py:117: TypeError\n&#34;}], &#34;Python/tests/test_platform_compatibility.py::TestConnectionManager::test_create_connection_string&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_platform_compatibility.py::TestConnectionManager::test_create_connection_string&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_platform_compatibility.py::TestConnectionManager::test_create_connection_string&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_platform_compatibility.py::TestConnectionManager::test_get_available_ports_macos&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_platform_compatibility.py::TestConnectionManager::test_get_available_ports_macos&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_platform_compatibility.py::TestConnectionManager::test_get_available_ports_macos&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_platform_compatibility.py::TestConnectionManager::test_get_available_ports_windows&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_platform_compatibility.py::TestConnectionManager::test_get_available_ports_windows&#34;, &#34;duration&#34;: &#34;23 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_platform_compatibility.py::TestConnectionManager::test_get_available_ports_windows&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;23 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_platform_compatibility.py::TestConnectionManager::test_get_default_connection_params&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_platform_compatibility.py::TestConnectionManager::test_get_default_connection_params&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_platform_compatibility.py::TestConnectionManager::test_get_default_connection_params&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_platform_compatibility.py::TestMAVLinkConnector::test_mavsdk_server_path_macos&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_platform_compatibility.py::TestMAVLinkConnector::test_mavsdk_server_path_macos&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_platform_compatibility.py::TestMAVLinkConnector::test_mavsdk_server_path_macos&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_platform_compatibility.TestMAVLinkConnector testMethod=test_mavsdk_server_path_macos&amp;gt;\n\n    def test_mavsdk_server_path_macos(self):\n        &amp;quot;&amp;quot;&amp;quot;Test des MAVSDK-Server-Pfads unter macOS&amp;quot;&amp;quot;&amp;quot;\n        with patch(&amp;#x27;sys.platform&amp;#x27;, &amp;#x27;darwin&amp;#x27;):\n            with patch(&amp;#x27;pathlib.Path.exists&amp;#x27;, side_effect=lambda p: &amp;#x27;mac&amp;#x27; in str(p)):\n                from backend.mavlink_connector import get_mavsdk_server_path\n&amp;gt;               server_path = get_mavsdk_server_path()\n\ntest_platform_compatibility.py:128: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n..\\backend\\mavlink_connector.py:36: in get_mavsdk_server_path\n    if server_path_1.exists():\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:1105: in __call__\n    return self._mock_call(*args, **kwargs)\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:1109: in _mock_call\n    return self._execute_mock_call(*args, **kwargs)\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = &amp;lt;MagicMock name=&amp;#x27;exists&amp;#x27; id=&amp;#x27;2675095110080&amp;#x27;&amp;gt;, args = (), kwargs = {}\neffect = &amp;lt;function TestMAVLinkConnector.test_mavsdk_server_path_macos.&amp;lt;locals&amp;gt;.&amp;lt;lambda&amp;gt; at 0x0000026ED8121900&amp;gt;\n\n    def _execute_mock_call(self, /, *args, **kwargs):\n        # separate from _increment_mock_call so that awaited functions are\n        # executed separately from their call, also AsyncMock overrides this method\n    \n        effect = self.side_effect\n        if effect is not None:\n            if _is_exception(effect):\n                raise effect\n            elif not _callable(effect):\n                result = next(effect)\n                if _is_exception(result):\n                    raise result\n            else:\n&amp;gt;               result = effect(*args, **kwargs)\nE               TypeError: TestMAVLinkConnector.test_mavsdk_server_path_macos.&amp;lt;locals&amp;gt;.&amp;lt;lambda&amp;gt;() missing 1 required positional argument: &amp;#x27;p&amp;#x27;\n\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:1170: TypeError\n&#34;}], &#34;Python/tests/test_platform_compatibility.py::TestMAVLinkConnector::test_mavsdk_server_path_windows&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_platform_compatibility.py::TestMAVLinkConnector::test_mavsdk_server_path_windows&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_platform_compatibility.py::TestMAVLinkConnector::test_mavsdk_server_path_windows&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connector_initialization&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connector_initialization&#34;, &#34;duration&#34;: &#34;4 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connector_initialization&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;4 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000026ED7CD9C00&amp;gt;\nmock_serial = &amp;lt;MagicMock name=&amp;#x27;Serial()&amp;#x27; id=&amp;#x27;2675095012640&amp;#x27;&amp;gt;\nmock_logger = &amp;lt;MagicMock spec=&amp;#x27;Logger&amp;#x27; id=&amp;#x27;2675094971888&amp;#x27;&amp;gt;\n\n    def test_connector_initialization(self, mock_serial, mock_logger):\n        &amp;quot;&amp;quot;&amp;quot;Testet die korrekte Initialisierung des MAVLink-Connectors.&amp;quot;&amp;quot;&amp;quot;\n        # Arranges\n        port = &amp;#x27;COM1&amp;#x27;\n        baudrate = 57600\n    \n        # Act\n        connector = MAVLinkConnector(mock_logger)\n&amp;gt;       connector.set_connection_params(port, baudrate)\nE       AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntest_mavlink_connector.py:45: AttributeError\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connect_success&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connect_success&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connect_success&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000026ED7CD9DB0&amp;gt;\nmock_serial = &amp;lt;MagicMock name=&amp;#x27;Serial()&amp;#x27; id=&amp;#x27;2675095029696&amp;#x27;&amp;gt;\nmock_logger = &amp;lt;MagicMock spec=&amp;#x27;Logger&amp;#x27; id=&amp;#x27;2675094178592&amp;#x27;&amp;gt;\n\n    def test_connect_success(self, mock_serial, mock_logger):\n        &amp;quot;&amp;quot;&amp;quot;Testet die erfolgreiche Verbindungsherstellung.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        connector = MAVLinkConnector(mock_logger)\n&amp;gt;       connector.set_connection_params(&amp;#x27;COM1&amp;#x27;, 57600)\nE       AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntest_mavlink_connector.py:57: AttributeError\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connect_failure&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connect_failure&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_connect_failure&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000026ED7CD9FC0&amp;gt;\nmock_serial_error = &amp;lt;MagicMock name=&amp;#x27;Serial&amp;#x27; id=&amp;#x27;2674692156352&amp;#x27;&amp;gt;\nmock_logger = &amp;lt;MagicMock spec=&amp;#x27;Logger&amp;#x27; id=&amp;#x27;2674707220128&amp;#x27;&amp;gt;\n\n    @patch(&amp;#x27;backend.mavlink_connector.serial.Serial&amp;#x27;, side_effect=Exception(&amp;#x27;Connection failed&amp;#x27;))\n    def test_connect_failure(self, mock_serial_error, mock_logger):\n        &amp;quot;&amp;quot;&amp;quot;Testet den Fehlerfall bei der Verbindungsherstellung.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        connector = MAVLinkConnector(mock_logger)\n&amp;gt;       connector.set_connection_params(&amp;#x27;COM1&amp;#x27;, 57600)\nE       AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntest_mavlink_connector.py:71: AttributeError\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_disconnect&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_disconnect&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_disconnect&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000026ED7CDA1D0&amp;gt;\nmock_serial = &amp;lt;MagicMock name=&amp;#x27;Serial()&amp;#x27; id=&amp;#x27;2675095089360&amp;#x27;&amp;gt;\nmock_logger = &amp;lt;MagicMock spec=&amp;#x27;Logger&amp;#x27; id=&amp;#x27;2675094742368&amp;#x27;&amp;gt;\n\n    def test_disconnect(self, mock_serial, mock_logger):\n        &amp;quot;&amp;quot;&amp;quot;Testet das korrekte Trennen der Verbindung.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        connector = MAVLinkConnector(mock_logger)\n&amp;gt;       connector.set_connection_params(&amp;#x27;COM1&amp;#x27;, 57600)\nE       AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntest_mavlink_connector.py:83: AttributeError\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_factory_method_mavlink&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_factory_method_mavlink&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_factory_method_mavlink&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000026ED7CDA3E0&amp;gt;\n\n    def test_factory_method_mavlink(self):\n        &amp;quot;&amp;quot;&amp;quot;Testet die Factory-Methode f\u00fcr die Erstellung eines MAVLink-Connectors.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange &amp;amp; Act\n        with patch(&amp;#x27;backend.mavlink_connector.MAVLinkConnector&amp;#x27;) as mock_connector:\n&amp;gt;           with patch(&amp;#x27;backend.mavlink_connector.Logger&amp;#x27;) as mock_logger_class:\n\ntest_mavlink_connector.py:97: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:1438: in __enter__\n    original, local = self.get_original()\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = &amp;lt;unittest.mock._patch object at 0x0000026ED812A800&amp;gt;\n\n    def get_original(self):\n        target = self.getter()\n        name = self.attribute\n    \n        original = DEFAULT\n        local = False\n    \n        try:\n            original = target.__dict__[name]\n        except (AttributeError, KeyError):\n            original = getattr(target, name, DEFAULT)\n        else:\n            local = True\n    \n        if name in _builtins and isinstance(target, ModuleType):\n            self.create = True\n    \n        if not self.create and original is DEFAULT:\n&amp;gt;           raise AttributeError(\n                &amp;quot;%s does not have the attribute %r&amp;quot; % (target, name)\n            )\nE           AttributeError: &amp;lt;module &amp;#x27;backend.mavlink_connector&amp;#x27; from &amp;#x27;C:\\\\Users\\\\fuckheinerkleinehack\\\\Documents\\\\RZGS2\\\\RZGCS\\\\Python\\\\backend\\\\mavlink_connector.py&amp;#x27;&amp;gt; does not have the attribute &amp;#x27;Logger&amp;#x27;\n\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:1411: AttributeError\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_factory_method_missing_params&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_factory_method_missing_params&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_factory_method_missing_params&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nFehler beim Erstellen des Connectors: port und baudrate sind erforderlich f\u00fcr MAVLink\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_send_message&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_send_message&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_send_message&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000026ED7CDAA10&amp;gt;\nmock_serial = &amp;lt;MagicMock name=&amp;#x27;Serial()&amp;#x27; id=&amp;#x27;2675095221152&amp;#x27;&amp;gt;\nmock_logger = &amp;lt;MagicMock spec=&amp;#x27;Logger&amp;#x27; id=&amp;#x27;2675095083120&amp;#x27;&amp;gt;\n\n    def test_send_message(self, mock_serial, mock_logger):\n        &amp;quot;&amp;quot;&amp;quot;Testet das Senden einer Nachricht.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        connector = MAVLinkConnector(mock_logger)\n&amp;gt;       connector.set_connection_params(&amp;#x27;COM1&amp;#x27;, 57600)\nE       AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntest_mavlink_connector.py:123: AttributeError\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_send_message_not_connected&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_send_message_not_connected&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_send_message_not_connected&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000026ED7D907F0&amp;gt;\nmock_logger = &amp;lt;MagicMock spec=&amp;#x27;Logger&amp;#x27; id=&amp;#x27;2675094757504&amp;#x27;&amp;gt;\n\n    def test_send_message_not_connected(self, mock_logger):\n        &amp;quot;&amp;quot;&amp;quot;Testet das Senden einer Nachricht ohne Verbindung.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        connector = MAVLinkConnector(mock_logger)\n&amp;gt;       connector.set_connection_params(&amp;#x27;COM1&amp;#x27;, 57600)\nE       AttributeError: &amp;#x27;MAVLinkConnector&amp;#x27; object has no attribute &amp;#x27;set_connection_params&amp;#x27;\n\ntest_mavlink_connector.py:140: AttributeError\n&#34;}], &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_receive_messages&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_receive_messages&#34;, &#34;duration&#34;: &#34;4 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_mavlink_connector.py::TestMAVLinkConnector::test_receive_messages&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;4 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;item = &amp;lt;Function test_receive_messages&amp;gt;\n\n    @pytest.hookimpl(wrapper=True, tryfirst=True)\n    def pytest_runtest_call(item):\n&amp;gt;       result = yield\n\n..\\..\\..\\..\\..\\AppData\\Roaming\\Python\\Python310\\site-packages\\pytestqt\\plugin.py:189: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:1367: in patched\n    with self.decoration_helper(patched,\nC:\\Program Files\\Python310\\lib\\contextlib.py:135: in __enter__\n    return next(self.gen)\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:1349: in decoration_helper\n    arg = exit_stack.enter_context(patching)\nC:\\Program Files\\Python310\\lib\\contextlib.py:492: in enter_context\n    result = _cm_type.__enter__(cm)\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:1438: in __enter__\n    original, local = self.get_original()\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = &amp;lt;unittest.mock._patch object at 0x0000026ED7CD9090&amp;gt;\n\n    def get_original(self):\n        target = self.getter()\n        name = self.attribute\n    \n        original = DEFAULT\n        local = False\n    \n        try:\n            original = target.__dict__[name]\n        except (AttributeError, KeyError):\n            original = getattr(target, name, DEFAULT)\n        else:\n            local = True\n    \n        if name in _builtins and isinstance(target, ModuleType):\n            self.create = True\n    \n        if not self.create and original is DEFAULT:\n&amp;gt;           raise AttributeError(\n                &amp;quot;%s does not have the attribute %r&amp;quot; % (target, name)\n            )\nE           AttributeError: &amp;lt;class &amp;#x27;backend.mavlink_connector.MAVLinkConnector&amp;#x27;&amp;gt; does not have the attribute &amp;#x27;process_messages&amp;#x27;\n\nC:\\Program Files\\Python310\\lib\\unittest\\mock.py:1411: AttributeError\n&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_initialization&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_initialization&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_initialization&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameters&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameters&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameters&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_rowCount&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_rowCount&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_rowCount&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_data_valid_index&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_data_valid_index&#34;, &#34;duration&#34;: &#34;4 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_data_valid_index&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;4 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_parameter_model.TestParameterTableModel object at 0x0000026ED809EE30&amp;gt;\nmodel = &amp;lt;backend.parameter_model.ParameterTableModel(0x26ec09c4120) at 0x0000026EC0F7A640&amp;gt;\nsample_params = [{&amp;#x27;defaultValue&amp;#x27;: &amp;#x27;0.1&amp;#x27;, &amp;#x27;description&amp;#x27;: &amp;#x27;Roll rate control P gain&amp;#x27;, &amp;#x27;name&amp;#x27;: &amp;#x27;RATE_RLL_P&amp;#x27;, &amp;#x27;options&amp;#x27;: [], ...}, {&amp;#x27;defau...[], ...}, {&amp;#x27;defaultValue&amp;#x27;: &amp;#x27;0.15&amp;#x27;, &amp;#x27;description&amp;#x27;: &amp;#x27;Yaw rate control P gain&amp;#x27;, &amp;#x27;name&amp;#x27;: &amp;#x27;RATE_YAW_P&amp;#x27;, &amp;#x27;options&amp;#x27;: [], ...}]\n\n    def test_data_valid_index(self, model, sample_params):\n        &amp;quot;&amp;quot;&amp;quot;Testet die data-Methode mit g\u00fcltigen Indizes.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        model.set_parameters(sample_params)\n    \n        # Act &amp;amp; Assert - Verschiedene Rollen testen\n        index = model.index(0, 0)\n        assert model.data(index, ParameterTableModel.NameRole) == &amp;#x27;RATE_RLL_P&amp;#x27;\n        assert model.data(index, ParameterTableModel.ValueRole) == &amp;#x27;0.15&amp;#x27;\n        assert model.data(index, ParameterTableModel.DefaultValueRole) == &amp;#x27;0.1&amp;#x27;\n        assert model.data(index, ParameterTableModel.UnitRole) == &amp;#x27;&amp;#x27;\n        assert model.data(index, ParameterTableModel.OptionsRole) == []\n&amp;gt;       assert model.data(index, ParameterTableModel.DescRole) == &amp;#x27;Roll rate control P gain&amp;#x27;\nE       AssertionError: assert &amp;#x27;&amp;#x27; == &amp;#x27;Roll rate control P gain&amp;#x27;\nE         \nE         - Roll rate control P gain\n\ntest_parameter_model.py:96: AssertionError\n&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_data_invalid_index&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_data_invalid_index&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_data_invalid_index&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_roleNames&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_roleNames&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_roleNames&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_parameter_model.TestParameterTableModel object at 0x0000026ED809EAA0&amp;gt;\nmodel = &amp;lt;backend.parameter_model.ParameterTableModel(0x26ec09c66f0) at 0x0000026ED80EEBC0&amp;gt;\n\n    def test_roleNames(self, model):\n        &amp;quot;&amp;quot;&amp;quot;Testet die roleNames-Methode.&amp;quot;&amp;quot;&amp;quot;\n        # Act\n        roles = model.roleNames()\n    \n        # Assert\n        expected_roles = {\n            ParameterTableModel.NameRole: b&amp;#x27;name&amp;#x27;,\n            ParameterTableModel.ValueRole: b&amp;#x27;value&amp;#x27;,\n            ParameterTableModel.DefaultValueRole: b&amp;#x27;defaultValue&amp;#x27;,\n            ParameterTableModel.UnitRole: b&amp;#x27;unit&amp;#x27;,\n            ParameterTableModel.OptionsRole: b&amp;#x27;options&amp;#x27;,\n            ParameterTableModel.DescRole: b&amp;#x27;description&amp;#x27;\n        }\n    \n        for role, name in expected_roles.items():\n&amp;gt;           assert roles[role] == name\nE           AssertionError: assert b&amp;#x27;desc&amp;#x27; == b&amp;#x27;description&amp;#x27;\nE             \nE             Use -v to get more diff\n\ntest_parameter_model.py:127: AssertionError\n&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameter_value&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameter_value&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameter_value&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nVersuche Parameter zu setzen: RATE_RLL_P = 0.2\nParameter RATE_RLL_P gefunden, aktualisiere Wert von 0.15 zu 0.2\n&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameter_value_nonexistent&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameter_value_nonexistent&#34;, &#34;duration&#34;: &#34;3 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_set_parameter_value_nonexistent&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;3 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nVersuche Parameter zu setzen: NONEXISTENT = 1.0\nParameter NONEXISTENT nicht gefunden\n&#34;}], &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_get_parameter_value&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_parameter_model.py::TestParameterTableModel::test_get_parameter_value&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_parameter_model.py::TestParameterTableModel::test_get_parameter_value&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;self = &amp;lt;test_parameter_model.TestParameterTableModel object at 0x0000026ED809E500&amp;gt;\nmodel = &amp;lt;backend.parameter_model.ParameterTableModel(0x26ec09c2fa0) at 0x0000026ED8130600&amp;gt;\nsample_params = [{&amp;#x27;defaultValue&amp;#x27;: &amp;#x27;0.1&amp;#x27;, &amp;#x27;description&amp;#x27;: &amp;#x27;Roll rate control P gain&amp;#x27;, &amp;#x27;name&amp;#x27;: &amp;#x27;RATE_RLL_P&amp;#x27;, &amp;#x27;options&amp;#x27;: [], ...}, {&amp;#x27;defau...[], ...}, {&amp;#x27;defaultValue&amp;#x27;: &amp;#x27;0.15&amp;#x27;, &amp;#x27;description&amp;#x27;: &amp;#x27;Yaw rate control P gain&amp;#x27;, &amp;#x27;name&amp;#x27;: &amp;#x27;RATE_YAW_P&amp;#x27;, &amp;#x27;options&amp;#x27;: [], ...}]\n\n    def test_get_parameter_value(self, model, sample_params):\n        &amp;quot;&amp;quot;&amp;quot;Testet das Abrufen eines Parameterwerts.&amp;quot;&amp;quot;&amp;quot;\n        # Arrange\n        model.set_parameters(sample_params)\n    \n        # Act &amp;amp; Assert\n&amp;gt;       assert model.get_parameter_value(&amp;#x27;RATE_RLL_P&amp;#x27;) == &amp;#x27;0.15&amp;#x27;\nE       AttributeError: &amp;#x27;ParameterTableModel&amp;#x27; object has no attribute &amp;#x27;get_parameter_value&amp;#x27;. Did you mean: &amp;#x27;set_parameter_value&amp;#x27;?\n\ntest_parameter_model.py:163: AttributeError\n&#34;}], &#34;Python/tests/test_sensorviewmodel.py::test_initial_sensor_count&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_sensorviewmodel.py::test_initial_sensor_count&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_sensorviewmodel.py::test_initial_sensor_count&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;model = &amp;lt;backend.sensorviewmodel.SensorViewModel(0x26ec09c66a0) at 0x0000026ED81B92C0&amp;gt;\n\n    def test_initial_sensor_count(model):\n        &amp;quot;&amp;quot;&amp;quot;Test, dass die initiale Anzahl der Sensoren korrekt ist.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       assert model.rowCount() == 13  # Anzahl der vordefinierten Sensoren\nE       assert 0 == 13\nE        +  where 0 = rowCount()\nE        +    where rowCount = &amp;lt;backend.sensorviewmodel.SensorViewModel(0x26ec09c66a0) at 0x0000026ED81B92C0&amp;gt;.rowCount\n\ntest_sensorviewmodel.py:13: AssertionError\n&#34;}], &#34;Python/tests/test_sensorviewmodel.py::test_sensor_roles&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_sensorviewmodel.py::test_sensor_roles&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_sensorviewmodel.py::test_sensor_roles&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;model = &amp;lt;backend.sensorviewmodel.SensorViewModel(0x26ec09c2c80) at 0x0000026EC0FA4E80&amp;gt;\n\n    def test_sensor_roles(model):\n        &amp;quot;&amp;quot;&amp;quot;Test, dass alle Rollen korrekt definiert sind.&amp;quot;&amp;quot;&amp;quot;\n        roles = model.roleNames()\n        assert roles[model.NameRole] == b&amp;quot;name&amp;quot;\n        assert roles[model.ValueRole] == b&amp;quot;value&amp;quot;\n&amp;gt;       assert roles[model.FormattedValueRole] == b&amp;quot;formattedValue&amp;quot;\nE       AttributeError: &amp;#x27;SensorViewModel&amp;#x27; object has no attribute &amp;#x27;FormattedValueRole&amp;#x27;\n\ntest_sensorviewmodel.py:20: AttributeError\n&#34;}], &#34;Python/tests/test_sensorviewmodel.py::test_sensor_data_access&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_sensorviewmodel.py::test_sensor_data_access&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_sensorviewmodel.py::test_sensor_data_access&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;model = &amp;lt;backend.sensorviewmodel.SensorViewModel(0x26ec09c3270) at 0x0000026ED8146540&amp;gt;\n\n    def test_sensor_data_access(model):\n        &amp;quot;&amp;quot;&amp;quot;Test des Zugriffs auf Sensordaten.&amp;quot;&amp;quot;&amp;quot;\n        index = model.index(0)  # Erster Sensor (Roll)\n    \n        # Test Sensor Name\n        name = model.data(index, model.NameRole)\n&amp;gt;       assert name == &amp;quot;Roll&amp;quot;\nE       AssertionError: assert None == &amp;#x27;Roll&amp;#x27;\n\ntest_sensorviewmodel.py:28: AssertionError\n&#34;}], &#34;Python/tests/test_sensorviewmodel.py::test_update_sensor&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_sensorviewmodel.py::test_update_sensor&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_sensorviewmodel.py::test_update_sensor&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;model = &amp;lt;backend.sensorviewmodel.SensorViewModel(0x26ec09c36d0) at 0x0000026ED81B0E00&amp;gt;\n\n    def test_update_sensor(model):\n        &amp;quot;&amp;quot;&amp;quot;Test der Sensor-Aktualisierung.&amp;quot;&amp;quot;&amp;quot;\n        model.update_sensor(&amp;quot;Roll&amp;quot;, 45.123)\n    \n        index = model.index(0)\n        value = model.data(index, model.ValueRole)\n&amp;gt;       formatted = model.data(index, model.FormattedValueRole)\nE       AttributeError: &amp;#x27;SensorViewModel&amp;#x27; object has no attribute &amp;#x27;FormattedValueRole&amp;#x27;\n\ntest_sensorviewmodel.py:44: AttributeError\n&#34;}], &#34;Python/tests/test_sensorviewmodel.py::test_invalid_sensor_update&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_sensorviewmodel.py::test_invalid_sensor_update&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_sensorviewmodel.py::test_invalid_sensor_update&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;model = &amp;lt;backend.sensorviewmodel.SensorViewModel(0x26ec09c3a40) at 0x0000026ED80EE900&amp;gt;\n\n    def test_invalid_sensor_update(model):\n        &amp;quot;&amp;quot;&amp;quot;Test, dass eine Exception bei ung\u00fcltigem Sensor geworfen wird.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       with pytest.raises(SensorException):\nE       Failed: DID NOT RAISE &amp;lt;class &amp;#x27;backend.exceptions.SensorException&amp;#x27;&amp;gt;\n\ntest_sensorviewmodel.py:51: Failed\n&#34;}], &#34;Python/tests/test_sensorviewmodel.py::test_invalid_index&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;Python/tests/test_sensorviewmodel.py::test_invalid_index&#34;, &#34;duration&#34;: &#34;1 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_sensorviewmodel.py::test_invalid_index&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;1 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.&#34;}], &#34;Python/tests/test_sensorviewmodel.py::test_formatted_value_with_invalid_data&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;Python/tests/test_sensorviewmodel.py::test_formatted_value_with_invalid_data&#34;, &#34;duration&#34;: &#34;2 ms&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;Python/tests/test_sensorviewmodel.py::test_formatted_value_with_invalid_data&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;2 ms&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;model = &amp;lt;backend.sensorviewmodel.SensorViewModel(0x26ec09c3c70) at 0x0000026ED819E880&amp;gt;\n\n    def test_formatted_value_with_invalid_data(model):\n        &amp;quot;&amp;quot;&amp;quot;Test der Formatierung bei ung\u00fcltigen Daten.&amp;quot;&amp;quot;&amp;quot;\n        # Simuliere ung\u00fcltige Daten (w\u00fcrde in der Praxis nicht vorkommen)\n&amp;gt;       model._sensors[0][&amp;quot;value&amp;quot;] = &amp;quot;invalid&amp;quot;\nE       IndexError: list index out of range\n\ntest_sensorviewmodel.py:62: IndexError\n&#34;}]}, &#34;renderCollapsed&#34;: [&#34;passed&#34;], &#34;initialSort&#34;: &#34;result&#34;, &#34;title&#34;: &#34;test_report_20250526_091140.html&#34;}"></div>
+    <script>
+      (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const { getCollapsedCategory, setCollapsedIds } = require('./storage.js')
+
+class DataManager {
+    setManager(data) {
+        const collapsedCategories = [...getCollapsedCategory(data.renderCollapsed)]
+        const collapsedIds = []
+        const tests = Object.values(data.tests).flat().map((test, index) => {
+            const collapsed = collapsedCategories.includes(test.result.toLowerCase())
+            const id = `test_${index}`
+            if (collapsed) {
+                collapsedIds.push(id)
+            }
+            return {
+                ...test,
+                id,
+                collapsed,
+            }
+        })
+        const dataBlob = { ...data, tests }
+        this.data = { ...dataBlob }
+        this.renderData = { ...dataBlob }
+        setCollapsedIds(collapsedIds)
+    }
+
+    get allData() {
+        return { ...this.data }
+    }
+
+    resetRender() {
+        this.renderData = { ...this.data }
+    }
+
+    setRender(data) {
+        this.renderData.tests = [...data]
+    }
+
+    toggleCollapsedItem(id) {
+        this.renderData.tests = this.renderData.tests.map((test) =>
+            test.id === id ? { ...test, collapsed: !test.collapsed } : test,
+        )
+    }
+
+    set allCollapsed(collapsed) {
+        this.renderData = { ...this.renderData, tests: [...this.renderData.tests.map((test) => (
+            { ...test, collapsed }
+        ))] }
+    }
+
+    get testSubset() {
+        return [...this.renderData.tests]
+    }
+
+    get environment() {
+        return this.renderData.environment
+    }
+
+    get initialSort() {
+        return this.data.initialSort
+    }
+}
+
+module.exports = {
+    manager: new DataManager(),
+}
+
+},{"./storage.js":8}],2:[function(require,module,exports){
+const mediaViewer = require('./mediaviewer.js')
+const templateEnvRow = document.getElementById('template_environment_row')
+const templateResult = document.getElementById('template_results-table__tbody')
+
+function htmlToElements(html) {
+    const temp = document.createElement('template')
+    temp.innerHTML = html
+    return temp.content.childNodes
+}
+
+const find = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return elem.querySelector(selector)
+}
+
+const findAll = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return [...elem.querySelectorAll(selector)]
+}
+
+const dom = {
+    getStaticRow: (key, value) => {
+        const envRow = templateEnvRow.content.cloneNode(true)
+        const isObj = typeof value === 'object' && value !== null
+        const values = isObj ? Object.keys(value).map((k) => `${k}: ${value[k]}`) : null
+
+        const valuesElement = htmlToElements(
+            values ? `<ul>${values.map((val) => `<li>${val}</li>`).join('')}<ul>` : `<div>${value}</div>`)[0]
+        const td = findAll('td', envRow)
+        td[0].textContent = key
+        td[1].appendChild(valuesElement)
+
+        return envRow
+    },
+    getResultTBody: ({ testId, id, log, extras, resultsTableRow, tableHtml, result, collapsed }) => {
+        const resultBody = templateResult.content.cloneNode(true)
+        resultBody.querySelector('tbody').classList.add(result.toLowerCase())
+        resultBody.querySelector('tbody').id = testId
+        resultBody.querySelector('.collapsible').dataset.id = id
+
+        resultsTableRow.forEach((html) => {
+            const t = document.createElement('template')
+            t.innerHTML = html
+            resultBody.querySelector('.collapsible').appendChild(t.content)
+        })
+
+        if (log) {
+            // Wrap lines starting with "E" with span.error to color those lines red
+            const wrappedLog = log.replace(/^E.*$/gm, (match) => `<span class="error">${match}</span>`)
+            resultBody.querySelector('.log').innerHTML = wrappedLog
+        } else {
+            resultBody.querySelector('.log').remove()
+        }
+
+        if (collapsed) {
+            resultBody.querySelector('.collapsible > td')?.classList.add('collapsed')
+            resultBody.querySelector('.extras-row').classList.add('hidden')
+        } else {
+            resultBody.querySelector('.collapsible > td')?.classList.remove('collapsed')
+        }
+
+        const media = []
+        extras?.forEach(({ name, format_type, content }) => {
+            if (['image', 'video'].includes(format_type)) {
+                media.push({ path: content, name, format_type })
+            }
+
+            if (format_type === 'html') {
+                resultBody.querySelector('.extraHTML').insertAdjacentHTML('beforeend', `<div>${content}</div>`)
+            }
+        })
+        mediaViewer.setup(resultBody, media)
+
+        // Add custom html from the pytest_html_results_table_html hook
+        tableHtml?.forEach((item) => {
+            resultBody.querySelector('td[class="extra"]').insertAdjacentHTML('beforeend', item)
+        })
+
+        return resultBody
+    },
+}
+
+module.exports = {
+    dom,
+    htmlToElements,
+    find,
+    findAll,
+}
+
+},{"./mediaviewer.js":6}],3:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const storageModule = require('./storage.js')
+
+const getFilteredSubSet = (filter) =>
+    manager.allData.tests.filter(({ result }) => filter.includes(result.toLowerCase()))
+
+const doInitFilter = () => {
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+}
+
+const doFilter = (type, show) => {
+    if (show) {
+        storageModule.showCategory(type)
+    } else {
+        storageModule.hideCategory(type)
+    }
+
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+
+    const sortColumn = storageModule.getSort()
+    doSort(sortColumn, true)
+}
+
+module.exports = {
+    doFilter,
+    doInitFilter,
+}
+
+},{"./datamanager.js":1,"./sort.js":7,"./storage.js":8}],4:[function(require,module,exports){
+const { redraw, bindEvents, renderStatic } = require('./main.js')
+const { doInitFilter } = require('./filter.js')
+const { doInitSort } = require('./sort.js')
+const { manager } = require('./datamanager.js')
+const data = JSON.parse(document.getElementById('data-container').dataset.jsonblob)
+
+function init() {
+    manager.setManager(data)
+    doInitFilter()
+    doInitSort()
+    renderStatic()
+    redraw()
+    bindEvents()
+}
+
+init()
+
+},{"./datamanager.js":1,"./filter.js":3,"./main.js":5,"./sort.js":7}],5:[function(require,module,exports){
+const { dom, find, findAll } = require('./dom.js')
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const { doFilter } = require('./filter.js')
+const {
+    getVisible,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    getSortDirection,
+    possibleFilters,
+} = require('./storage.js')
+
+const removeChildren = (node) => {
+    while (node.firstChild) {
+        node.removeChild(node.firstChild)
+    }
+}
+
+const renderStatic = () => {
+    const renderEnvironmentTable = () => {
+        const environment = manager.environment
+        const rows = Object.keys(environment).map((key) => dom.getStaticRow(key, environment[key]))
+        const table = document.getElementById('environment')
+        removeChildren(table)
+        rows.forEach((row) => table.appendChild(row))
+    }
+    renderEnvironmentTable()
+}
+
+const addItemToggleListener = (elem) => {
+    elem.addEventListener('click', ({ target }) => {
+        const id = target.parentElement.dataset.id
+        manager.toggleCollapsedItem(id)
+
+        const collapsedIds = getCollapsedIds()
+        if (collapsedIds.includes(id)) {
+            const updated = collapsedIds.filter((item) => item !== id)
+            setCollapsedIds(updated)
+        } else {
+            collapsedIds.push(id)
+            setCollapsedIds(collapsedIds)
+        }
+        redraw()
+    })
+}
+
+const renderContent = (tests) => {
+    const sortAttr = getSort(manager.initialSort)
+    const sortAsc = JSON.parse(getSortDirection())
+    const rows = tests.map(dom.getResultTBody)
+    const table = document.getElementById('results-table')
+    const tableHeader = document.getElementById('results-table-head')
+
+    const newTable = document.createElement('table')
+    newTable.id = 'results-table'
+
+    // remove all sorting classes and set the relevant
+    findAll('.sortable', tableHeader).forEach((elem) => elem.classList.remove('asc', 'desc'))
+    tableHeader.querySelector(`.sortable[data-column-type="${sortAttr}"]`)?.classList.add(sortAsc ? 'desc' : 'asc')
+    newTable.appendChild(tableHeader)
+
+    if (!rows.length) {
+        const emptyTable = document.getElementById('template_results-table__body--empty').content.cloneNode(true)
+        newTable.appendChild(emptyTable)
+    } else {
+        rows.forEach((row) => {
+            if (!!row) {
+                findAll('.collapsible td:not(.col-links', row).forEach(addItemToggleListener)
+                find('.logexpander', row).addEventListener('click',
+                    (evt) => evt.target.parentNode.classList.toggle('expanded'),
+                )
+                newTable.appendChild(row)
+            }
+        })
+    }
+
+    table.replaceWith(newTable)
+}
+
+const renderDerived = () => {
+    const currentFilter = getVisible()
+    possibleFilters.forEach((result) => {
+        const input = document.querySelector(`input[data-test-result="${result}"]`)
+        input.checked = currentFilter.includes(result)
+    })
+}
+
+const bindEvents = () => {
+    const filterColumn = (evt) => {
+        const { target: element } = evt
+        const { testResult } = element.dataset
+
+        doFilter(testResult, element.checked)
+        const collapsedIds = getCollapsedIds()
+        const updated = manager.renderData.tests.map((test) => {
+            return {
+                ...test,
+                collapsed: collapsedIds.includes(test.id),
+            }
+        })
+        manager.setRender(updated)
+        redraw()
+    }
+
+    const header = document.getElementById('environment-header')
+    header.addEventListener('click', () => {
+        const table = document.getElementById('environment')
+        table.classList.toggle('hidden')
+        header.classList.toggle('collapsed')
+    })
+
+    findAll('input[name="filter_checkbox"]').forEach((elem) => {
+        elem.addEventListener('click', filterColumn)
+    })
+
+    findAll('.sortable').forEach((elem) => {
+        elem.addEventListener('click', (evt) => {
+            const { target: element } = evt
+            const { columnType } = element.dataset
+            doSort(columnType)
+            redraw()
+        })
+    })
+
+    document.getElementById('show_all_details').addEventListener('click', () => {
+        manager.allCollapsed = false
+        setCollapsedIds([])
+        redraw()
+    })
+    document.getElementById('hide_all_details').addEventListener('click', () => {
+        manager.allCollapsed = true
+        const allIds = manager.renderData.tests.map((test) => test.id)
+        setCollapsedIds(allIds)
+        redraw()
+    })
+}
+
+const redraw = () => {
+    const { testSubset } = manager
+
+    renderContent(testSubset)
+    renderDerived()
+}
+
+module.exports = {
+    redraw,
+    bindEvents,
+    renderStatic,
+}
+
+},{"./datamanager.js":1,"./dom.js":2,"./filter.js":3,"./sort.js":7,"./storage.js":8}],6:[function(require,module,exports){
+class MediaViewer {
+    constructor(assets) {
+        this.assets = assets
+        this.index = 0
+    }
+
+    nextActive() {
+        this.index = this.index === this.assets.length - 1 ? 0 : this.index + 1
+        return [this.activeFile, this.index]
+    }
+
+    prevActive() {
+        this.index = this.index === 0 ? this.assets.length - 1 : this.index -1
+        return [this.activeFile, this.index]
+    }
+
+    get currentIndex() {
+        return this.index
+    }
+
+    get activeFile() {
+        return this.assets[this.index]
+    }
+}
+
+
+const setup = (resultBody, assets) => {
+    if (!assets.length) {
+        resultBody.querySelector('.media').classList.add('hidden')
+        return
+    }
+
+    const mediaViewer = new MediaViewer(assets)
+    const container = resultBody.querySelector('.media-container')
+    const leftArrow = resultBody.querySelector('.media-container__nav--left')
+    const rightArrow = resultBody.querySelector('.media-container__nav--right')
+    const mediaName = resultBody.querySelector('.media__name')
+    const counter = resultBody.querySelector('.media__counter')
+    const imageEl = resultBody.querySelector('img')
+    const sourceEl = resultBody.querySelector('source')
+    const videoEl = resultBody.querySelector('video')
+
+    const setImg = (media, index) => {
+        if (media?.format_type === 'image') {
+            imageEl.src = media.path
+
+            imageEl.classList.remove('hidden')
+            videoEl.classList.add('hidden')
+        } else if (media?.format_type === 'video') {
+            sourceEl.src = media.path
+
+            videoEl.classList.remove('hidden')
+            imageEl.classList.add('hidden')
+        }
+
+        mediaName.innerText = media?.name
+        counter.innerText = `${index + 1} / ${assets.length}`
+    }
+    setImg(mediaViewer.activeFile, mediaViewer.currentIndex)
+
+    const moveLeft = () => {
+        const [media, index] = mediaViewer.prevActive()
+        setImg(media, index)
+    }
+    const doRight = () => {
+        const [media, index] = mediaViewer.nextActive()
+        setImg(media, index)
+    }
+    const openImg = () => {
+        window.open(mediaViewer.activeFile.path, '_blank')
+    }
+    if (assets.length === 1) {
+        container.classList.add('media-container--fullscreen')
+    } else {
+        leftArrow.addEventListener('click', moveLeft)
+        rightArrow.addEventListener('click', doRight)
+    }
+    imageEl.addEventListener('click', openImg)
+}
+
+module.exports = {
+    setup,
+}
+
+},{}],7:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const storageModule = require('./storage.js')
+
+const genericSort = (list, key, ascending, customOrder) => {
+    let sorted
+    if (customOrder) {
+        sorted = list.sort((a, b) => {
+            const aValue = a.result.toLowerCase()
+            const bValue = b.result.toLowerCase()
+
+            const aIndex = customOrder.findIndex((item) => item.toLowerCase() === aValue)
+            const bIndex = customOrder.findIndex((item) => item.toLowerCase() === bValue)
+
+            // Compare the indices to determine the sort order
+            return aIndex - bIndex
+        })
+    } else {
+        sorted = list.sort((a, b) => a[key] === b[key] ? 0 : a[key] > b[key] ? 1 : -1)
+    }
+
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const durationSort = (list, ascending) => {
+    const parseDuration = (duration) => {
+        if (duration.includes(':')) {
+            // If it's in the format "HH:mm:ss"
+            const [hours, minutes, seconds] = duration.split(':').map(Number)
+            return (hours * 3600 + minutes * 60 + seconds) * 1000
+        } else {
+            // If it's in the format "nnn ms"
+            return parseInt(duration)
+        }
+    }
+    const sorted = list.sort((a, b) => parseDuration(a['duration']) - parseDuration(b['duration']))
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const doInitSort = () => {
+    const type = storageModule.getSort(manager.initialSort)
+    const ascending = storageModule.getSortDirection()
+    const list = manager.testSubset
+    const initialOrder = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed', 'Skipped', 'Passed']
+
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    if (type?.toLowerCase() === 'original') {
+        manager.setRender(list)
+    } else {
+        let sortedList
+        switch (type) {
+        case 'duration':
+            sortedList = durationSort(list, ascending)
+            break
+        case 'result':
+            sortedList = genericSort(list, type, ascending, initialOrder)
+            break
+        default:
+            sortedList = genericSort(list, type, ascending)
+            break
+        }
+        manager.setRender(sortedList)
+    }
+}
+
+const doSort = (type, skipDirection) => {
+    const newSortType = storageModule.getSort(manager.initialSort) !== type
+    const currentAsc = storageModule.getSortDirection()
+    let ascending
+    if (skipDirection) {
+        ascending = currentAsc
+    } else {
+        ascending = newSortType ? false : !currentAsc
+    }
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    const list = manager.testSubset
+    const sortedList = type === 'duration' ? durationSort(list, ascending) : genericSort(list, type, ascending)
+    manager.setRender(sortedList)
+}
+
+module.exports = {
+    doInitSort,
+    doSort,
+}
+
+},{"./datamanager.js":1,"./storage.js":8}],8:[function(require,module,exports){
+const possibleFilters = [
+    'passed',
+    'skipped',
+    'failed',
+    'error',
+    'xfailed',
+    'xpassed',
+    'rerun',
+]
+
+const getVisible = () => {
+    const url = new URL(window.location.href)
+    const settings = new URLSearchParams(url.search).get('visible')
+    const lower = (item) => {
+        const lowerItem = item.toLowerCase()
+        if (possibleFilters.includes(lowerItem)) {
+            return lowerItem
+        }
+        return null
+    }
+    return settings === null ?
+        possibleFilters :
+        [...new Set(settings?.split(',').map(lower).filter((item) => item))]
+}
+
+const hideCategory = (categoryToHide) => {
+    const url = new URL(window.location.href)
+    const visibleParams = new URLSearchParams(url.search).get('visible')
+    const currentVisible = visibleParams ? visibleParams.split(',') : [...possibleFilters]
+    const settings = [...new Set(currentVisible)].filter((f) => f !== categoryToHide).join(',')
+
+    url.searchParams.set('visible', settings)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const showCategory = (categoryToShow) => {
+    if (typeof window === 'undefined') {
+        return
+    }
+    const url = new URL(window.location.href)
+    const currentVisible = new URLSearchParams(url.search).get('visible')?.split(',').filter(Boolean) ||
+        [...possibleFilters]
+    const settings = [...new Set([categoryToShow, ...currentVisible])]
+    const noFilter = possibleFilters.length === settings.length || !settings.length
+
+    noFilter ? url.searchParams.delete('visible') : url.searchParams.set('visible', settings.join(','))
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getSort = (initialSort) => {
+    const url = new URL(window.location.href)
+    let sort = new URLSearchParams(url.search).get('sort')
+    if (!sort) {
+        sort = initialSort || 'result'
+    }
+    return sort
+}
+
+const setSort = (type) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('sort', type)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getCollapsedCategory = (renderCollapsed) => {
+    let categories
+    if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href)
+        const collapsedItems = new URLSearchParams(url.search).get('collapsed')
+        switch (true) {
+        case !renderCollapsed && collapsedItems === null:
+            categories = ['passed']
+            break
+        case collapsedItems?.length === 0 || /^["']{2}$/.test(collapsedItems):
+            categories = []
+            break
+        case /^all$/.test(collapsedItems) || collapsedItems === null && /^all$/.test(renderCollapsed):
+            categories = [...possibleFilters]
+            break
+        default:
+            categories = collapsedItems?.split(',').map((item) => item.toLowerCase()) || renderCollapsed
+            break
+        }
+    } else {
+        categories = []
+    }
+    return categories
+}
+
+const getSortDirection = () => JSON.parse(sessionStorage.getItem('sortAsc')) || false
+const setSortDirection = (ascending) => sessionStorage.setItem('sortAsc', ascending)
+
+const getCollapsedIds = () => JSON.parse(sessionStorage.getItem('collapsedIds')) || []
+const setCollapsedIds = (list) => sessionStorage.setItem('collapsedIds', JSON.stringify(list))
+
+module.exports = {
+    getVisible,
+    hideCategory,
+    showCategory,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    setSort,
+    getSortDirection,
+    setSortDirection,
+    getCollapsedCategory,
+    possibleFilters,
+}
+
+},{}]},{},[4]);
+    </script>
+  </footer>
+</html>

@@ -1,0 +1,38 @@
+# Grundlegende Abhängigkeiten
+PySide6>=6.0.0
+numpy>=1.20.0
+scipy>=1.7.0
+
+# MAVLink-Integration
+pymavlink>=2.4.37
+dronekit>=2.9.2
+
+# Serialisierung
+pyyaml>=6.0
+json5>=0.9.14
+
+# Logging
+loguru>=0.7.0
+
+# Tests
+pytest>=7.3.1
+pytest-qt>=4.2.0
+pytest-cov>=4.1.0
+
+# Entwicklung
+black>=23.3.0
+isort>=5.12.0
+mypy>=1.3.0
+pylint>=2.17.0
+
+# Flottensteuerung
+PySide6>=6.5.0
+pytest>=7.3.1
+pytest-qt>=4.2.0
+pytest-cov>=4.1.0
+black>=23.3.0
+isort>=5.12.0
+pylint>=2.17.0
+mypy>=1.3.0
+mkdocs>=1.4.3
+mkdocs-material>=9.1.8 

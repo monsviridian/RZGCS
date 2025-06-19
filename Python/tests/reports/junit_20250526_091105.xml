@@ -1,0 +1,976 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="18" failures="43" skipped="5" tests="96" time="22.952" timestamp="2025-05-26T09:11:08.542970+02:00" hostname="GTA3"><testcase classname="Python.tests.test_3d_map_standalone.TestStandaloneMap" name="test_map_initialization" time="7.096" /><testcase classname="Python.tests.test_map_sockets.TestMapSocketCommunication" name="test_socket_communication" time="0.219" /><testcase classname="Python.tests.test_3d_view.Test3DView" name="test_store_view_3d_model_exists" time="0.704"><skipped type="pytest.skip" message="Test konnte nicht ausgeführt werden: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.">C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\tests\test_3d_view.py:103: Test konnte nicht ausgeführt werden: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.</skipped></testcase><testcase classname="Python.tests.test_3d_view.Test3DView" name="test_preflight_view_3d_model_exists" time="0.147"><skipped type="pytest.skip" message="Test konnte nicht ausgeführt werden: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.">C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\tests\test_3d_view.py:123: Test konnte nicht ausgeführt werden: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.</skipped></testcase><testcase classname="Python.tests.test_3d_view.Test3DView" name="test_model_switching" time="0.029"><skipped type="pytest.skip" message="Fehler beim Zugriff auf StoreView-Kinder: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.">C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\tests\test_3d_view.py:166: Fehler beim Zugriff auf StoreView-Kinder: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.</skipped></testcase><testcase classname="Python.tests.test_3d_view.Test3DView" name="test_model_rotation" time="0.036"><skipped type="pytest.skip" message="Fehler beim Zugriff auf StoreView-Kinder: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.">C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\tests\test_3d_view.py:215: Fehler beim Zugriff auf StoreView-Kinder: Internal C++ object (PySide6.QtQuick.QQuickItem) already deleted.</skipped></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_connection_timeout" time="0.005"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_connection.TestMAVLinkConnector object at 0x000002447F00FEB0&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x24451152cf0) at 0x000002447F1B6E80&gt;
+
+    def test_connection_timeout(self, connector):
+        """Test that connection times out when port is invalid"""
+&gt;       connector.set_connection_params("COM99", 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_connection.py:19: AttributeError</failure></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_connection_invalid_port" time="0.004"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_connection.TestMAVLinkConnector object at 0x000002447F0C80D0&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x24451162890) at 0x000002447E986640&gt;
+
+    def test_connection_invalid_port(self, connector):
+        """Test that connection fails with invalid port"""
+&gt;       connector.set_connection_params("INVALID_PORT", 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_connection.py:26: AttributeError</failure></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_reconnection" time="0.005"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_connection.TestMAVLinkConnector object at 0x000002447F0C82B0&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x244511626d0) at 0x000002447E8BA940&gt;
+
+    def test_reconnection(self, connector):
+        """Test reconnection logic"""
+        # Mock Serial
+        with patch('serial.Serial') as mock_serial:
+            mock_instance = mock_serial.return_value
+            mock_instance.is_open = True
+            mock_instance.read.return_value = b''
+            mock_instance.inWaiting.return_value = 0
+    
+            # First connection
+&gt;           connector.set_connection_params("COM1", 57600)
+E           AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_connection.py:41: AttributeError</failure></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_connection_parameters" time="0.006"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_connection.TestMAVLinkConnector object at 0x000002447F0C84C0&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x244511627d0) at 0x000002447E4C2AC0&gt;
+
+    def test_connection_parameters(self, connector):
+        """Test connection with different parameters"""
+        with patch('serial.Serial') as mock_serial:
+            mock_instance = mock_serial.return_value
+            mock_instance.is_open = True
+    
+            # Test with default baudrate
+&gt;           connector.set_connection_params("COM1", 57600)
+E           AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_connection.py:60: AttributeError</failure></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_connection_state" time="0.004"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'is_connected'. Did you mean: '_is_connecting'?">self = &lt;test_connection.TestMAVLinkConnector object at 0x000002447F0C86D0&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x24451162bd0) at 0x000002447E996E80&gt;
+
+    def test_connection_state(self, connector):
+        """Test connection state management"""
+        with patch('serial.Serial') as mock_serial:
+            mock_instance = mock_serial.return_value
+            mock_instance.is_open = True
+            mock_instance.read.return_value = b''
+            mock_instance.inWaiting.return_value = 0
+    
+&gt;           assert connector.is_connected() == False
+E           AttributeError: 'MAVLinkConnector' object has no attribute 'is_connected'. Did you mean: '_is_connecting'?
+
+test_connection.py:78: AttributeError</failure></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_connection_events" time="0.005"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'connected'. Did you mean: 'connect'?">self = &lt;test_connection.TestMAVLinkConnector object at 0x000002447F0C88E0&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x244511624b0) at 0x000002444D374D40&gt;
+
+    def test_connection_events(self, connector):
+        """Test connection event handling"""
+        with patch('serial.Serial') as mock_serial:
+            mock_instance = mock_serial.return_value
+            mock_instance.is_open = True
+            mock_instance.read.return_value = b''
+            mock_instance.inWaiting.return_value = 0
+    
+            connected_events = []
+            disconnected_events = []
+    
+            def on_connected():
+                connected_events.append(True)
+    
+            def on_disconnected():
+                disconnected_events.append(True)
+    
+            # Verbindung mit Signal-Slots aufsetzen
+&gt;           connector.connected.connect(on_connected)
+E           AttributeError: 'MAVLinkConnector' object has no attribute 'connected'. Did you mean: 'connect'?
+
+test_connection.py:105: AttributeError</failure></testcase><testcase classname="Python.tests.test_end_to_end.TestEndToEnd" name="test_full_application_startup" time="0.051"><error message="failed on setup with &quot;ImportError: cannot import name 'MainApplication' from 'main' (C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\main.py)&quot;">self = &lt;test_end_to_end.TestEndToEnd object at 0x000002447F0C9840&gt;
+app = &lt;PySide6.QtWidgets.QApplication(0x2447b3cb4a0) at 0x000002447BF06900&gt;
+
+    @pytest.fixture
+    def main_app(self, app):
+        """Fixture zum Starten der Hauptanwendung für Tests."""
+        # Die Hauptanwendung importieren
+&gt;       from main import MainApplication
+E       ImportError: cannot import name 'MainApplication' from 'main' (C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\main.py)
+
+test_end_to_end.py:24: ImportError</error></testcase><testcase classname="Python.tests.test_end_to_end.TestEndToEnd" name="test_tab_navigation" time="0.002"><error message="failed on setup with &quot;ImportError: cannot import name 'MainApplication' from 'main' (C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\main.py)&quot;">self = &lt;test_end_to_end.TestEndToEnd object at 0x000002447F0C9A20&gt;
+app = &lt;PySide6.QtWidgets.QApplication(0x2447b3cb4a0) at 0x000002447BF06900&gt;
+
+    @pytest.fixture
+    def main_app(self, app):
+        """Fixture zum Starten der Hauptanwendung für Tests."""
+        # Die Hauptanwendung importieren
+&gt;       from main import MainApplication
+E       ImportError: cannot import name 'MainApplication' from 'main' (C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\main.py)
+
+test_end_to_end.py:24: ImportError</error></testcase><testcase classname="Python.tests.test_end_to_end.TestEndToEnd" name="test_store_view_interaction" time="0.003"><error message="failed on setup with &quot;ImportError: cannot import name 'MainApplication' from 'main' (C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\main.py)&quot;">self = &lt;test_end_to_end.TestEndToEnd object at 0x000002447F0C9C00&gt;
+app = &lt;PySide6.QtWidgets.QApplication(0x2447b3cb4a0) at 0x000002447BF06900&gt;
+
+    @pytest.fixture
+    def main_app(self, app):
+        """Fixture zum Starten der Hauptanwendung für Tests."""
+        # Die Hauptanwendung importieren
+&gt;       from main import MainApplication
+E       ImportError: cannot import name 'MainApplication' from 'main' (C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\main.py)
+
+test_end_to_end.py:24: ImportError</error></testcase><testcase classname="Python.tests.test_end_to_end.TestEndToEnd" name="test_connection_workflow" time="0.002"><error message="failed on setup with &quot;ImportError: cannot import name 'MainApplication' from 'main' (C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\main.py)&quot;">self = &lt;test_end_to_end.TestEndToEnd object at 0x000002447F0C9DE0&gt;
+app = &lt;PySide6.QtWidgets.QApplication(0x2447b3cb4a0) at 0x000002447BF06900&gt;
+
+    @pytest.fixture
+    def main_app(self, app):
+        """Fixture zum Starten der Hauptanwendung für Tests."""
+        # Die Hauptanwendung importieren
+&gt;       from main import MainApplication
+E       ImportError: cannot import name 'MainApplication' from 'main' (C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\main.py)
+
+test_end_to_end.py:24: ImportError</error></testcase><testcase classname="Python.tests.test_integration.TestIntegration" name="test_message_handler_with_simulator" time="0.002"><error message="failed on setup with &quot;TypeError: MessageHandler.__init__() missing 1 required positional argument: 'logger'&quot;">self = &lt;test_integration.TestIntegration object at 0x000002447F0CAB00&gt;
+
+    @pytest.fixture
+    def message_handler(self):
+        """Fixture für einen echten MessageHandler."""
+&gt;       return MessageHandler()
+E       TypeError: MessageHandler.__init__() missing 1 required positional argument: 'logger'
+
+test_integration.py:25: TypeError</error></testcase><testcase classname="Python.tests.test_integration.TestIntegration" name="test_simulator_thread_operation" time="0.002"><error message="failed on setup with &quot;TypeError: MessageHandler.__init__() missing 1 required positional argument: 'logger'&quot;">self = &lt;test_integration.TestIntegration object at 0x000002447F0CACB0&gt;
+
+    @pytest.fixture
+    def message_handler(self):
+        """Fixture für einen echten MessageHandler."""
+&gt;       return MessageHandler()
+E       TypeError: MessageHandler.__init__() missing 1 required positional argument: 'logger'
+
+test_integration.py:25: TypeError</error></testcase><testcase classname="Python.tests.test_integration.TestIntegration" name="test_connector_with_message_handler" time="0.003"><error message="failed on setup with &quot;AttributeError: Mock object has no attribute 'is_connected'. Did you mean: 'disconnect'?&quot;">self = &lt;test_integration.TestIntegration object at 0x000002447F0CAE90&gt;
+
+    @pytest.fixture
+    def mock_connector(self):
+        """Fixture für einen Mock-Connector."""
+        connector = MagicMock(spec=MAVLinkConnector)
+&gt;       connector.is_connected.return_value = True
+
+test_integration.py:31: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;MagicMock spec='MAVLinkConnector' id='2492376829040'&gt;
+name = 'is_connected'
+
+    def __getattr__(self, name):
+        if name in {'_mock_methods', '_mock_unsafe'}:
+            raise AttributeError(name)
+        elif self._mock_methods is not None:
+            if name not in self._mock_methods or name in _all_magics:
+&gt;               raise AttributeError("Mock object has no attribute %r" % name)
+E               AttributeError: Mock object has no attribute 'is_connected'. Did you mean: 'disconnect'?
+
+C:\Program Files\Python310\lib\unittest\mock.py:634: AttributeError</error></testcase><testcase classname="Python.tests.test_integration.TestIntegration" name="test_sensor_data_flow" time="0.002"><error message="failed on setup with &quot;TypeError: MessageHandler.__init__() missing 1 required positional argument: 'logger'&quot;">self = &lt;test_integration.TestIntegration object at 0x000002447F0CB040&gt;
+
+    @pytest.fixture
+    def message_handler(self):
+        """Fixture für einen echten MessageHandler."""
+&gt;       return MessageHandler()
+E       TypeError: MessageHandler.__init__() missing 1 required positional argument: 'logger'
+
+test_integration.py:25: TypeError</error></testcase><testcase classname="Python.tests.test_integration.TestIntegration" name="test_end_to_end_command_flow" time="0.003"><error message="failed on setup with &quot;AttributeError: Mock object has no attribute 'is_connected'. Did you mean: 'disconnect'?&quot;">self = &lt;test_integration.TestIntegration object at 0x000002447F0CB250&gt;
+
+    @pytest.fixture
+    def mock_connector(self):
+        """Fixture für einen Mock-Connector."""
+        connector = MagicMock(spec=MAVLinkConnector)
+&gt;       connector.is_connected.return_value = True
+
+test_integration.py:31: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;MagicMock spec='MAVLinkConnector' id='2492376182464'&gt;
+name = 'is_connected'
+
+    def __getattr__(self, name):
+        if name in {'_mock_methods', '_mock_unsafe'}:
+            raise AttributeError(name)
+        elif self._mock_methods is not None:
+            if name not in self._mock_methods or name in _all_magics:
+&gt;               raise AttributeError("Mock object has no attribute %r" % name)
+E               AttributeError: Mock object has no attribute 'is_connected'. Did you mean: 'disconnect'?
+
+C:\Program Files\Python310\lib\unittest\mock.py:634: AttributeError</error></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_connector_initialization" time="0.005"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x000002447F140370&gt;
+mock_serial = &lt;MagicMock name='Serial()' id='2493213834688'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2492376298832'&gt;
+
+    def test_connector_initialization(self, mock_serial, mock_logger):
+        """Testet die korrekte Initialisierung des MAVLink-Connectors."""
+        # Arranges
+        port = 'COM1'
+        baudrate = 57600
+    
+        # Act
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params(port, baudrate)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:45: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_connect_success" time="0.004"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x000002447F140550&gt;
+mock_serial = &lt;MagicMock name='Serial()' id='2493214441632'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2492376172624'&gt;
+
+    def test_connect_success(self, mock_serial, mock_logger):
+        """Testet die erfolgreiche Verbindungsherstellung."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:57: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_connect_failure" time="0.005"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x000002447F140700&gt;
+mock_serial_error = &lt;MagicMock name='Serial' id='2492180060848'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2492180068768'&gt;
+
+    @patch('backend.mavlink_connector.serial.Serial', side_effect=Exception('Connection failed'))
+    def test_connect_failure(self, mock_serial_error, mock_logger):
+        """Testet den Fehlerfall bei der Verbindungsherstellung."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:71: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_disconnect" time="0.004"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x000002447F1408E0&gt;
+mock_serial = &lt;MagicMock name='Serial()' id='2492376296336'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2492180234784'&gt;
+
+    def test_disconnect(self, mock_serial, mock_logger):
+        """Testet das korrekte Trennen der Verbindung."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:83: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_factory_method_mavlink" time="0.003"><failure message="AttributeError: &lt;module 'backend.mavlink_connector' from 'C:\\Users\\fuckheinerkleinehack\\Documents\\RZGS2\\RZGCS\\Python\\backend\\mavlink_connector.py'&gt; does not have the attribute 'Logger'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x000002447F140A90&gt;
+
+    def test_factory_method_mavlink(self):
+        """Testet die Factory-Methode für die Erstellung eines MAVLink-Connectors."""
+        # Arrange &amp; Act
+        with patch('backend.mavlink_connector.MAVLinkConnector') as mock_connector:
+&gt;           with patch('backend.mavlink_connector.Logger') as mock_logger_class:
+
+test_mavlink_connector.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Program Files\Python310\lib\unittest\mock.py:1438: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;unittest.mock._patch object at 0x00000244417E2AA0&gt;
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+&gt;           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: &lt;module 'backend.mavlink_connector' from 'C:\\Users\\fuckheinerkleinehack\\Documents\\RZGS2\\RZGCS\\Python\\backend\\mavlink_connector.py'&gt; does not have the attribute 'Logger'
+
+C:\Program Files\Python310\lib\unittest\mock.py:1411: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_factory_method_missing_params" time="0.003" /><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_send_message" time="0.007"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x000002447F0CAC50&gt;
+mock_serial = &lt;MagicMock name='Serial()' id='2492376480592'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2492376185872'&gt;
+
+    def test_send_message(self, mock_serial, mock_logger):
+        """Testet das Senden einer Nachricht."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:123: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_send_message_not_connected" time="0.004"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x000002447F140BE0&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2492376343568'&gt;
+
+    def test_send_message_not_connected(self, mock_logger):
+        """Testet das Senden einer Nachricht ohne Verbindung."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:140: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_receive_messages" time="0.005"><failure message="AttributeError: &lt;class 'backend.mavlink_connector.MAVLinkConnector'&gt; does not have the attribute 'process_messages'">item = &lt;Function test_receive_messages&gt;
+
+    @pytest.hookimpl(wrapper=True, tryfirst=True)
+    def pytest_runtest_call(item):
+&gt;       result = yield
+
+..\..\..\..\..\AppData\Roaming\Python\Python310\site-packages\pytestqt\plugin.py:189: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Program Files\Python310\lib\unittest\mock.py:1367: in patched
+    with self.decoration_helper(patched,
+C:\Program Files\Python310\lib\contextlib.py:135: in __enter__
+    return next(self.gen)
+C:\Program Files\Python310\lib\unittest\mock.py:1349: in decoration_helper
+    arg = exit_stack.enter_context(patching)
+C:\Program Files\Python310\lib\contextlib.py:492: in enter_context
+    result = _cm_type.__enter__(cm)
+C:\Program Files\Python310\lib\unittest\mock.py:1438: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;unittest.mock._patch object at 0x000002447F0CBB50&gt;
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+&gt;           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: &lt;class 'backend.mavlink_connector.MAVLinkConnector'&gt; does not have the attribute 'process_messages'
+
+C:\Program Files\Python310\lib\unittest\mock.py:1411: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_initialization" time="0.187"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2493160642144'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x000002447F141C00&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='2493160642144'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x2444d8fbf80&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='2493160642144'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2493160642144'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+..\backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_start_simulator" time="0.006"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2492382154224'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x000002447F141DE0&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='2492382154224'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x2444d90ec40&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='2492382154224'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2492382154224'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+..\backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_stop_simulator" time="0.004"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2492180245920'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x000002447F141FC0&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='2492180245920'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x2444d92b480&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='2492180245920'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2492180245920'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+..\backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_is_running" time="0.005"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2492179732496'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x000002447F1421A0&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='2492179732496'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x2444d848940&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='2492179732496'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2492179732496'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+..\backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_run_loop" time="0.004"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2492179939232'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x000002447F1423B0&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='2492179939232'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x24441825380&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='2492179939232'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2492179939232'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+..\backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_simulate_heartbeat" time="0.003"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2492180243376'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x000002447F142590&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='2492180243376'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x2444d92c840&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='2492180243376'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2492180243376'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+..\backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_simulate_attitude" time="0.003"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2492376344960'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x000002447F142770&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='2492376344960'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x2444d92b0c0&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='2492376344960'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2492376344960'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+..\backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_simulate_gps_status" time="0.003"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2492179810480'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x000002447F142950&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='2492179810480'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x2444d8d53c0&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='2492179810480'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2492179810480'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+..\backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_mavlink_simulator.TestMAVLinkSimulator" name="test_simulate_battery_status" time="0.004"><error message="failed on setup with &quot;ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:&#10;  PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2492179932512'&gt;,)&#10;Found signature:&#10;  PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)&quot;">self = &lt;test_mavlink_simulator.TestMAVLinkSimulator object at 0x000002447F142B30&gt;
+mock_message_handler = &lt;MagicMock spec='MessageHandler' id='2492179932512'&gt;
+
+    @pytest.fixture
+    def simulator(self, mock_message_handler):
+        """Fixture für einen MAVLinkSimulator mit Mock-Handler."""
+&gt;       return MAVLinkSimulator(mock_message_handler)
+
+test_mavlink_simulator.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;[RuntimeError("'__init__' method of object's base class (MAVLinkSimulator) not called.") raised in repr()] MAVLinkSimulator object at 0x2444d848440&gt;
+parent = &lt;MagicMock spec='MessageHandler' id='2492179932512'&gt;
+
+    def __init__(self, parent=None):
+&gt;       super().__init__(parent)
+E       ValueError: 'PySide6.QtCore.QObject.__init__' called with wrong argument values:
+E         PySide6.QtCore.QObject.__init__(&lt;MagicMock spec='MessageHandler' id='2492179932512'&gt;,)
+E       Found signature:
+E         PySide6.QtCore.QObject.__init__(Optional[PySide6.QtCore.QObject] = None, *, Optional[str] = None)
+
+..\backend\mavlink_simulator.py:11: ValueError</error></testcase><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_initialization" time="0.002" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_set_parameters" time="0.007" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_rowCount" time="0.003" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_data_valid_index" time="0.025"><failure message="AssertionError: assert '' == 'Roll rate control P gain'&#10;  &#10;  - Roll rate control P gain">self = &lt;test_parameter_model.TestParameterTableModel object at 0x000002447F15C5B0&gt;
+model = &lt;backend.parameter_model.ParameterTableModel(0x24414d41210) at 0x000002444D92A140&gt;
+sample_params = [{'defaultValue': '0.1', 'description': 'Roll rate control P gain', 'name': 'RATE_RLL_P', 'options': [], ...}, {'defau...[], ...}, {'defaultValue': '0.15', 'description': 'Yaw rate control P gain', 'name': 'RATE_YAW_P', 'options': [], ...}]
+
+    def test_data_valid_index(self, model, sample_params):
+        """Testet die data-Methode mit gültigen Indizes."""
+        # Arrange
+        model.set_parameters(sample_params)
+    
+        # Act &amp; Assert - Verschiedene Rollen testen
+        index = model.index(0, 0)
+        assert model.data(index, ParameterTableModel.NameRole) == 'RATE_RLL_P'
+        assert model.data(index, ParameterTableModel.ValueRole) == '0.15'
+        assert model.data(index, ParameterTableModel.DefaultValueRole) == '0.1'
+        assert model.data(index, ParameterTableModel.UnitRole) == ''
+        assert model.data(index, ParameterTableModel.OptionsRole) == []
+&gt;       assert model.data(index, ParameterTableModel.DescRole) == 'Roll rate control P gain'
+E       AssertionError: assert '' == 'Roll rate control P gain'
+E         
+E         - Roll rate control P gain
+
+test_parameter_model.py:96: AssertionError</failure></testcase><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_data_invalid_index" time="0.002" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_roleNames" time="0.034"><failure message="AssertionError: assert b'desc' == b'description'&#10;  &#10;  Full diff:&#10;  - (b'description')&#10;  + b'desc'">self = &lt;test_parameter_model.TestParameterTableModel object at 0x000002447F15C940&gt;
+model = &lt;backend.parameter_model.ParameterTableModel(0x24414d40e00) at 0x000002444D88D0C0&gt;
+
+    def test_roleNames(self, model):
+        """Testet die roleNames-Methode."""
+        # Act
+        roles = model.roleNames()
+    
+        # Assert
+        expected_roles = {
+            ParameterTableModel.NameRole: b'name',
+            ParameterTableModel.ValueRole: b'value',
+            ParameterTableModel.DefaultValueRole: b'defaultValue',
+            ParameterTableModel.UnitRole: b'unit',
+            ParameterTableModel.OptionsRole: b'options',
+            ParameterTableModel.DescRole: b'description'
+        }
+    
+        for role, name in expected_roles.items():
+&gt;           assert roles[role] == name
+E           AssertionError: assert b'desc' == b'description'
+E             
+E             Full diff:
+E             - (b'description')
+E             + b'desc'
+
+test_parameter_model.py:127: AssertionError</failure></testcase><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_set_parameter_value" time="0.008" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_set_parameter_value_nonexistent" time="0.003" /><testcase classname="Python.tests.test_parameter_model.TestParameterTableModel" name="test_get_parameter_value" time="0.004"><failure message="AttributeError: 'ParameterTableModel' object has no attribute 'get_parameter_value'. Did you mean: 'set_parameter_value'?">self = &lt;test_parameter_model.TestParameterTableModel object at 0x000002447F15CEE0&gt;
+model = &lt;backend.parameter_model.ParameterTableModel(0x24414d40900) at 0x000002444D8D4800&gt;
+sample_params = [{'defaultValue': '0.1', 'description': 'Roll rate control P gain', 'name': 'RATE_RLL_P', 'options': [], ...}, {'defau...[], ...}, {'defaultValue': '0.15', 'description': 'Yaw rate control P gain', 'name': 'RATE_YAW_P', 'options': [], ...}]
+
+    def test_get_parameter_value(self, model, sample_params):
+        """Testet das Abrufen eines Parameterwerts."""
+        # Arrange
+        model.set_parameters(sample_params)
+    
+        # Act &amp; Assert
+&gt;       assert model.get_parameter_value('RATE_RLL_P') == '0.15'
+E       AttributeError: 'ParameterTableModel' object has no attribute 'get_parameter_value'. Did you mean: 'set_parameter_value'?
+
+test_parameter_model.py:163: AttributeError</failure></testcase><testcase classname="Python.tests.test_performance.TestPerformance" name="test_message_processing_performance" time="0.003"><skipped type="pytest.skip" message="MessageHandler hat keine Methode 'process_attitude'">C:\Users\fuckheinerkleinehack\Documents\RZGS2\RZGCS\Python\tests\test_performance.py:78: MessageHandler hat keine Methode 'process_attitude'</skipped></testcase><testcase classname="Python.tests.test_performance.TestPerformance" name="test_parameter_model_performance" time="0.011" /><testcase classname="Python.tests.test_performance.TestPerformance" name="test_simulator_performance" time="0.022" /><testcase classname="Python.tests.test_security.TestSecurity" name="test_no_hardcoded_credentials" time="0.126" /><testcase classname="Python.tests.test_security.TestSecurity" name="test_input_validation" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_security.TestSecurity object at 0x000002447F15F6A0&gt;
+
+    def test_input_validation(self):
+        """Testet die Eingabevalidierung für kritische Funktionen."""
+        # Import der zu testenden Module
+        from backend.mavlink_connector import MAVLinkConnector, create_connector, ConnectorType
+    
+        # Mock Logger erstellen
+        mock_logger = MagicMock(spec=Logger)
+    
+        # Test 1: MAVLinkConnector mit ungültigen Eingaben
+        connector = MAVLinkConnector(mock_logger)
+    
+        with pytest.raises(ValueError):
+&gt;           connector.set_connection_params("", 0)  # Leerer Port und ungültige Baudrate
+E           AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_security.py:85: AttributeError</failure></testcase><testcase classname="Python.tests.test_security.TestSecurity" name="test_no_command_injection" time="0.005"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_security.TestSecurity object at 0x000002447F1CC190&gt;
+
+    def test_no_command_injection(self):
+        """Testet die Robustheit gegen Command-Injection-Angriffe."""
+        # Import der zu testenden Module
+        from backend.mavlink_connector import MAVLinkConnector
+    
+        # Mock Logger erstellen
+        mock_logger = MagicMock(spec=Logger)
+    
+        # Methode mocken, um direkte Aufrufe zu verhindern
+        with patch('serial.Serial') as mock_serial:
+            # Mock-Instanz konfigurieren
+            mock_instance = MagicMock()
+            mock_serial.return_value = mock_instance
+            mock_instance.is_open = True
+    
+            # Test mit potenziell gefährlichen Port-Namen
+            malicious_ports = [
+                "COM1; rm -rf /",
+                "COM1 &amp;&amp; del /f /s /q *",
+                "COM1` echo pwned`",
+                "COM1$(cat /etc/passwd)",
+                "COM1|whoami"
+            ]
+    
+            for port in malicious_ports:
+                # Sicherstellen, dass keine Ausnahme auftritt, aber auch kein System-Befehl ausgeführt wird
+                connector = MAVLinkConnector(mock_logger)
+&gt;               connector.set_connection_params(port, 115200)
+E               AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_security.py:124: AttributeError</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_initial_sensor_count" time="0.004"><failure message="assert 0 == 13&#10; +  where 0 = rowCount()&#10; +    where rowCount = &lt;backend.sensorviewmodel.SensorViewModel(0x24414d41030) at 0x0000024441B74780&gt;.rowCount">model = &lt;backend.sensorviewmodel.SensorViewModel(0x24414d41030) at 0x0000024441B74780&gt;
+
+    def test_initial_sensor_count(model):
+        """Test, dass die initiale Anzahl der Sensoren korrekt ist."""
+&gt;       assert model.rowCount() == 13  # Anzahl der vordefinierten Sensoren
+E       assert 0 == 13
+E        +  where 0 = rowCount()
+E        +    where rowCount = &lt;backend.sensorviewmodel.SensorViewModel(0x24414d41030) at 0x0000024441B74780&gt;.rowCount
+
+test_sensorviewmodel.py:13: AssertionError</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_sensor_roles" time="0.003"><failure message="AttributeError: 'SensorViewModel' object has no attribute 'FormattedValueRole'">model = &lt;backend.sensorviewmodel.SensorViewModel(0x24414d412b0) at 0x0000024441B56900&gt;
+
+    def test_sensor_roles(model):
+        """Test, dass alle Rollen korrekt definiert sind."""
+        roles = model.roleNames()
+        assert roles[model.NameRole] == b"name"
+        assert roles[model.ValueRole] == b"value"
+&gt;       assert roles[model.FormattedValueRole] == b"formattedValue"
+E       AttributeError: 'SensorViewModel' object has no attribute 'FormattedValueRole'
+
+test_sensorviewmodel.py:20: AttributeError</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_sensor_data_access" time="0.003"><failure message="AssertionError: assert None == 'Roll'">model = &lt;backend.sensorviewmodel.SensorViewModel(0x24414d40d10) at 0x0000024441B77940&gt;
+
+    def test_sensor_data_access(model):
+        """Test des Zugriffs auf Sensordaten."""
+        index = model.index(0)  # Erster Sensor (Roll)
+    
+        # Test Sensor Name
+        name = model.data(index, model.NameRole)
+&gt;       assert name == "Roll"
+E       AssertionError: assert None == 'Roll'
+
+test_sensorviewmodel.py:28: AssertionError</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_update_sensor" time="0.002"><failure message="AttributeError: 'SensorViewModel' object has no attribute 'FormattedValueRole'">model = &lt;backend.sensorviewmodel.SensorViewModel(0x24414d40e00) at 0x0000024441B6B300&gt;
+
+    def test_update_sensor(model):
+        """Test der Sensor-Aktualisierung."""
+        model.update_sensor("Roll", 45.123)
+    
+        index = model.index(0)
+        value = model.data(index, model.ValueRole)
+&gt;       formatted = model.data(index, model.FormattedValueRole)
+E       AttributeError: 'SensorViewModel' object has no attribute 'FormattedValueRole'
+
+test_sensorviewmodel.py:44: AttributeError</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_invalid_sensor_update" time="0.002"><failure message="Failed: DID NOT RAISE &lt;class 'backend.exceptions.SensorException'&gt;">model = &lt;backend.sensorviewmodel.SensorViewModel(0x24414d40ea0) at 0x0000024441B55E40&gt;
+
+    def test_invalid_sensor_update(model):
+        """Test, dass eine Exception bei ungültigem Sensor geworfen wird."""
+&gt;       with pytest.raises(SensorException):
+E       Failed: DID NOT RAISE &lt;class 'backend.exceptions.SensorException'&gt;
+
+test_sensorviewmodel.py:51: Failed</failure></testcase><testcase classname="Python.tests.test_sensorviewmodel" name="test_invalid_index" time="0.003" /><testcase classname="Python.tests.test_sensorviewmodel" name="test_formatted_value_with_invalid_data" time="0.002"><failure message="IndexError: list index out of range">model = &lt;backend.sensorviewmodel.SensorViewModel(0x24414d41530) at 0x0000024441B77980&gt;
+
+    def test_formatted_value_with_invalid_data(model):
+        """Test der Formatierung bei ungültigen Daten."""
+        # Simuliere ungültige Daten (würde in der Praxis nicht vorkommen)
+&gt;       model._sensors[0]["value"] = "invalid"
+E       IndexError: list index out of range
+
+test_sensorviewmodel.py:62: IndexError</failure></testcase><testcase classname="Python.tests.test_simulated_drone" name="test_drone_initialization" time="0.101"><failure message="AssertionError: assert 51.1657 == 0.0&#10; +  where 51.1657 = DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False).lat&#10; +    where DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False) = &lt;backend.simulated_drone.SimulatedDrone object at 0x000002444D869DB0&gt;.state">drone = &lt;backend.simulated_drone.SimulatedDrone object at 0x000002444D869DB0&gt;
+
+    def test_drone_initialization(drone):
+        """Test, dass die Drone korrekt initialisiert wird."""
+&gt;       assert drone.state.lat == 0.0
+E       AssertionError: assert 51.1657 == 0.0
+E        +  where 51.1657 = DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False).lat
+E        +    where DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False) = &lt;backend.simulated_drone.SimulatedDrone object at 0x000002444D869DB0&gt;.state
+
+test_simulated_drone.py:17: AssertionError</failure></testcase><testcase classname="Python.tests.test_simulated_drone" name="test_drone_movement" time="2.036"><failure message="AssertionError: assert 0.0 != 0.0&#10; +  where 0.0 = DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False).alt&#10; +    where DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False) = &lt;backend.simulated_drone.SimulatedDrone object at 0x0000024441BABB80&gt;.state">drone = &lt;backend.simulated_drone.SimulatedDrone object at 0x0000024441BABB80&gt;
+
+    def test_drone_movement(drone):
+        """Test, dass die Drone sich korrekt bewegt."""
+        # Setze Zielposition
+        target_lat = 51.1657
+        target_lon = 10.4515
+        target_alt = 100.0
+    
+        drone.set_target_position(target_lat, target_lon, target_alt)
+    
+        # Warte kurz, damit sich die Drone bewegen kann
+        time.sleep(2)
+    
+        # Überprüfe, ob sich die Position geändert hat
+        assert drone.state.lat != 0.0
+        assert drone.state.lon != 0.0
+&gt;       assert drone.state.alt != 0.0
+E       AssertionError: assert 0.0 != 0.0
+E        +  where 0.0 = DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False).alt
+E        +    where DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False) = &lt;backend.simulated_drone.SimulatedDrone object at 0x0000024441BABB80&gt;.state
+
+test_simulated_drone.py:38: AssertionError</failure></testcase><testcase classname="Python.tests.test_simulated_drone" name="test_battery_drain" time="2.042"><failure message="AssertionError: assert 100.0 &lt; 100.0&#10; +  where 100.0 = DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False).battery_remaining&#10; +    where DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False) = &lt;backend.simulated_drone.SimulatedDrone object at 0x000002444D8698D0&gt;.state">drone = &lt;backend.simulated_drone.SimulatedDrone object at 0x000002444D8698D0&gt;
+
+    def test_battery_drain(drone):
+        """Test, dass der Batteriestand realistisch abnimmt."""
+        initial_battery = drone.state.battery_remaining
+    
+        # Setze Zielposition und warte
+        drone.set_target_position(51.1657, 10.4515, 100.0)
+        time.sleep(2)
+    
+        # Überprüfe, ob der Batteriestand abgenommen hat
+&gt;       assert drone.state.battery_remaining &lt; initial_battery
+E       AssertionError: assert 100.0 &lt; 100.0
+E        +  where 100.0 = DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False).battery_remaining
+E        +    where DroneState(lat=51.1657, lon=10.4515, alt=0.0, roll=0.0, pitch=0.0, yaw=0.0, groundspeed=0.0, airspeed=0.0, battery_remaining=100.0, voltage=12.0, current=0.0, mode='STABILIZE', armed=False) = &lt;backend.simulated_drone.SimulatedDrone object at 0x000002444D8698D0&gt;.state
+
+test_simulated_drone.py:49: AssertionError</failure></testcase><testcase classname="Python.tests.test_simulated_drone" name="test_flight_modes" time="0.107" /><testcase classname="Python.tests.test_simulated_drone" name="test_arming" time="0.109" /><testcase classname="Python.tests.test_simulated_drone" name="test_max_altitude" time="1.023" /><testcase classname="Python.tests.test_simulated_drone" name="test_send_heartbeat" time="0.110" /><testcase classname="Python.tests.test_simulated_drone" name="test_send_global_position_int" time="0.110" /><testcase classname="Python.tests.test_simulated_drone" name="test_send_attitude" time="0.110" /><testcase classname="Python.tests.test_simulated_drone" name="test_send_sys_status" time="0.111" /><testcase classname="Python.tests.test_simulated_drone" name="test_send_vfr_hud" time="0.111" /><testcase classname="Python.tests.test_simulated_drone" name="test_send_statustext" time="0.111" /><testcase classname="Python.tests.test_ui_components.TestUIComponents" name="test_preflight_view_loads" time="0.065" /><testcase classname="Python.tests.test_ui_components.TestUIComponents" name="test_store_view_loads" time="0.029" /><testcase classname="Python.tests.test_ui_components.TestUIComponents" name="test_flight_view_loads" time="0.136" /><testcase classname="Python.tests.test_ui_components.TestUIComponents" name="test_sensor_view_loads" time="0.048"><failure message="assert None is not None">self = &lt;test_ui_components.TestUIComponents object at 0x000002447F1FCCA0&gt;
+qml_component_loader = &lt;function TestUIComponents.qml_component_loader.&lt;locals&gt;._load_component at 0x0000024441B5C940&gt;
+
+    def test_sensor_view_loads(self, qml_component_loader):
+        """Testet, ob die SensorView korrekt geladen wird."""
+        # Act
+        sensor_view = qml_component_loader("SensorView.ui.qml")
+    
+        # Assert
+&gt;       assert sensor_view is not None
+E       assert None is not None
+
+test_ui_components.py:75: AssertionError
+-------------------------- Captured Qt messages ---------------------------
+file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/SensorView.ui.qml:None:78:
+
+    QtWarningMsg: file:///C:/Users/fuckheinerkleinehack/Documents/RZGS2/RZGCS/RZGCSContent/SensorView.ui.qml:78: ReferenceError: sensorModel is not defined</failure></testcase><testcase classname="Python.tests.test_ui_components.TestUIComponents" name="test_menu_tab_interaction" time="0.137"><failure message="assert None is not None">self = &lt;test_ui_components.TestUIComponents object at 0x000002447F1FCEB0&gt;
+qml_component_loader = &lt;function TestUIComponents.qml_component_loader.&lt;locals&gt;._load_component at 0x0000024441B5D750&gt;
+
+    @pytest.mark.skipif(os.environ.get('CI') == 'true',
+                       reason="Interaktive Tests werden in CI-Umgebungen übersprungen")
+    def test_menu_tab_interaction(self, qml_component_loader):
+        """Testet die Interaktion mit den Menü-Tabs."""
+        # Arrange
+        menu_tab = qml_component_loader("MenuTab.ui.qml")
+&gt;       assert menu_tab is not None
+E       assert None is not None
+
+test_ui_components.py:83: AssertionError</failure></testcase><testcase classname="Python.tests.test_ui_components.TestUIComponents" name="test_parameter_view_model" time="0.005"><failure message="ModuleNotFoundError: No module named 'RZGCSContent'">self = &lt;test_ui_components.TestUIComponents object at 0x000002447F1FD060&gt;
+app = &lt;PySide6.QtWidgets.QApplication(0x2447b3cb4a0) at 0x000002447BF06900&gt;
+
+    def test_parameter_view_model(self, app):
+        """Testet das ParameterViewModel."""
+        # Import hier, damit QApplication bereits existiert
+&gt;       from RZGCSContent.ParameterViewModel import ParameterViewModel
+E       ModuleNotFoundError: No module named 'RZGCSContent'
+
+test_ui_components.py:96: ModuleNotFoundError</failure></testcase><testcase classname="Python.tests.test_ui_components.TestUIComponents" name="test_sensor_view_model" time="0.005"><failure message="ModuleNotFoundError: No module named 'RZGCSContent'">self = &lt;test_ui_components.TestUIComponents object at 0x000002447F1FD240&gt;
+app = &lt;PySide6.QtWidgets.QApplication(0x2447b3cb4a0) at 0x000002447BF06900&gt;
+
+    def test_sensor_view_model(self, app):
+        """Testet das SensorViewModel."""
+        # Import hier, damit QApplication bereits existiert
+&gt;       from RZGCSContent.SensorViewModel import SensorViewModel
+E       ModuleNotFoundError: No module named 'RZGCSContent'
+
+test_ui_components.py:112: ModuleNotFoundError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseManager" name="test_activate_license" time="0.007"><failure message="AssertionError: 'Professional' != 'professional'&#10;- Professional&#10;? ^&#10;+ professional&#10;? ^">self = &lt;test_license_system.TestLicenseManager testMethod=test_activate_license&gt;
+
+    def test_activate_license(self):
+        """Test zur Aktivierung einer Lizenz"""
+        # Mock die _get_machine_id-Methode
+        with patch('backend.license_manager.LicenseManager._get_machine_id') as mock_get_machine_id:
+            mock_get_machine_id.return_value = "test-machine-id"
+    
+            # Test für Professional-Lizenz
+            result = self.license_manager.activate_license("RZGCS-PRO-1234-5678-9ABC-DEF0")
+            self.assertTrue(result)
+            self.assertTrue(self.license_manager.license_valid)
+&gt;           self.assertEqual(self.license_manager.license_type, "professional")
+E           AssertionError: 'Professional' != 'professional'
+E           - Professional
+E           ? ^
+E           + professional
+E           ? ^
+
+test_license_system.py:79: AssertionError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseManager" name="test_enterprise_license_features" time="0.005"><failure message="AssertionError: 'Enterprise' != 'enterprise'&#10;- Enterprise&#10;? ^&#10;+ enterprise&#10;? ^">self = &lt;test_license_system.TestLicenseManager testMethod=test_enterprise_license_features&gt;
+
+    def test_enterprise_license_features(self):
+        """Test für Enterprise-Lizenz-Features"""
+        # Mock die _get_machine_id-Methode
+        with patch('backend.license_manager.LicenseManager._get_machine_id') as mock_get_machine_id:
+            mock_get_machine_id.return_value = "test-machine-id"
+    
+            # Test für Enterprise-Lizenz
+            result = self.license_manager.activate_license("RZGCS-ENT-ABCD-EF12-3456-789A")
+            self.assertTrue(result)
+            self.assertTrue(self.license_manager.license_valid)
+&gt;           self.assertEqual(self.license_manager.license_type, "enterprise")
+E           AssertionError: 'Enterprise' != 'enterprise'
+E           - Enterprise
+E           ? ^
+E           + enterprise
+E           ? ^
+
+test_license_system.py:96: AssertionError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseManager" name="test_initialization" time="0.004"><failure message="AssertionError: 'Basic' != 'basic'&#10;- Basic&#10;? ^&#10;+ basic&#10;? ^">self = &lt;test_license_system.TestLicenseManager testMethod=test_initialization&gt;
+
+    def test_initialization(self):
+        """Test, ob der LicenseManager korrekt initialisiert wird"""
+        self.assertFalse(self.license_manager.license_valid)
+&gt;       self.assertEqual(self.license_manager.license_type, "basic")
+E       AssertionError: 'Basic' != 'basic'
+E       - Basic
+E       ? ^
+E       + basic
+E       ? ^
+
+test_license_system.py:54: AssertionError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseManager" name="test_validate_license_key_format" time="0.005"><failure message="AttributeError: 'LicenseManager' object has no attribute '_validate_license_key_format'">self = &lt;test_license_system.TestLicenseManager testMethod=test_validate_license_key_format&gt;
+
+    def test_validate_license_key_format(self):
+        """Test zur Validierung des Lizenzschlüsselformats"""
+        # Gültiges Format
+&gt;       self.assertTrue(self.license_manager._validate_license_key_format("RZGCS-PRO-1234-5678-9ABC-DEF0"))
+E       AttributeError: 'LicenseManager' object has no attribute '_validate_license_key_format'
+
+test_license_system.py:61: AttributeError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseController" name="test_activate_license" time="0.003"><failure message="TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given">self = &lt;test_license_system.TestLicenseController testMethod=test_activate_license&gt;
+
+    def setUp(self):
+        # Mock-Logger erstellen
+        self.logger = MockLogger()
+    
+        # Mock LicenseManager
+        self.license_manager = MagicMock(spec=LicenseManager)
+        self.license_manager.license_valid = False
+        self.license_manager.license_type = "basic"
+        self.license_manager.is_feature_enabled.return_value = False
+    
+        # LicenseController initialisieren
+&gt;       self.license_controller = LicenseController(self.license_manager, self.logger)
+E       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given
+
+test_license_system.py:117: TypeError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseController" name="test_feature_access" time="0.003"><failure message="TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given">self = &lt;test_license_system.TestLicenseController testMethod=test_feature_access&gt;
+
+    def setUp(self):
+        # Mock-Logger erstellen
+        self.logger = MockLogger()
+    
+        # Mock LicenseManager
+        self.license_manager = MagicMock(spec=LicenseManager)
+        self.license_manager.license_valid = False
+        self.license_manager.license_type = "basic"
+        self.license_manager.is_feature_enabled.return_value = False
+    
+        # LicenseController initialisieren
+&gt;       self.license_controller = LicenseController(self.license_manager, self.logger)
+E       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given
+
+test_license_system.py:117: TypeError</failure></testcase><testcase classname="Python.tests.test_license_system.TestLicenseController" name="test_initialization" time="0.003"><failure message="TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given">self = &lt;test_license_system.TestLicenseController testMethod=test_initialization&gt;
+
+    def setUp(self):
+        # Mock-Logger erstellen
+        self.logger = MockLogger()
+    
+        # Mock LicenseManager
+        self.license_manager = MagicMock(spec=LicenseManager)
+        self.license_manager.license_valid = False
+        self.license_manager.license_type = "basic"
+        self.license_manager.is_feature_enabled.return_value = False
+    
+        # LicenseController initialisieren
+&gt;       self.license_controller = LicenseController(self.license_manager, self.logger)
+E       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given
+
+test_license_system.py:117: TypeError</failure></testcase><testcase classname="Python.tests.test_platform_compatibility.TestConnectionManager" name="test_create_connection_string" time="0.003" /><testcase classname="Python.tests.test_platform_compatibility.TestConnectionManager" name="test_get_available_ports_macos" time="0.003" /><testcase classname="Python.tests.test_platform_compatibility.TestConnectionManager" name="test_get_available_ports_windows" time="0.026" /><testcase classname="Python.tests.test_platform_compatibility.TestConnectionManager" name="test_get_default_connection_params" time="0.002" /><testcase classname="Python.tests.test_platform_compatibility.TestMAVLinkConnector" name="test_mavsdk_server_path_macos" time="0.003"><failure message="TypeError: TestMAVLinkConnector.test_mavsdk_server_path_macos.&lt;locals&gt;.&lt;lambda&gt;() missing 1 required positional argument: 'p'">self = &lt;test_platform_compatibility.TestMAVLinkConnector testMethod=test_mavsdk_server_path_macos&gt;
+
+    def test_mavsdk_server_path_macos(self):
+        """Test des MAVSDK-Server-Pfads unter macOS"""
+        with patch('sys.platform', 'darwin'):
+            with patch('pathlib.Path.exists', side_effect=lambda p: 'mac' in str(p)):
+                from backend.mavlink_connector import get_mavsdk_server_path
+&gt;               server_path = get_mavsdk_server_path()
+
+test_platform_compatibility.py:128: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\backend\mavlink_connector.py:36: in get_mavsdk_server_path
+    if server_path_1.exists():
+C:\Program Files\Python310\lib\unittest\mock.py:1105: in __call__
+    return self._mock_call(*args, **kwargs)
+C:\Program Files\Python310\lib\unittest\mock.py:1109: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;MagicMock name='exists' id='2492184209072'&gt;, args = (), kwargs = {}
+effect = &lt;function TestMAVLinkConnector.test_mavsdk_server_path_macos.&lt;locals&gt;.&lt;lambda&gt; at 0x0000024441B5E320&gt;
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+                raise effect
+            elif not _callable(effect):
+                result = next(effect)
+                if _is_exception(result):
+                    raise result
+            else:
+&gt;               result = effect(*args, **kwargs)
+E               TypeError: TestMAVLinkConnector.test_mavsdk_server_path_macos.&lt;locals&gt;.&lt;lambda&gt;() missing 1 required positional argument: 'p'
+
+C:\Program Files\Python310\lib\unittest\mock.py:1170: TypeError</failure></testcase><testcase classname="Python.tests.test_platform_compatibility.TestMAVLinkConnector" name="test_mavsdk_server_path_windows" time="0.003" /><testcase classname="Python.tests.test_angel_mode.TestAngelMode" name="test_angel_mode_basic_license" time="0.003"><failure message="TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given">self = &lt;test_angel_mode.TestAngelMode testMethod=test_angel_mode_basic_license&gt;
+
+    def setUp(self):
+        # Mock-Logger erstellen
+        self.logger = MockLogger()
+    
+        # LicenseManager initialisieren
+        self.license_manager = LicenseManager(self.logger)
+    
+        # LicenseController initialisieren
+&gt;       self.license_controller = LicenseController(self.license_manager, self.logger)
+E       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given
+
+test_angel_mode.py:53: TypeError</failure></testcase><testcase classname="Python.tests.test_angel_mode.TestAngelMode" name="test_angel_mode_enterprise_license" time="0.003"><failure message="TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given">self = &lt;test_angel_mode.TestAngelMode testMethod=test_angel_mode_enterprise_license&gt;
+
+    def setUp(self):
+        # Mock-Logger erstellen
+        self.logger = MockLogger()
+    
+        # LicenseManager initialisieren
+        self.license_manager = LicenseManager(self.logger)
+    
+        # LicenseController initialisieren
+&gt;       self.license_controller = LicenseController(self.license_manager, self.logger)
+E       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given
+
+test_angel_mode.py:53: TypeError</failure></testcase><testcase classname="Python.tests.test_angel_mode.TestAngelMode" name="test_angel_mode_professional_license" time="0.004"><failure message="TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given">self = &lt;test_angel_mode.TestAngelMode testMethod=test_angel_mode_professional_license&gt;
+
+    def setUp(self):
+        # Mock-Logger erstellen
+        self.logger = MockLogger()
+    
+        # LicenseManager initialisieren
+        self.license_manager = LicenseManager(self.logger)
+    
+        # LicenseController initialisieren
+&gt;       self.license_controller = LicenseController(self.license_manager, self.logger)
+E       TypeError: LicenseController.__init__() takes from 1 to 2 positional arguments but 3 were given
+
+test_angel_mode.py:53: TypeError</failure></testcase></testsuite></testsuites>

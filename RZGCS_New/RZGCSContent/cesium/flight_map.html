@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>RZGCS - 3D Flight Map</title>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.104/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.104/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <style>
+        html, body, #cesiumContainer { 
+            width: 100%; 
+            height: 100%; 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .control-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background-color: rgba(42, 42, 42, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+        }
+        .drone-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            background-color: rgba(42, 42, 42, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+            min-width: 200px;
+        }
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+        }
+        .data-row .label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .data-row .value {
+            font-family: monospace;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 2px 2px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div id="cesiumContainer"></div>
+    <div class="control-panel">
+        <button id="follow-drone">Drohne folgen</button>
+        <button id="top-view">Draufsicht</button>
+        <button id="show-path">Flugpfad anzeigen</button>
+    </div>
+    <div class="drone-info">
+        <div class="data-row">
+            <span class="label">Breitengrad:</span>
+            <span class="value" id="latitude">0.000000</span>
+        </div>
+        <div class="data-row">
+            <span class="label">Längengrad:</span>
+            <span class="value" id="longitude">0.000000</span>
+        </div>
+        <div class="data-row">
+            <span class="label">Höhe:</span>
+            <span class="value" id="altitude">0.0 m</span>
+        </div>
+        <div class="data-row">
+            <span class="label">Geschwindigkeit:</span>
+            <span class="value" id="speed">0.0 m/s</span>
+        </div>
+        <div class="data-row">
+            <span class="label">Akku:</span>
+            <span class="value" id="battery">100%</span>
+        </div>
+    </div>
+
+    <script>
+        // Ersetzen Sie diesen Token mit Ihrem eigenen von cesium.com/ion/
+        // Registrieren Sie sich kostenlos und erhalten Sie einen Token
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWE1OWUxNy1mMWZiLTQzYjYtYTQ0OS1kMWY5ZmJkYTRmMjciLCJpZCI6MjU5MiwzLCJpYXQiOjE2ODAwMjUyMDN9.DSUlCvj9Nx7B_jetonOXk89F80jUt1Q99HfPkCyhkB4';
+        
+        // Viewer initialisieren
+        const viewer = new Cesium.Viewer('cesiumContainer', {
+            terrain: Cesium.Terrain.fromWorldTerrain(),
+            timeline: false,
+            animation: false,
+            baseLayerPicker: false,
+            homeButton: false,
+            infoBox: false,
+            sceneModePicker: false,
+            navigationHelpButton: false,
+            geocoder: false
+        });
+        
+        // 3D-Gebäude aktivieren
+        viewer.scene.primitives.add(Cesium.createOsmBuildings());
+        
+        // Startposition in Deutschland festlegen
+        const berlinPosition = Cesium.Cartesian3.fromDegrees(13.4050, 52.5200, 100);
+        
+        // Kamera konfigurieren
+        viewer.camera.flyTo({
+            destination: berlinPosition,
+            orientation: {
+                heading: Cesium.Math.toRadians(0),
+                pitch: Cesium.Math.toRadians(-30),
+                roll: 0.0
+            }
+        });
+        
+        // Drohnenmodell und Pfad
+        let droneEntity = viewer.entities.add({
+            name: 'Drohne',
+            position: berlinPosition,
+            model: {
+                uri: 'https://raw.githubusercontent.com/CesiumGS/cesium/main/Apps/SampleData/models/CesiumDrone/CesiumDrone.glb',
+                minimumPixelSize: 32,
+                maximumScale: 20000,
+                silhouetteColor: Cesium.Color.WHITE,
+                silhouetteSize: 2
+            },
+            path: {
+                resolution: 1,
+                material: new Cesium.PolylineGlowMaterialProperty({
+                    glowPower: 0.2,
+                    color: Cesium.Color.BLUE
+                }),
+                width: 5,
+                show: true
+            },
+            orientation: new Cesium.VelocityOrientationProperty(new Cesium.CallbackProperty(() => {
+                return droneEntity.position;
+            }, false))
+        });
+        
+        // Eigenschaften für UI-Aktualisierung
+        let latitude = 52.5200;
+        let longitude = 13.4050;
+        let altitude = 100;
+        let speed = 0;
+        let battery = 100;
+        
+        // Aktualisiert die Drohnenposition vom Python-Backend
+        function updateDronePosition(lat, lon, alt, spd = null, bat = null) {
+            latitude = lat;
+            longitude = lon;
+            altitude = alt;
+            
+            if (spd !== null) speed = spd;
+            if (bat !== null) battery = bat;
+            
+            droneEntity.position = Cesium.Cartesian3.fromDegrees(lon, lat, alt);
+            
+            // UI-Elemente aktualisieren
+            document.getElementById('latitude').textContent = lat.toFixed(6);
+            document.getElementById('longitude').textContent = lon.toFixed(6);
+            document.getElementById('altitude').textContent = alt.toFixed(1) + ' m';
+            document.getElementById('speed').textContent = speed.toFixed(1) + ' m/s';
+            document.getElementById('battery').textContent = battery + '%';
+        }
+        
+        // Testpfad für die Demonstration (kann später entfernt werden)
+        let pathPoints = [];
+        for (let i = 0; i < 100; i++) {
+            pathPoints.push({
+                lon: longitude + (Math.sin(i * 0.1) * 0.01),
+                lat: latitude + (Math.cos(i * 0.1) * 0.01),
+                alt: altitude + (i * 2)
+            });
+        }
+        
+        // Simulation eines Flugpfads (kann später entfernt werden)
+        let currentPoint = 0;
+        let simInterval = setInterval(() => {
+            if (currentPoint < pathPoints.length) {
+                let point = pathPoints[currentPoint];
+                updateDronePosition(point.lat, point.lon, point.alt, 10 + Math.random() * 5, 100 - (currentPoint / pathPoints.length * 20));
+                currentPoint++;
+            } else {
+                clearInterval(simInterval);
+            }
+        }, 500);
+        
+        // UI-Steuerelemente
+        document.getElementById('follow-drone').addEventListener('click', () => {
+            viewer.trackedEntity = droneEntity;
+        });
+        
+        document.getElementById('top-view').addEventListener('click', () => {
+            viewer.trackedEntity = undefined;
+            viewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(longitude, latitude, altitude + 500),
+                orientation: {
+                    heading: 0,
+                    pitch: Cesium.Math.toRadians(-90),
+                    roll: 0
+                }
+            });
+        });
+        
+        document.getElementById('show-path').addEventListener('click', function() {
+            droneEntity.path.show = !droneEntity.path.show;
+            this.textContent = droneEntity.path.show._value ? 'Flugpfad ausblenden' : 'Flugpfad anzeigen';
+        });
+        
+        // Kommunikation mit Qt-Anwendung
+        function sendToQt(message) {
+            if (window.qt && window.qt.webChannelTransport) {
+                window.qt.flightMap.receiveMessage(JSON.stringify(message));
+            }
+        }
+        
+        // Empfangen von Befehlen aus Qt
+        window.receiveFromQt = function(message) {
+            const data = JSON.parse(message);
+            
+            switch(data.type) {
+                case 'position':
+                    updateDronePosition(data.lat, data.lon, data.alt, data.speed, data.battery);
+                    break;
+                case 'centerMap':
+                    viewer.camera.flyTo({
+                        destination: Cesium.Cartesian3.fromDegrees(data.lon, data.lat, data.alt + 200),
+                        orientation: {
+                            heading: Cesium.Math.toRadians(data.heading || 0),
+                            pitch: Cesium.Math.toRadians(data.pitch || -30),
+                            roll: 0
+                        }
+                    });
+                    break;
+                case 'clearPath':
+                    // Pfad zurücksetzen
+                    droneEntity.path.show = false;
+                    setTimeout(() => {
+                        droneEntity.path.show = true;
+                    }, 100);
+                    break;
+            }
+        };
+        
+        // Event-Listener für Klicks auf die Karte
+        viewer.screenSpaceEventHandler.setInputAction(function(movement) {
+            const pickedPosition = viewer.scene.pickPosition(movement.position);
+            if (Cesium.defined(pickedPosition)) {
+                const cartographic = Cesium.Cartographic.fromCartesian(pickedPosition);
+                const lon = Cesium.Math.toDegrees(cartographic.longitude);
+                const lat = Cesium.Math.toDegrees(cartographic.latitude);
+                const alt = cartographic.height;
+                
+                sendToQt({
+                    type: 'mapClick',
+                    lat: lat,
+                    lon: lon,
+                    alt: alt
+                });
+            }
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    </script>
+</body>
+</html>

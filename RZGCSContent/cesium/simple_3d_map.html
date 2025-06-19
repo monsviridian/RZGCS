@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>RZGCS - 3D Flight Map (Simple Version)</title>
+    <style>
+        html, body { 
+            width: 100%; 
+            height: 100%; 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2c5b52;
+            color: white;
+        }
+        #mapContainer {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .control-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background-color: rgba(42, 42, 42, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+        }
+        .drone-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            background-color: rgba(42, 42, 42, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+            min-width: 200px;
+        }
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+        }
+        .data-row .label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .data-row .value {
+            font-family: monospace;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 2px 2px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #compass {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 100px;
+            height: 100px;
+            background-color: rgba(0,0,0,0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #compass-arrow {
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 40px solid red;
+            transform-origin: center 75%;
+        }
+        #status {
+            position: absolute;
+            top: 10px;
+            right: 130px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div id="mapContainer">
+        <canvas id="map3d" style="width: 100%; height: 100%;"></canvas>
+        
+        <div id="status">
+            Status: <span style="color: #80ff00;">Aktiv</span>
+        </div>
+        
+        <div id="compass">
+            <div id="compass-arrow"></div>
+        </div>
+        
+        <div class="control-panel">
+            <button id="follow-drone">Drohne folgen</button>
+            <button id="top-view">Draufsicht</button>
+            <button id="reset-view">Ansicht zurücksetzen</button>
+        </div>
+        
+        <div class="drone-info">
+            <div class="data-row">
+                <span class="label">Breitengrad:</span>
+                <span class="value" id="latitude">51.505600</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Längengrad:</span>
+                <span class="value" id="longitude">7.452400</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Höhe:</span>
+                <span class="value" id="altitude">100.0 m</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Geschwindigkeit:</span>
+                <span class="value" id="speed">0.0 m/s</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Batterie:</span>
+                <span class="value" id="battery">100%</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Canvas-Referenz und Kontext
+        const canvas = document.getElementById('map3d');
+        const ctx = canvas.getContext('2d');
+        
+        // Bildschirmgröße anpassen
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            draw();
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // Drohnenposition und Kamera
+        let dronePosition = { lat: 51.505600, lon: 7.452400, alt: 100, heading: 0 };
+        let camera = {
+            lat: 51.505600,
+            lon: 7.452400,
+            alt: 500,
+            pitch: 45,  // 0=Draufsicht, 90=Horizontansicht
+            heading: 0,  // 0=Nord, 90=Ost usw.
+            followDrone: true
+        };
+        
+        // Funktionen für Transformationen zwischen geografischen und Bildschirmkoordinaten
+        function geoToScreen(lat, lon, alt) {
+            // Einfache perspektivische Projektion
+            const centerLat = camera.followDrone ? dronePosition.lat : camera.lat;
+            const centerLon = camera.followDrone ? dronePosition.lon : camera.lon;
+            
+            // Umwandlung in Meter (vereinfacht)
+            const scale = 100000;
+            const x = (lon - centerLon) * scale;
+            const y = (lat - centerLat) * scale;
+            const z = alt;
+            
+            // 3D-Rotation basierend auf Kameraausrichtung
+            const rad = Math.PI / 180;
+            const cosHeading = Math.cos(-camera.heading * rad);
+            const sinHeading = Math.sin(-camera.heading * rad);
+            const cosPitch = Math.cos(camera.pitch * rad);
+            const sinPitch = Math.sin(camera.pitch * rad);
+            
+            // Rotation um Z-Achse (Heading)
+            const x1 = x * cosHeading - y * sinHeading;
+            const y1 = x * sinHeading + y * cosHeading;
+            
+            // Rotation um X-Achse (Pitch)
+            const y2 = y1 * cosPitch - z * sinPitch;
+            const z2 = y1 * sinPitch + z * cosPitch;
+            
+            // Perspektivische Projektion
+            const screenScale = 1;
+            const perspectiveFactor = 1000 / (1000 + z2);
+            const screenX = canvas.width / 2 + x1 * screenScale * perspectiveFactor;
+            const screenY = canvas.height / 2 - y2 * screenScale * perspectiveFactor;
+            
+            return { x: screenX, y: screenY, z: z2 };
+        }
+        
+        // Funktion zum Zeichnen des Gitters
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            
+            // Gitterlinien-Abstand in geografischen Einheiten
+            const gridSpacing = 0.001; // ca. 100m
+            const gridExtent = 0.05;    // ca. 5km
+            
+            // Mittelpunkt des Gitters
+            const centerLat = camera.followDrone ? dronePosition.lat : camera.lat;
+            const centerLon = camera.followDrone ? dronePosition.lon : camera.lon;
+            
+            // Horizontale Linien
+            for (let lat = centerLat - gridExtent; lat <= centerLat + gridExtent; lat += gridSpacing) {
+                ctx.beginPath();
+                
+                let prevPoint = null;
+                for (let lon = centerLon - gridExtent; lon <= centerLon + gridExtent; lon += gridSpacing / 5) {
+                    const point = geoToScreen(lat, lon, 0);
+                    
+                    if (!prevPoint) {
+                        ctx.moveTo(point.x, point.y);
+                    } else {
+                        // Nur zeichnen, wenn die Punkte nicht zu weit auseinander sind
+                        if (Math.abs(point.x - prevPoint.x) < 500 && Math.abs(point.y - prevPoint.y) < 500) {
+                            ctx.lineTo(point.x, point.y);
+                        } else {
+                            ctx.moveTo(point.x, point.y);
+                        }
+                    }
+                    
+                    prevPoint = point;
+                }
+                
+                ctx.stroke();
+            }
+            
+            // Vertikale Linien
+            for (let lon = centerLon - gridExtent; lon <= centerLon + gridExtent; lon += gridSpacing) {
+                ctx.beginPath();
+                
+                let prevPoint = null;
+                for (let lat = centerLat - gridExtent; lat <= centerLat + gridExtent; lat += gridSpacing / 5) {
+                    const point = geoToScreen(lat, lon, 0);
+                    
+                    if (!prevPoint) {
+                        ctx.moveTo(point.x, point.y);
+                    } else {
+                        // Nur zeichnen, wenn die Punkte nicht zu weit auseinander sind
+                        if (Math.abs(point.x - prevPoint.x) < 500 && Math.abs(point.y - prevPoint.y) < 500) {
+                            ctx.lineTo(point.x, point.y);
+                        } else {
+                            ctx.moveTo(point.x, point.y);
+                        }
+                    }
+                    
+                    prevPoint = point;
+                }
+                
+                ctx.stroke();
+            }
+        }
+        
+        // Funktion zum Zeichnen der Drohne
+        function drawDrone() {
+            const droneSize = 10;
+            const dronePos = geoToScreen(dronePosition.lat, dronePosition.lon, dronePosition.alt);
+            
+            // Schatten zeichnen
+            const shadowPos = geoToScreen(dronePosition.lat, dronePosition.lon, 0);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.beginPath();
+            ctx.arc(shadowPos.x, shadowPos.y, droneSize * 0.8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Verbindungslinie zum Boden
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(dronePos.x, dronePos.y);
+            ctx.lineTo(shadowPos.x, shadowPos.y);
+            ctx.stroke();
+            
+            // Drohne zeichnen
+            ctx.fillStyle = '#ff3030';
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(dronePos.x, dronePos.y, droneSize, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Kompass aktualisieren
+            document.getElementById('compass-arrow').style.transform = `rotate(${dronePosition.heading}deg)`;
+        }
+        
+        // Hauptzeichenfunktion
+        function draw() {
+            // Hintergrund
+            ctx.fillStyle = '#4d8d82';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Wenn Drohnenverfolgung aktiviert ist, Kamera auf Drohne ausrichten
+            if (camera.followDrone) {
+                camera.lat = dronePosition.lat;
+                camera.lon = dronePosition.lon;
+            }
+            
+            // Gitter zeichnen
+            drawGrid();
+            
+            // Drohne zeichnen
+            drawDrone();
+        }
+        
+        // Drohnenposition aktualisieren
+        function updateDronePosition(lat, lon, alt, heading, speed, battery) {
+            dronePosition.lat = lat;
+            dronePosition.lon = lon;
+            dronePosition.alt = alt;
+            if (heading !== undefined) dronePosition.heading = heading;
+            
+            // UI-Elemente aktualisieren
+            document.getElementById('latitude').textContent = lat.toFixed(6);
+            document.getElementById('longitude').textContent = lon.toFixed(6);
+            document.getElementById('altitude').textContent = alt.toFixed(1) + ' m';
+            
+            if (speed !== undefined) {
+                document.getElementById('speed').textContent = speed.toFixed(1) + ' m/s';
+            }
+            
+            if (battery !== undefined) {
+                document.getElementById('battery').textContent = battery.toFixed(0) + '%';
+            }
+            
+            // Karte neu zeichnen
+            draw();
+        }
+        
+        // Event-Listener für Buttons
+        document.getElementById('follow-drone').addEventListener('click', function() {
+            camera.followDrone = true;
+            draw();
+        });
+        
+        document.getElementById('top-view').addEventListener('click', function() {
+            camera.pitch = 0;
+            camera.heading = 0;
+            draw();
+        });
+        
+        document.getElementById('reset-view').addEventListener('click', function() {
+            camera.pitch = 45;
+            camera.heading = 0;
+            draw();
+        });
+        
+        // Maus-Interaktion für Kamerasteuerung
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        
+        canvas.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
+        
+        canvas.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                const deltaX = e.clientX - lastMouseX;
+                const deltaY = e.clientY - lastMouseY;
+                
+                camera.heading = (camera.heading - deltaX * 0.5) % 360;
+                camera.pitch = Math.max(0, Math.min(90, camera.pitch + deltaY * 0.5));
+                
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                
+                draw();
+            }
+        });
+        
+        window.addEventListener('mouseup', function() {
+            isDragging = false;
+        });
+        
+        // Rad zum Zoomen
+        canvas.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            camera.alt = Math.max(10, Math.min(2000, camera.alt + e.deltaY));
+            draw();
+        });
+        
+        // Simulation für lokales Testen
+        let simulationAngle = 0;
+        
+        function simulateDroneMovement() {
+            simulationAngle = (simulationAngle + 2) % 360;
+            const radius = 0.001;
+            const newLat = 51.505600 + radius * Math.sin(simulationAngle * Math.PI / 180);
+            const newLon = 7.452400 + radius * Math.cos(simulationAngle * Math.PI / 180);
+            const newAlt = 100 + 50 * Math.sin(simulationAngle * Math.PI / 180);
+            const newHeading = simulationAngle;
+            const speed = 10 + 5 * Math.sin(simulationAngle * Math.PI / 20);
+            const battery = 100 - simulationAngle / 10;
+            
+            updateDronePosition(newLat, newLon, newAlt, newHeading, speed, battery);
+        }
+        
+        // Position der Drohne alle 100ms aktualisieren (Simulation)
+        setInterval(simulateDroneMovement, 100);
+        
+        // Funktion zum Empfangen von Nachrichten von Qt
+        window.receiveFromQt = function(message) {
+            try {
+                const data = JSON.parse(message);
+                if (data.type === 'position') {
+                    updateDronePosition(
+                        data.lat, 
+                        data.lon, 
+                        data.alt, 
+                        data.heading, 
+                        data.speed, 
+                        data.battery
+                    );
+                }
+            } catch (e) {
+                console.error("Error processing message:", e);
+            }
+        };
+        
+        // Initialisierung
+        updateDronePosition(dronePosition.lat, dronePosition.lon, dronePosition.alt, 0, 0, 100);
+    </script>
+</body>
+</html>

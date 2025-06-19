@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="15" skipped="0" tests="21" time="2.660" timestamp="2025-05-26T09:11:36.844772+02:00" hostname="GTA3"><testcase classname="Python.tests.test_platform_compatibility.TestConnectionManager" name="test_create_connection_string" time="0.006" /><testcase classname="Python.tests.test_platform_compatibility.TestConnectionManager" name="test_get_available_ports_macos" time="0.004" /><testcase classname="Python.tests.test_platform_compatibility.TestConnectionManager" name="test_get_available_ports_windows" time="0.023" /><testcase classname="Python.tests.test_platform_compatibility.TestConnectionManager" name="test_get_default_connection_params" time="0.002" /><testcase classname="Python.tests.test_platform_compatibility.TestMAVLinkConnector" name="test_mavsdk_server_path_macos" time="0.002"><failure message="TypeError: TestMAVLinkConnector.test_mavsdk_server_path_macos.&lt;locals&gt;.&lt;lambda&gt;() missing 1 required positional argument: 'p'">self = &lt;test_platform_compatibility.TestMAVLinkConnector testMethod=test_mavsdk_server_path_macos&gt;
+
+    def test_mavsdk_server_path_macos(self):
+        """Test des MAVSDK-Server-Pfads unter macOS"""
+        with patch('sys.platform', 'darwin'):
+            with patch('pathlib.Path.exists', side_effect=lambda p: 'mac' in str(p)):
+                from backend.mavlink_connector import get_mavsdk_server_path
+&gt;               server_path = get_mavsdk_server_path()
+
+test_platform_compatibility.py:128: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\backend\mavlink_connector.py:36: in get_mavsdk_server_path
+    if server_path_1.exists():
+C:\Program Files\Python310\lib\unittest\mock.py:1105: in __call__
+    return self._mock_call(*args, **kwargs)
+C:\Program Files\Python310\lib\unittest\mock.py:1109: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;MagicMock name='exists' id='2383276779760'&gt;, args = (), kwargs = {}
+effect = &lt;function TestMAVLinkConnector.test_mavsdk_server_path_macos.&lt;locals&gt;.&lt;lambda&gt; at 0x0000022AE65B8310&gt;
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+                raise effect
+            elif not _callable(effect):
+                result = next(effect)
+                if _is_exception(result):
+                    raise result
+            else:
+&gt;               result = effect(*args, **kwargs)
+E               TypeError: TestMAVLinkConnector.test_mavsdk_server_path_macos.&lt;locals&gt;.&lt;lambda&gt;() missing 1 required positional argument: 'p'
+
+C:\Program Files\Python310\lib\unittest\mock.py:1170: TypeError</failure></testcase><testcase classname="Python.tests.test_platform_compatibility.TestMAVLinkConnector" name="test_mavsdk_server_path_windows" time="0.002" /><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_connection_timeout" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_connection.TestMAVLinkConnector object at 0x0000022AE6207370&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x22acef348d0) at 0x0000022AE5950B40&gt;
+
+    def test_connection_timeout(self, connector):
+        """Test that connection times out when port is invalid"""
+&gt;       connector.set_connection_params("COM99", 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_connection.py:19: AttributeError</failure></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_connection_invalid_port" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_connection.TestMAVLinkConnector object at 0x0000022AE62075B0&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x22acef346b0) at 0x0000022AE65C3480&gt;
+
+    def test_connection_invalid_port(self, connector):
+        """Test that connection fails with invalid port"""
+&gt;       connector.set_connection_params("INVALID_PORT", 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_connection.py:26: AttributeError</failure></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_reconnection" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_connection.TestMAVLinkConnector object at 0x0000022AE6207820&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x22acef34610) at 0x0000022AE5B67280&gt;
+
+    def test_reconnection(self, connector):
+        """Test reconnection logic"""
+        # Mock Serial
+        with patch('serial.Serial') as mock_serial:
+            mock_instance = mock_serial.return_value
+            mock_instance.is_open = True
+            mock_instance.read.return_value = b''
+            mock_instance.inWaiting.return_value = 0
+    
+            # First connection
+&gt;           connector.set_connection_params("COM1", 57600)
+E           AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_connection.py:41: AttributeError</failure></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_connection_parameters" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_connection.TestMAVLinkConnector object at 0x0000022AE6207A90&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x22acec525c0) at 0x0000022AE5D7D540&gt;
+
+    def test_connection_parameters(self, connector):
+        """Test connection with different parameters"""
+        with patch('serial.Serial') as mock_serial:
+            mock_instance = mock_serial.return_value
+            mock_instance.is_open = True
+    
+            # Test with default baudrate
+&gt;           connector.set_connection_params("COM1", 57600)
+E           AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_connection.py:60: AttributeError</failure></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_connection_state" time="0.028"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'is_connected'. Did you mean: '_is_connecting'?">self = &lt;test_connection.TestMAVLinkConnector object at 0x0000022AE6207CD0&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x22acef561e0) at 0x0000022AE654EDC0&gt;
+
+    def test_connection_state(self, connector):
+        """Test connection state management"""
+        with patch('serial.Serial') as mock_serial:
+            mock_instance = mock_serial.return_value
+            mock_instance.is_open = True
+            mock_instance.read.return_value = b''
+            mock_instance.inWaiting.return_value = 0
+    
+&gt;           assert connector.is_connected() == False
+E           AttributeError: 'MAVLinkConnector' object has no attribute 'is_connected'. Did you mean: '_is_connecting'?
+
+test_connection.py:78: AttributeError</failure></testcase><testcase classname="Python.tests.test_connection.TestMAVLinkConnector" name="test_connection_events" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'connected'. Did you mean: 'connect'?">self = &lt;test_connection.TestMAVLinkConnector object at 0x0000022AE6207F70&gt;
+connector = &lt;backend.mavlink_connector.MAVLinkConnector(0x22acef56120) at 0x0000022AE654EC00&gt;
+
+    def test_connection_events(self, connector):
+        """Test connection event handling"""
+        with patch('serial.Serial') as mock_serial:
+            mock_instance = mock_serial.return_value
+            mock_instance.is_open = True
+            mock_instance.read.return_value = b''
+            mock_instance.inWaiting.return_value = 0
+    
+            connected_events = []
+            disconnected_events = []
+    
+            def on_connected():
+                connected_events.append(True)
+    
+            def on_disconnected():
+                disconnected_events.append(True)
+    
+            # Verbindung mit Signal-Slots aufsetzen
+&gt;           connector.connected.connect(on_connected)
+E           AttributeError: 'MAVLinkConnector' object has no attribute 'connected'. Did you mean: 'connect'?
+
+test_connection.py:105: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_connector_initialization" time="0.004"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000022AE6207760&gt;
+mock_serial = &lt;MagicMock name='Serial()' id='2383293667152'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2383276770256'&gt;
+
+    def test_connector_initialization(self, mock_serial, mock_logger):
+        """Testet die korrekte Initialisierung des MAVLink-Connectors."""
+        # Arranges
+        port = 'COM1'
+        baudrate = 57600
+    
+        # Act
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params(port, baudrate)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:45: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_connect_success" time="0.004"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000022AE6526DA0&gt;
+mock_serial = &lt;MagicMock name='Serial()' id='2383293896096'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2383276723456'&gt;
+
+    def test_connect_success(self, mock_serial, mock_logger):
+        """Testet die erfolgreiche Verbindungsherstellung."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:57: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_connect_failure" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000022AE6526F50&gt;
+mock_serial_error = &lt;MagicMock name='Serial' id='2383276807152'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2383276809024'&gt;
+
+    @patch('backend.mavlink_connector.serial.Serial', side_effect=Exception('Connection failed'))
+    def test_connect_failure(self, mock_serial_error, mock_logger):
+        """Testet den Fehlerfall bei der Verbindungsherstellung."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:71: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_disconnect" time="0.004"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000022AE6527130&gt;
+mock_serial = &lt;MagicMock name='Serial()' id='2383294630784'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2383293688144'&gt;
+
+    def test_disconnect(self, mock_serial, mock_logger):
+        """Testet das korrekte Trennen der Verbindung."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:83: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_factory_method_mavlink" time="0.002"><failure message="AttributeError: &lt;module 'backend.mavlink_connector' from 'C:\\Users\\fuckheinerkleinehack\\Documents\\RZGS2\\RZGCS\\Python\\backend\\mavlink_connector.py'&gt; does not have the attribute 'Logger'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000022AE65272E0&gt;
+
+    def test_factory_method_mavlink(self):
+        """Testet die Factory-Methode für die Erstellung eines MAVLink-Connectors."""
+        # Arrange &amp; Act
+        with patch('backend.mavlink_connector.MAVLinkConnector') as mock_connector:
+&gt;           with patch('backend.mavlink_connector.Logger') as mock_logger_class:
+
+test_mavlink_connector.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Program Files\Python310\lib\unittest\mock.py:1438: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;unittest.mock._patch object at 0x0000022AE76E8C40&gt;
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+&gt;           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: &lt;module 'backend.mavlink_connector' from 'C:\\Users\\fuckheinerkleinehack\\Documents\\RZGS2\\RZGCS\\Python\\backend\\mavlink_connector.py'&gt; does not have the attribute 'Logger'
+
+C:\Program Files\Python310\lib\unittest\mock.py:1411: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_factory_method_missing_params" time="0.002" /><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_send_message" time="0.003"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000022AE6527670&gt;
+mock_serial = &lt;MagicMock name='Serial()' id='2383276655184'&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2382875228240'&gt;
+
+    def test_send_message(self, mock_serial, mock_logger):
+        """Testet das Senden einer Nachricht."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:123: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_send_message_not_connected" time="0.002"><failure message="AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'">self = &lt;test_mavlink_connector.TestMAVLinkConnector object at 0x0000022AE6527820&gt;
+mock_logger = &lt;MagicMock spec='Logger' id='2383276727824'&gt;
+
+    def test_send_message_not_connected(self, mock_logger):
+        """Testet das Senden einer Nachricht ohne Verbindung."""
+        # Arrange
+        connector = MAVLinkConnector(mock_logger)
+&gt;       connector.set_connection_params('COM1', 57600)
+E       AttributeError: 'MAVLinkConnector' object has no attribute 'set_connection_params'
+
+test_mavlink_connector.py:140: AttributeError</failure></testcase><testcase classname="Python.tests.test_mavlink_connector.TestMAVLinkConnector" name="test_receive_messages" time="0.003"><failure message="AttributeError: &lt;class 'backend.mavlink_connector.MAVLinkConnector'&gt; does not have the attribute 'process_messages'">item = &lt;Function test_receive_messages&gt;
+
+    @pytest.hookimpl(wrapper=True, tryfirst=True)
+    def pytest_runtest_call(item):
+&gt;       result = yield
+
+..\..\..\..\..\AppData\Roaming\Python\Python310\site-packages\pytestqt\plugin.py:189: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Program Files\Python310\lib\unittest\mock.py:1367: in patched
+    with self.decoration_helper(patched,
+C:\Program Files\Python310\lib\contextlib.py:135: in __enter__
+    return next(self.gen)
+C:\Program Files\Python310\lib\unittest\mock.py:1349: in decoration_helper
+    arg = exit_stack.enter_context(patching)
+C:\Program Files\Python310\lib\contextlib.py:492: in enter_context
+    result = _cm_type.__enter__(cm)
+C:\Program Files\Python310\lib\unittest\mock.py:1438: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;unittest.mock._patch object at 0x0000022AE6526740&gt;
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+&gt;           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: &lt;class 'backend.mavlink_connector.MAVLinkConnector'&gt; does not have the attribute 'process_messages'
+
+C:\Program Files\Python310\lib\unittest\mock.py:1411: AttributeError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,134 @@
+# RZGCS Projekt-Checkliste
+
+## Phase 1: Grundstruktur ✅
+- [x] Projektstruktur
+  - [x] Verzeichnisstruktur
+  - [x] Dateiorganisation
+  - [x] Konfigurationsdateien
+- [x] Basis-UI
+  - [x] Hauptfenster
+  - [x] Navigation
+  - [x] Grundlayout
+- [x] Verbindungsmanagement
+  - [x] Verbindungsaufbau
+  - [x] Verbindungsabbau
+  - [x] Fehlerbehandlung
+
+## Phase 2: Flugsteuerung ✅
+- [x] Datenmodelle
+  - [x] FlightMode
+  - [x] FlightStatus
+  - [x] FlightState
+  - [x] FlightStatistics
+  - [x] FlightEvent
+  - [x] FlightLog
+  - [x] Fehlerklassen
+- [x] Service-Implementierung
+  - [x] Flugsteuerungs-Service
+  - [x] Service-Dokumentation
+- [x] ViewModel-Implementierung
+  - [x] Flugsteuerungs-ViewModel
+  - [x] ViewModel-Dokumentation
+- [x] View-Implementierung
+  - [x] Flugsteuerungs-View
+  - [x] View-Dokumentation
+- [x] Tests
+  - [x] Unit-Tests für Datenmodelle
+  - [x] Unit-Tests für Service
+  - [x] Unit-Tests für ViewModel
+  - [x] Integrationstests
+  - [x] Systemtests
+  - [x] Testdokumentation
+- [x] Dokumentation
+  - [x] Architektur-Dokumentation
+  - [x] API-Dokumentation
+  - [x] Benutzerhandbuch
+
+## Phase 3: Flugplanung 🔄 (AKTUELL)
+- [ ] Datenmodelle
+  - [ ] FlightPlan
+  - [ ] Waypoint
+  - [ ] Route
+  - [ ] Mission
+  - [ ] MissionStatus
+  - [ ] MissionEvent
+  - [ ] MissionLog
+  - [ ] Fehlerklassen
+- [ ] Service-Implementierung
+  - [ ] Flugplanungs-Service
+  - [ ] Service-Dokumentation
+- [ ] ViewModel-Implementierung
+  - [ ] Flugplanungs-ViewModel
+  - [ ] ViewModel-Dokumentation
+- [ ] View-Implementierung
+  - [ ] Flugplanungs-View
+  - [ ] View-Dokumentation
+- [ ] Tests
+  - [ ] Unit-Tests für Datenmodelle
+  - [ ] Unit-Tests für Service
+  - [ ] Unit-Tests für ViewModel
+  - [ ] Integrationstests
+  - [ ] Systemtests
+  - [ ] Testdokumentation
+- [ ] Dokumentation
+  - [ ] Architektur-Dokumentation
+  - [ ] API-Dokumentation
+  - [ ] Benutzerhandbuch
+
+## Phase 4: Flugüberwachung
+- [ ] Datenmodelle
+  - [ ] Telemetry
+  - [ ] SensorData
+  - [ ] SystemStatus
+  - [ ] HealthStatus
+  - [ ] Alert
+  - [ ] AlertLog
+  - [ ] Fehlerklassen
+- [ ] Service-Implementierung
+  - [ ] Überwachungs-Service
+  - [ ] Service-Dokumentation
+- [ ] ViewModel-Implementierung
+  - [ ] Überwachungs-ViewModel
+  - [ ] ViewModel-Dokumentation
+- [ ] View-Implementierung
+  - [ ] Überwachungs-View
+  - [ ] View-Dokumentation
+- [ ] Tests
+  - [ ] Unit-Tests für Datenmodelle
+  - [ ] Unit-Tests für Service
+  - [ ] Unit-Tests für ViewModel
+  - [ ] Integrationstests
+  - [ ] Systemtests
+  - [ ] Testdokumentation
+- [ ] Dokumentation
+  - [ ] Architektur-Dokumentation
+  - [ ] API-Dokumentation
+  - [ ] Benutzerhandbuch
+
+## Phase 5: Systemintegration
+- [ ] Komponenten-Integration
+  - [ ] Flugsteuerung
+  - [ ] Flugplanung
+  - [ ] Flugüberwachung
+- [ ] Systemtests
+  - [ ] Integrationstests
+  - [ ] End-to-End-Tests
+  - [ ] Performance-Tests
+  - [ ] Stabilitätstests
+- [ ] Dokumentation
+  - [ ] Systemarchitektur
+  - [ ] API-Dokumentation
+  - [ ] Benutzerhandbuch
+- [ ] Deployment
+  - [ ] Build-System
+  - [ ] Installer
+  - [ ] Update-System
+  - [ ] Konfiguration
+
+## Gesamtfortschritt
+- Phase 1: 100% ✅
+- Phase 2: 100% ✅
+- Phase 3: 0% 🔄
+- Phase 4: 0%
+- Phase 5: 0%
+- Gesamt: 40% 

@@ -1,0 +1,130 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Window
+
+// Lokale Komponenten importieren
+import "./" as RZGCS
+import "./Components" as Components
+
+Window {
+    id: window
+    visible: true
+    title: "RZGCS"
+    width: 800
+    height: 600
+    minimumWidth: 800
+    minimumHeight: 600
+    
+    RZGCS.Screen01 {
+        id: mainScreen
+        anchors.fill: parent
+    }
+    
+    // Verbindungen zum SerialConnector
+    Connections {
+        target: serialConnector
+        
+        // Zeige Busy-Indikator beim Verbinden/Trennen
+        function onConnecting() {
+            Components.BusyIndicatorManager.showBusy("Verbindung wird hergestellt...")
+        }
+        
+        function onConnected() {
+            Components.BusyIndicatorManager.hideBusy()
+        }
+        
+        function onDisconnected() {
+            Components.BusyIndicatorManager.hideBusy()
+        }
+        
+        function onConnectionFailed(error) {
+            Components.BusyIndicatorManager.hideBusy()
+        }
+    }
+    
+    // Verbindungen zum Parameter-Controller
+    Connections {
+        target: parameterController ? parameterController : null
+        
+        // Diese Signalnamen mu00fcssen mit denen im ParameterManager u00fcbereinstimmen
+        function onParametersLoading() {
+            console.log("Parameter-Ladevorgang gestartet")
+            Components.BusyIndicatorManager.showBusy("Parameter werden geladen...")
+        }
+        
+        function onParametersLoaded(params) {
+            console.log("Parameter-Ladevorgang abgeschlossen: " + (params ? params.length : 0) + " Parameter")
+            Components.BusyIndicatorManager.hideBusy()
+        }
+        
+        function onErrorOccurred(errorMsg) {
+            console.error("Fehler beim Laden der Parameter: " + errorMsg)
+            Components.BusyIndicatorManager.hideBusy()
+        }
+    }
+    
+    // Globaler Busy-Indikator (am Ende, damit er garantiert u00fcber allem liegt)
+    Rectangle {
+        id: busyIndicatorBackground
+        anchors.fill: parent
+        color: "#80000000"  // Halbdurchsichtiger schwarzer Hintergrund
+        visible: busyActive
+        z: 999999 // Extrem hoher z-Index, um sicherzustellen, dass er u00fcber allen anderen Elementen liegt
+        
+        // Eigenschaft fu00fcr den Busy-Status und Nachricht
+        property bool busyActive: false
+        property string busyMessage: "Bitte warten..."
+        
+        // Animation fu00fcr sanftes Ein- und Ausblenden
+        opacity: busyActive ? 0.9 : 0.0
+        Behavior on opacity {
+            NumberAnimation { duration: 300 }
+        }
+        
+        // Verbindung zum BusyIndicatorManager
+        Connections {
+            target: Components.BusyIndicatorManager
+            
+            function onShowBusyRequested(message) {
+                console.log("BusyIndicator wird angezeigt: " + message)
+                busyIndicatorBackground.busyMessage = message
+                busyIndicatorBackground.busyActive = true
+            }
+            
+            function onHideBusyRequested() {
+                console.log("BusyIndicator wird ausgeblendet")
+                busyIndicatorBackground.busyActive = false
+            }
+        }
+        
+        Rectangle {
+            width: busyContent.width + 40
+            height: busyContent.height + 40
+            radius: 10
+            color: "#222222"
+            border.color: "#444444"
+            border.width: 2
+            anchors.centerIn: parent
+            
+            ColumnLayout {
+                id: busyContent
+                anchors.centerIn: parent
+                spacing: 15
+                
+                BusyIndicator {
+                    Layout.alignment: Qt.AlignHCenter
+                    running: busyIndicatorBackground.busyActive
+                    scale: 1.5
+                }
+                
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: busyIndicatorBackground.busyMessage
+                    color: "white"
+                    font.pixelSize: 14
+                }
+            }
+        }
+    }
+}
