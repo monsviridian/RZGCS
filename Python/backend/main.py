@@ -19,7 +19,8 @@ from flight_control.enums import FlightStatus, FlightMode, ControlMode, CommandT
 from flight_control.services import (FlightService, MissionService, AutonomousService,
                                    GeofenceService, CollisionService)
 from flight_control.viewmodels import (FlightViewModel, MissionViewModel, AutonomousViewModel,
-                                     GeofenceViewModel, CollisionViewModel)
+                                     GeofenceViewModel, CollisionViewModel, TelemetryViewModel,
+                                     SensorViewModel)
 from flight_control.views import (FlightView, MissionView, AutonomousView,
                                 GeofenceView, CollisionView)
 from telemetry.telemetry_manager import TelemetryManager
@@ -42,6 +43,11 @@ class MainWindow(QMainWindow):
         # Manager
         self._telemetry = TelemetryManager()
         self._connection = ConnectionManager()
+        
+        # ViewModels
+        self._sensor_viewmodel = SensorViewModel()
+        self._telemetry_viewmodel = TelemetryViewModel()
+        self._telemetry_viewmodel.set_sensor_model(self._sensor_viewmodel)
         
         # Services
         self._flight_service = FlightService(self._telemetry, self._connection)

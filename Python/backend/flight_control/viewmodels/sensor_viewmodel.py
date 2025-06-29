@@ -29,6 +29,7 @@ from ..models.fleet_data import (
     FleetCommandError,
     FleetStateError
 )
+from ..models.sensor_formatter import SensorDataFormatter
 
 class SensorViewModel(QObject):
     """Sensor ViewModel.
@@ -38,6 +39,7 @@ class SensorViewModel(QObject):
     Attributes:
         _sensor_data: Sensordaten
         _selected_uav_id: Ausgewählte UAV-ID
+        _last_update_time: Zeitstempel der letzten Aktualisierung
         
     Signals:
         sensor_data_changed: Wird ausgelöst, wenn sich die Sensordaten ändern
@@ -52,8 +54,10 @@ class SensorViewModel(QObject):
         """Initialisierung."""
         super().__init__()
         # SensorData mit Standardwerten initialisieren
-        self._sensor_data = SensorData(temperature=0.0, pressure=0.0, humidity=0.0)
+        self._sensor_data = SensorData()
         self._selected_uav_id = ""
+        self._last_update_time = datetime.now()
+        self._sensor_values = {}  # Cache for formatted sensor values
     
     @Property(str, notify=selected_uav_changed)
     def selected_uav_id(self) -> str:
@@ -71,257 +75,187 @@ class SensorViewModel(QObject):
             self._selected_uav_id = uav_id
             self.selected_uav_changed.emit()
     
+    @Slot(str, result='QVariant')
+    def get_sensor_value(self, name: str) -> Dict[str, Any]:
+        """Get formatted sensor value with metadata.
+        
+        Args:
+            name: Name of the sensor
+            
+        Returns:
+            Dictionary with formatted value and metadata
+        """
+        value = getattr(self._sensor_data, name, 0.0)
+        return SensorDataFormatter.get_display_value(name, value)
+    
+    @Slot(str, result=str)
+    def get_formatted_value(self, name: str) -> str:
+        """Get formatted sensor value as string.
+        
+        Args:
+            name: Name of the sensor
+            
+        Returns:
+            Formatted value string with unit
+        """
+        value = getattr(self._sensor_data, name, 0.0)
+        return SensorDataFormatter.format_value(name, value)
+    
+    @Slot(str, result=bool)
+    def is_sensor_valid(self, name: str) -> bool:
+        """Check if a sensor value is valid.
+        
+        Args:
+            name: Name of the sensor
+            
+        Returns:
+            True if value is valid, False otherwise
+        """
+        value = getattr(self._sensor_data, name, 0.0)
+        is_valid, _ = SensorDataFormatter.validate_value(name, value)
+        return is_valid
+    
+    @Slot(str, result=str)
+    def get_sensor_error(self, name: str) -> str:
+        """Get error message for a sensor value.
+        
+        Args:
+            name: Name of the sensor
+            
+        Returns:
+            Error message if invalid, empty string if valid
+        """
+        value = getattr(self._sensor_data, name, 0.0)
+        _, error = SensorDataFormatter.validate_value(name, value)
+        return error or ""
+    
+    @Property(float, notify=sensor_data_changed)
+    def last_update_seconds(self) -> float:
+        """Time since last update in seconds."""
+        delta = datetime.now() - self._last_update_time
+        return delta.total_seconds()
+    
+    @Property(float, notify=sensor_data_changed)
+    def roll(self) -> float:
+        """Roll value in degrees."""
+        return self._sensor_data.roll
+    
+    @Property(float, notify=sensor_data_changed)
+    def pitch(self) -> float:
+        """Pitch value in degrees."""
+        return self._sensor_data.pitch
+    
+    @Property(float, notify=sensor_data_changed)
+    def yaw(self) -> float:
+        """Yaw value in degrees."""
+        return self._sensor_data.yaw
+    
     @Property(float, notify=sensor_data_changed)
     def battery_voltage(self) -> float:
-        """Batteriespannung."""
+        """Battery voltage in volts."""
         return self._sensor_data.battery_voltage
     
     @Property(float, notify=sensor_data_changed)
     def battery_current(self) -> float:
-        """Batteriestrom."""
+        """Battery current in amperes."""
         return self._sensor_data.battery_current
     
     @Property(float, notify=sensor_data_changed)
     def battery_percentage(self) -> float:
-        """Batterieprozentsatz."""
+        """Battery percentage remaining."""
         return self._sensor_data.battery_percentage
     
     @Property(float, notify=sensor_data_changed)
-    def battery_temperature(self) -> float:
-        """Batterietemperatur."""
-        return self._sensor_data.battery_temperature
+    def groundspeed(self) -> float:
+        """Ground speed in m/s."""
+        return self._sensor_data.groundspeed
     
     @Property(float, notify=sensor_data_changed)
-    def motor_temperature(self) -> float:
-        """Motortemperatur."""
-        return self._sensor_data.motor_temperature
+    def airspeed(self) -> float:
+        """Air speed in m/s."""
+        return self._sensor_data.airspeed
     
     @Property(float, notify=sensor_data_changed)
-    def esc_temperature(self) -> float:
-        """ESC-Temperatur."""
-        return self._sensor_data.esc_temperature
+    def gps_latitude(self) -> float:
+        """GPS latitude in degrees."""
+        return self._sensor_data.gps_latitude
     
     @Property(float, notify=sensor_data_changed)
-    def gps_signal_strength(self) -> float:
-        """GPS-Signalstärke."""
-        return self._sensor_data.gps_signal_strength
+    def gps_longitude(self) -> float:
+        """GPS longitude in degrees."""
+        return self._sensor_data.gps_longitude
     
     @Property(float, notify=sensor_data_changed)
-    def gps_satellites(self) -> float:
-        """GPS-Satelliten."""
-        return self._sensor_data.gps_satellites
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_hdop(self) -> float:
-        """GPS-HDOP."""
-        return self._sensor_data.gps_hdop
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_vdop(self) -> float:
-        """GPS-VDOP."""
-        return self._sensor_data.gps_vdop
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_pdop(self) -> float:
-        """GPS-PDOP."""
-        return self._sensor_data.gps_pdop
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_fix_type(self) -> float:
-        """GPS-Fix-Typ."""
-        return self._sensor_data.gps_fix_type
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_fix_quality(self) -> float:
-        """GPS-Fix-Qualität."""
-        return self._sensor_data.gps_fix_quality
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_eph(self) -> float:
-        """GPS-EPH."""
-        return self._sensor_data.gps_eph
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_epv(self) -> float:
-        """GPS-EPV."""
-        return self._sensor_data.gps_epv
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_vel(self) -> float:
-        """GPS-Geschwindigkeit."""
-        return self._sensor_data.gps_vel
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_cog(self) -> float:
-        """GPS-Kurs über Grund."""
-        return self._sensor_data.gps_cog
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_speed_accuracy(self) -> float:
-        """GPS-Geschwindigkeitsgenauigkeit."""
-        return self._sensor_data.gps_speed_accuracy
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_horizontal_accuracy(self) -> float:
-        """GPS-horizontale Genauigkeit."""
-        return self._sensor_data.gps_horizontal_accuracy
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_vertical_accuracy(self) -> float:
-        """GPS-vertikale Genauigkeit."""
-        return self._sensor_data.gps_vertical_accuracy
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_heading_accuracy(self) -> float:
-        """GPS-Richtungsgenauigkeit."""
-        return self._sensor_data.gps_heading_accuracy
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_yaw_accuracy(self) -> float:
-        """GPS-Gierwinkelgenauigkeit."""
-        return self._sensor_data.gps_yaw_accuracy
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_altitude_accuracy(self) -> float:
-        """GPS-Höhengenauigkeit."""
-        return self._sensor_data.gps_altitude_accuracy
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_speed_accuracy_estimate(self) -> float:
-        """GPS-Geschwindigkeitsgenauigkeitsschätzung."""
-        return self._sensor_data.gps_speed_accuracy_estimate
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_horizontal_accuracy_estimate(self) -> float:
-        """GPS-horizontale Genauigkeitsschätzung."""
-        return self._sensor_data.gps_horizontal_accuracy_estimate
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_vertical_accuracy_estimate(self) -> float:
-        """GPS-vertikale Genauigkeitsschätzung."""
-        return self._sensor_data.gps_vertical_accuracy_estimate
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_heading_accuracy_estimate(self) -> float:
-        """GPS-Richtungsgenauigkeitsschätzung."""
-        return self._sensor_data.gps_heading_accuracy_estimate
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_yaw_accuracy_estimate(self) -> float:
-        """GPS-Gierwinkelgenauigkeitsschätzung."""
-        return self._sensor_data.gps_yaw_accuracy_estimate
-    
-    @Property(float, notify=sensor_data_changed)
-    def gps_altitude_accuracy_estimate(self) -> float:
-        """GPS-Höhengenauigkeitsschätzung."""
-        return self._sensor_data.gps_altitude_accuracy_estimate
+    def gps_altitude(self) -> float:
+        """GPS altitude in meters."""
+        return self._sensor_data.gps_altitude
     
     def update_sensor_data(self, sensor_data: SensorData):
-        """Sensordaten aktualisieren.
+        """Update sensor data.
         
         Args:
-            sensor_data: Sensordaten
+            sensor_data: New sensor data
         """
         self._sensor_data = sensor_data
+        self._last_update_time = datetime.now()
+        self._sensor_values.clear()  # Clear cache
         self.sensor_data_changed.emit()
-        
+    
     @Slot(str, float)
     def update_sensor_value(self, name: str, value: float):
-        """Einzelnen Sensorwert aktualisieren.
+        """Update a single sensor value.
         
         Args:
-            name: Name des Sensors
-            value: Sensorwert
+            name: Name of the sensor
+            value: New value
         """
-        # Direkter Zugriff auf die Attribute des SensorData-Objekts über Namen
         if hasattr(self._sensor_data, name):
+            old_value = getattr(self._sensor_data, name)
             setattr(self._sensor_data, name, value)
-        else:
-            # Erweiterungsmöglichkeit für nicht direkt vorhandene Attribute
-            print(f"Warnung: Sensordaten haben kein Attribut {name}")
+            self._last_update_time = datetime.now()
+            if name in self._sensor_values:
+                del self._sensor_values[name]  # Clear cached value
+            self.sensor_data_changed.emit()
             
-        self.sensor_data_changed.emit()
+            # Debug logging
+            print(f"SensorViewModel: Updated {name} from {old_value} to {value}")
+        else:
+            print(f"SensorViewModel: WARNING - No attribute '{name}' in SensorData")
     
     def update_from_telemetry(self, telemetry_type: str, telemetry_data: Dict[str, Any]):
-        """Sensordaten aus Telemetriedaten aktualisieren.
+        """Update from telemetry data.
         
         Args:
-            telemetry_type: Art der Telemetriedaten (z.B. 'attitude', 'gps', 'battery')
-            telemetry_data: Telemetriedaten als Dictionary
+            telemetry_type: Type of telemetry data
+            telemetry_data: Telemetry data dictionary
         """
-        if telemetry_type == 'attitude':
-            if 'roll' in telemetry_data:
-                self.update_sensor_value('roll', telemetry_data['roll'])
-            if 'pitch' in telemetry_data:
-                self.update_sensor_value('pitch', telemetry_data['pitch'])
-            if 'yaw' in telemetry_data:
-                self.update_sensor_value('yaw', telemetry_data['yaw'])
-        elif telemetry_type == 'gps':
-            if 'lat' in telemetry_data:
-                self.update_sensor_value('gps_lat', telemetry_data['lat'])
-            if 'lon' in telemetry_data:
-                self.update_sensor_value('gps_lon', telemetry_data['lon'])
-            if 'alt' in telemetry_data:
-                self.update_sensor_value('altitude', telemetry_data['alt'])
-            if 'satellites' in telemetry_data:
-                self.update_sensor_value('gps_satellites', telemetry_data['satellites'])
-        elif telemetry_type == 'battery':
-            if 'voltage' in telemetry_data:
-                self.update_sensor_value('battery_voltage', telemetry_data['voltage'])
-            if 'current' in telemetry_data:
-                self.update_sensor_value('battery_current', telemetry_data['current'])
-            if 'percentage' in telemetry_data:
-                self.update_sensor_value('battery_percentage', telemetry_data['percentage'])
-        elif telemetry_type == 'velocity':
-            if 'groundspeed' in telemetry_data:
-                self.update_sensor_value('groundspeed', telemetry_data['groundspeed'])
-            if 'airspeed' in telemetry_data:
-                self.update_sensor_value('airspeed', telemetry_data['airspeed'])
-        # Signalisieren, dass sich Daten geändert haben
-        self.sensor_data_changed.emit()
-    
-    @Slot(str, result=float)
-    def findSensorByName(self, name: str) -> float:
-        """Findet einen Sensorwert basierend auf dem Namen.
+        # Update timestamp
+        self._last_update_time = datetime.now()
         
-        Args:
-            name: Name des Sensors
+        # Update relevant sensor values based on telemetry type
+        if telemetry_type == "ATTITUDE":
+            self._sensor_data.roll = telemetry_data.get("roll", 0.0)
+            self._sensor_data.pitch = telemetry_data.get("pitch", 0.0)
+            self._sensor_data.yaw = telemetry_data.get("yaw", 0.0)
+            self._sensor_data.heading = telemetry_data.get("heading", 0.0)
             
-        Returns:
-            Sensorwert als float, oder 0.0 wenn nicht gefunden
-        """
-        # Direkte Attribute des SensorData-Objekts prüfen
-        if hasattr(self._sensor_data, name):
-            value = getattr(self._sensor_data, name)
-            return float(value) if value is not None else 0.0
-        
-        # Commonly used sensor names mapping
-        sensor_mapping = {
-            'roll': 'roll',
-            'pitch': 'pitch', 
-            'yaw': 'yaw',
-            'altitude': 'altitude',
-            'gps_lat': 'gps_lat',
-            'gps_lon': 'gps_lon',
-            'gps_latitude': 'gps_lat',
-            'gps_longitude': 'gps_lon',
-            'altitude_msl': 'altitude',
-            'groundspeed': 'groundspeed',
-            'airspeed': 'airspeed',
-            'battery_voltage': 'battery_voltage',
-            'battery_current': 'battery_current',
-            'battery_percentage': 'battery_percentage',
-            'satellites': 'gps_satellites',
-            'gps_satellites': 'gps_satellites'
-        }
-        
-        # Check mapped names
-        if name in sensor_mapping:
-            mapped_name = sensor_mapping[name]
-            if hasattr(self._sensor_data, mapped_name):
-                value = getattr(self._sensor_data, mapped_name)
-                return float(value) if value is not None else 0.0
-        
-        # If not found, return 0
-        print(f"Warnung: Sensor '{name}' nicht gefunden")
-        return 0.0
+        elif telemetry_type == "GPS":
+            self._sensor_data.gps_latitude = telemetry_data.get("lat", 0.0)
+            self._sensor_data.gps_longitude = telemetry_data.get("lon", 0.0)
+            self._sensor_data.gps_altitude = telemetry_data.get("alt", 0.0)
+            self._sensor_data.gps_fix_type = telemetry_data.get("fix_type", 0.0)
+            self._sensor_data.gps_satellites = telemetry_data.get("satellites_visible", 0)
+            
+        elif telemetry_type == "VFR_HUD":
+            self._sensor_data.groundspeed = telemetry_data.get("groundspeed", 0.0)
+            self._sensor_data.airspeed = telemetry_data.get("airspeed", 0.0)
+            self._sensor_data.throttle = telemetry_data.get("throttle", 0.0)
+            
+        elif telemetry_type == "BATTERY":
+            self._sensor_data.battery_voltage = telemetry_data.get("voltage", 0.0)
+            self._sensor_data.battery_current = telemetry_data.get("current", 0.0)
+            self._sensor_data.battery_percentage = telemetry_data.get("percentage", 0.0)
+            
+        # Clear cache and emit change signal
+        self._sensor_values.clear()
+        self.sensor_data_changed.emit()

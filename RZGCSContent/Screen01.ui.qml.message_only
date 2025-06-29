@@ -1,0 +1,83 @@
+/*
+This is a UI file (.ui.qml) that is intended to be edited in Qt Design Studio only.
+It is supposed to be strictly declarative and only uses a subset of QML. If you edit
+this file manually, you might introduce QML code that is not supported by Qt Design Studio.
+Check out https://doc.qt.io/qtcreator/creator-quick-ui-forms.html for details on .ui.qml files.
+*/
+import QtQuick 2.15
+import QtQuick.Controls.Material 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
+import QtQuick.Window 2.15
+
+// Lokale Komponenten importieren
+import "./" as RZGCS
+
+Item {
+    id: root
+    width: 800
+    height: 600
+
+    // Schwarzer Hintergrund
+    Rectangle {
+        anchors.fill: parent
+        color: "black"
+        z: -1  // Hinter allen Elementen
+    }
+
+    // Toast Notification Container
+    Item {
+        id: toastContainer
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.margins: 20
+        z: 1000
+    }
+
+    // Ensure serialConnector is available
+    Component.onCompleted: {
+        if (serialConnector) {
+            messageManager.addMessage("Application started", MessageManager.MessageType.Info)
+            showToast("RZGCS started successfully", 1) // Success
+        }
+    }
+    
+    // Function to show toast notification
+    function showToast(message, type) {
+        var toast = Qt.createComponent("ToastNotification.qml").createObject(toastContainer, {
+            message: message,
+            type: type,
+            duration: type === 3 ? 5000 : 3000 // Longer duration for errors
+        })
+        
+        // Position the toast
+        toast.x = toastContainer.width - toast.width
+        
+        // Show the toast
+        toast.show()
+        
+        // Clean up after animation
+        toast.hideAnimation.finished.connect(function() {
+            toast.destroy()
+        })
+    }
+
+    // Nur die Message-Panel anzeigen
+    RowLayout {
+        anchors.fill: parent
+        spacing: 10
+
+        // Linke Seite leer lassen
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+        }
+        
+        // Rechter Message-Panel
+        MessageList {
+            Layout.preferredWidth: 300
+            Layout.fillHeight: true
+            messageManager: root.messageManager
+        }
+    }
+}

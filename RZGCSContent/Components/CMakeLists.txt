@@ -14,8 +14,14 @@ qt6_add_qml_module(Components
     VERSION 1.0
     RESOURCE_PREFIX "/qt/qml"
     QML_FILES
-        "BusyIndicatorManager.qml"
+        "MissionInfoDisplay.qml"
+        "EnvironmentPanel.qml"
+        "TelemetryPanel.qml"
         "BusyIndicator.qml"
+        "ArtificialHorizon.qml"
+        "TelemetryConnection.qml"
+        "BusyIndicatorManager.qml"
+        "ArduPilotMap.qml"
 )
 
 

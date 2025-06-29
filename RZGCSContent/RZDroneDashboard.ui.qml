@@ -39,8 +39,8 @@ Item {
         Text { text: "\uF185"; font.family: "FontAwesome"; color: "#7ee6ff"; font.pixelSize: 22 } // Sun
         Text { 
             text: {
-                var battery = sensorModel.findSensorByName("Battery");
-                return battery ? battery.value + " %" : "-- %";
+                var battery = sensorModel.findSensorByName("battery_percentage");
+                return battery ? battery.value.toFixed(1) + " %" : "-- %";
             }
             color: "#e6faff"; font.pixelSize: 20 
         }
@@ -48,16 +48,16 @@ Item {
         Text { text: "\uF1EB"; font.family: "FontAwesome"; color: "#7ee6ff"; font.pixelSize: 22 } // WiFi
         Text { 
             text: { 
-                var altitude = sensorModel.findSensorByName("Altitude");
-                return altitude ? altitude.value + " m" : "-- m";
+                var altitude = sensorModel.findSensorByName("gps_altitude");
+                return altitude ? altitude.value.toFixed(1) + " m" : "-- m";
             }
             color: "#e6faff"; font.pixelSize: 20 
         }
         Text { text: "S\u223C\u223C"; color: "#e6faff"; font.pixelSize: 20 }
         Text { 
             text: { 
-                var speed = sensorModel.findSensorByName("Ground Speed");
-                return speed ? speed.value + " km/h" : "-- km/h";
+                var speed = sensorModel.findSensorByName("groundspeed");
+                return speed ? (speed.value * 3.6).toFixed(1) + " km/h" : "-- km/h";  // Convert m/s to km/h
             }
             color: "#e6faff"; font.pixelSize: 20 
         }
@@ -205,15 +205,15 @@ Item {
                     id: telemetryCanvas
                     width: parent.width; height: 100
                     property var values1: {
-                        var altitude = sensorModel.findSensorByName("Altitude");
+                        var altitude = sensorModel.findSensorByName("gps_altitude");
                         return altitude ? altitude.values : [50,60,40,70,55,80,60,90,70,100,80,60,70,90,100];
                     }
                     property var values2: {
-                        var distance = sensorModel.findSensorByName("Distance") || sensorModel.findSensorByName("Home Distance");
+                        var distance = sensorModel.findSensorByName("gps_horizontal_accuracy");
                         return distance ? distance.values : [30,40,35,50,45,60,50,70,60,80,70,60,70,80,90];
                     }
                     property var values3: {
-                        var speed = sensorModel.findSensorByName("Ground Speed");
+                        var speed = sensorModel.findSensorByName("groundspeed");
                         return speed ? speed.values : [20,30,25,40,35,50,40,60,50,70,60,50,60,70,80];
                     }
                     onPaint: {
@@ -275,8 +275,8 @@ Item {
                     Text { text: "ALTITUDE"; color: "#7ee6ff"; font.pixelSize: 14 }
                     Text { 
                         text: { 
-                            var altitude = sensorModel.findSensorByName("Altitude");
-                            return altitude ? altitude.value + " m" : "-- m";
+                            var altitude = sensorModel.findSensorByName("gps_altitude");
+                            return altitude ? altitude.value.toFixed(1) + " m" : "-- m";
                         }
                         color: "#e6faff"; font.pixelSize: 32; font.bold: true 
                     }
@@ -286,7 +286,7 @@ Item {
                     Text { text: "DISTANCE"; color: "#7ee6ff"; font.pixelSize: 14 }
                     Text { 
                         text: { 
-                            var distance = sensorModel.findSensorByName("Distance") || sensorModel.findSensorByName("Home Distance");
+                            var distance = sensorModel.findSensorByName("gps_horizontal_accuracy");
                             return distance ? distance.value + " m" : "-- m";
                         }
                         color: "#e6faff"; font.pixelSize: 32; font.bold: true 
@@ -314,7 +314,7 @@ Item {
                         id: batteryCanvas
                         anchors.fill: parent
                         property real percent: {
-                            var battery = sensorModel.findSensorByName("Battery");
+                            var battery = sensorModel.findSensorByName("battery_percentage");
                             return battery ? battery.value / 100.0 : 0.0;
                         }
                         onPaint: {
@@ -339,8 +339,23 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: {
-                            var battery = sensorModel.findSensorByName("Battery");
-                            return battery ? battery.value + "%" : "--%";
+                            var battery = sensorModel.findSensorByName("battery_percentage");
+                            return battery ? battery.formattedValue : "--%";
+                        }
+                        color: "#e6faff"
+                        font.pixelSize: 22
+                        font.bold: true
+                    }
+                }
+                // Battery
+                ColumnLayout {
+                    spacing: 0
+                    Text { text: "BATTERY"; color: "#7ee6ff"; font.pixelSize: 14 }
+                    Text {
+                        anchors.centerIn: parent
+                        text: {
+                            var battery = sensorModel.findSensorByName("battery_percentage");
+                            return battery ? battery.formattedValue : "--%";
                         }
                         color: "#e6faff"
                         font.pixelSize: 22
@@ -353,8 +368,8 @@ Item {
                     Text { text: "SPEED"; color: "#7ee6ff"; font.pixelSize: 14 }
                     Text { 
                         text: { 
-                            var speed = sensorModel.findSensorByName("Ground Speed");
-                            return speed ? speed.value + " km/h" : "-- km/h";
+                            var speed = sensorModel.findSensorByName("groundspeed");
+                            return speed ? speed.formattedValue : "-- km/h";
                         }
                         color: "#e6faff"; font.pixelSize: 32; font.bold: true 
                     }

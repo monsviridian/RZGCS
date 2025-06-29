@@ -15,7 +15,7 @@ import math
 import threading
 from typing import Dict, Any, Callable, Optional, List, Union
 
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, Signal, QTimer
 
 from pymavlink import mavutil
 
@@ -30,6 +30,8 @@ class MAVLinkHandler(QObject):
         battery_updated: Emittiert, wenn neue Batteriestatus-Daten empfangen werden
         status_text_received: Emittiert, wenn eine Statusnachricht empfangen wird
         connection_state_changed: Emittiert, wenn sich der Verbindungsstatus ändert
+        velocity_updated: Emittiert, wenn neue Geschwindigkeitsdaten empfangen werden
+        vfr_hud_updated: Emittiert, wenn neue VFR_HUD-Daten empfangen werden
     """
     
     # Signal-Definitionen
@@ -40,6 +42,10 @@ class MAVLinkHandler(QObject):
     status_text_received = Signal(str)  # text message
     connection_state_changed = Signal(bool)  # connected: True/False
     error_occurred = Signal(str)  # Fehlermeldung
+    
+    # Zusätzliche Signale für erweiterte Telemetrie
+    velocity_updated = Signal(float, float, float)  # groundspeed, airspeed, vertical_speed
+    vfr_hud_updated = Signal(float, float, float, float)  # groundspeed, airspeed, heading, throttle
     
     # Verbindungsstatus-Konstanten
     DISCONNECTED = 0
@@ -71,6 +77,7 @@ class MAVLinkHandler(QObject):
         self.message_thread = None
         self.running = False
         self.last_heartbeat_time = 0
+        self._shutdown_event = threading.Event()
         
         # Logger
         self.logger = logger
@@ -79,11 +86,83 @@ class MAVLinkHandler(QObject):
         # (Wird in SerialConnector durch QTimer ersetzt)
         self.last_connection_check = 0
         self.heartbeat_timeout = 5.0  # 5 Sekunden ohne Heartbeat = Verbindungsverlust
+        
+        # Signal-Emissions-Schutz
+        self._signals_enabled = True
     
+    def __del__(self):
+        """
+        Destruktor - wird aufgerufen, wenn das Objekt gelöscht wird
+        Stellt sicher, dass alle Ressourcen korrekt freigegeben werden
+        """
+        self.cleanup()
+    
+    def cleanup(self):
+        """
+        Saubere Bereinigung aller Ressourcen
+        Kann auch manuell aufgerufen werden
+        """
+        try:
+            # Signale deaktivieren, um "Signal source has been deleted" zu vermeiden
+            self._signals_enabled = False
+            
+            # Thread sicher stoppen
+            self.running = False
+            self._shutdown_event.set()
+            
+            if hasattr(self, 'message_thread') and self.message_thread and self.message_thread.is_alive():
+                try:
+                    self.message_thread.join(timeout=2.0)
+                    if self.message_thread.is_alive():
+                        # Thread konnte nicht ordnungsgemäß beendet werden
+                        print("WARNING: MAVLink message thread could not be stopped cleanly")
+                except Exception as e:
+                    print(f"WARNING: Error stopping message thread: {e}")
+                
+            # Verbindung schließen, falls noch offen
+            if hasattr(self, 'connection') and self.connection:
+                try:
+                    self.connection.close()
+                except Exception as e:
+                    print(f"WARNING: Error closing connection: {e}")
+                    
+        except Exception as e:
+            print(f"WARNING: Error during cleanup: {e}")
+        finally:
+            # Ressourcen freigeben
+            self.connection = None
+            self.message_thread = None
+            self._shutdown_event = None
+            
+    def _safe_emit(self, signal, *args):
+        """
+        Sicheres Emittieren von Signalen mit Schutz vor "Signal source has been deleted"
+        
+        Args:
+            signal: Das zu emittierende Signal
+            *args: Argumente für das Signal
+        """
+        if self._signals_enabled and hasattr(self, '_signals_enabled'):
+            try:
+                signal.emit(*args)
+            except RuntimeError as e:
+                if "Signal source has been deleted" in str(e):
+                    # Signal-Quelle wurde gelöscht, deaktiviere weitere Emissionen
+                    self._signals_enabled = False
+                    print("Signal emissions disabled due to object deletion")
+                else:
+                    # Anderer Runtime-Fehler
+                    print(f"Signal emission error: {e}")
+            except Exception as e:
+                print(f"Unexpected error during signal emission: {e}")
+            
     def log(self, message):
         """Gibt eine Nachricht an den Logger weiter, wenn vorhanden"""
         if self.logger:
-            self.logger.addLog(message)
+            try:
+                self.logger.addLog(message)
+            except:
+                print(message)
         else:
             print(message)
     
@@ -129,7 +208,7 @@ class MAVLinkHandler(QObject):
                 if self.connection:
                     self.connection.close()
                     self.connection = None
-                self.connection_state_changed.emit(False)
+                self._safe_emit(self.connection_state_changed, False)
                 return False
             
             # Target System und Component aus Heartbeat speichern
@@ -154,7 +233,7 @@ class MAVLinkHandler(QObject):
             # Verbindungsstatus aktualisieren
             self.connection_status = self.CONNECTED
             self.last_heartbeat_time = time.time()
-            self.connection_state_changed.emit(True)
+            self._safe_emit(self.connection_state_changed, True)
             
             return True
             
@@ -167,7 +246,7 @@ class MAVLinkHandler(QObject):
                 except:
                     pass
                 self.connection = None
-            self.connection_state_changed.emit(False)
+            self._safe_emit(self.connection_state_changed, False)
             return False
     
     def request_data_streams(self, rate_hz=10):
@@ -221,8 +300,16 @@ class MAVLinkHandler(QObject):
             return
         
         self.running = False
+        self._shutdown_event.set()
+        
         if self.message_thread.is_alive():
-            self.message_thread.join(timeout=2.0)
+            try:
+                self.message_thread.join(timeout=3.0)
+                if self.message_thread.is_alive():
+                    print("WARNING: Message thread did not stop within timeout")
+            except Exception as e:
+                print(f"WARNING: Error stopping message thread: {e}")
+        
         self.message_thread = None
         self.log("MAVLink-Message-Thread gestoppt")
     
@@ -233,7 +320,7 @@ class MAVLinkHandler(QObject):
         """
         self.log("MAVLink-Nachrichten-Loop gestartet")
         
-        while self.running and self.connection:
+        while self.running and self.connection and not self._shutdown_event.is_set():
             try:
                 # Nicht-blockierendes Lesen mit Timeout
                 msg = self.connection.recv_match(blocking=True, timeout=0.1)
@@ -243,13 +330,13 @@ class MAVLinkHandler(QObject):
                     msg_type = msg.get_type()
                     
                     # Debug output for message types we received
-                    # self.log(f"MAVLink-Nachricht empfangen: {msg_type}")
+                    self.log(f"MAVLink-Nachricht empfangen: {msg_type}")
                     
                     if msg_type == 'HEARTBEAT':
                         # Aktualisiere Zeitstempel des letzten Heartbeats
                         self.last_heartbeat_time = time.time()
                         # Emittiere Signal mit der Heartbeat-Nachricht
-                        self.heartbeat_received.emit(msg)
+                        self._safe_emit(self.heartbeat_received, msg)
                         
                     elif msg_type == 'ATTITUDE':
                         # Umrechnung von rad in Grad
@@ -257,7 +344,8 @@ class MAVLinkHandler(QObject):
                         pitch = math.degrees(msg.pitch)
                         yaw = math.degrees(msg.yaw)
                         # Signal emittieren
-                        self.attitude_updated.emit(roll, pitch, yaw)
+                        self.log(f"Emittiere attitude_updated Signal: roll={roll}, pitch={pitch}, yaw={yaw}")
+                        self._safe_emit(self.attitude_updated, roll, pitch, yaw)
                         
                     elif msg_type == 'GPS_RAW_INT':
                         # GPS-Daten konvertieren (lat/lon von 10e7 zu Grad, alt von mm zu m)
@@ -265,7 +353,8 @@ class MAVLinkHandler(QObject):
                         lon = msg.lon / 1e7
                         alt = msg.alt / 1000.0
                         # Signal emittieren
-                        self.gps_updated.emit(lat, lon, alt)
+                        self.log(f"Emittiere gps_updated Signal: lat={lat}, lon={lon}, alt={alt}")
+                        self._safe_emit(self.gps_updated, lat, lon, alt)
                         
                     elif msg_type == 'SYS_STATUS':
                         # Batterie-Daten konvertieren
@@ -273,16 +362,47 @@ class MAVLinkHandler(QObject):
                         current = msg.current_battery / 100.0   # 10*mA zu A
                         remaining = msg.battery_remaining       # 0-100%
                         # Signal emittieren
-                        self.battery_updated.emit(voltage, current, remaining)
+                        self.log(f"Emittiere battery_updated Signal: voltage={voltage}V, current={current}A, remaining={remaining}%")
+                        self._safe_emit(self.battery_updated, voltage, current, remaining)
+                        
+                    elif msg_type == 'VFR_HUD':
+                        # VFR_HUD-Daten (Geschwindigkeit, Heading, etc.)
+                        groundspeed = msg.groundspeed  # m/s
+                        airspeed = msg.airspeed        # m/s
+                        heading = msg.heading          # Grad
+                        throttle = msg.throttle        # Prozent
+                        # Signal emittieren
+                        self._safe_emit(self.vfr_hud_updated, groundspeed, airspeed, heading, throttle)
+                        
+                    elif msg_type == 'GLOBAL_POSITION_INT':
+                        # Erweiterte GPS-Daten mit Geschwindigkeit
+                        lat = msg.lat / 1e7
+                        lon = msg.lon / 1e7
+                        alt = msg.alt / 1000.0
+                        relative_alt = msg.relative_alt / 1000.0
+                        vx = msg.vx / 100.0  # cm/s zu m/s
+                        vy = msg.vy / 100.0  # cm/s zu m/s
+                        vz = msg.vz / 100.0  # cm/s zu m/s
+                        # Berechne Groundspeed aus vx, vy
+                        groundspeed = math.sqrt(vx*vx + vy*vy)
+                        # Signal emittieren
+                        self.log(f"Emittiere velocity_updated Signal: groundspeed={groundspeed}, vz={vz}")
+                        self._safe_emit(self.velocity_updated, groundspeed, 0.0, vz)  # airspeed unbekannt
                         
                     elif msg_type == 'STATUSTEXT':
                         # Statustext-Nachricht verarbeiten
                         status_text = msg.text.decode('utf-8', errors='replace') if isinstance(msg.text, bytes) else str(msg.text)
                         # Signal emittieren
-                        self.status_text_received.emit(status_text)
+                        self._safe_emit(self.status_text_received, status_text)
                 
             except Exception as e:
-                self.log(f"Fehler in MAVLink-Message-Loop: {str(e)}")
+                # Prüfe, ob das Objekt noch existiert, bevor wir loggen
+                if hasattr(self, 'logger') and self.logger is not None:
+                    try:
+                        self.log(f"Fehler in MAVLink-Message-Loop: {str(e)}")
+                    except:
+                        # Wenn das Logging fehlschlägt, ignoriere es
+                        pass
                 time.sleep(0.5)  # Kurze Pause bei Fehlern, um CPU-Last zu reduzieren
         
         self.log("MAVLink-Nachrichten-Loop beendet")
@@ -304,7 +424,7 @@ class MAVLinkHandler(QObject):
             # Kein Heartbeat für zu lange Zeit - verbindung vermutlich verloren
             self.log(f"Verbindung verloren: Kein Heartbeat seit {time_since_last_heartbeat:.1f} Sekunden")
             self.connection_status = self.DISCONNECTED
-            self.connection_state_changed.emit(False)
+            self._safe_emit(self.connection_state_changed, False)
             return False
         
         return True
@@ -338,21 +458,37 @@ class MAVLinkHandler(QObject):
             
             # Verbindung schließen
             if self.connection:
-                self.connection.close()
+                try:
+                    self.connection.close()
+                except:
+                    pass  # Fehler beim Schließen ignorieren
                 self.connection = None
             
             # Status aktualisieren
             self.connection_status = self.DISCONNECTED
-            self.connection_state_changed.emit(False)
+            
+            # Signal nur emittieren, wenn das Objekt noch existiert
+            try:
+                self._safe_emit(self.connection_state_changed, False)
+            except:
+                pass  # Signal kann nicht emittiert werden, wenn Objekt gelöscht wird
+                
             self.log("MAVLink-Verbindung erfolgreich getrennt")
             
             return True
             
         except Exception as e:
-            self.log(f"Fehler beim Trennen der MAVLink-Verbindung: {str(e)}")
+            if hasattr(self, 'logger') and self.logger is not None:
+                try:
+                    self.log(f"Fehler beim Trennen der MAVLink-Verbindung: {str(e)}")
+                except:
+                    pass
             # Trotz Fehler Status auf getrennt setzen
             self.connection_status = self.DISCONNECTED
-            self.connection_state_changed.emit(False)
+            try:
+                self._safe_emit(self.connection_state_changed, False)
+            except:
+                pass
             return False
     
     def is_connected(self):

@@ -13,6 +13,9 @@ Item {
     width: 800
     height: 600
     
+    // Property to track connection status
+    property bool isConnected: false // Default to false if not provided
+    
     // Schwarzer Hintergrund für den gesamten Tab
     Rectangle {
         anchors.fill: parent
@@ -26,7 +29,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 40
-            color: "#0d52a4"
+            color: "#000000"
             radius: 5
             
             RowLayout {
@@ -44,14 +47,14 @@ Item {
                 
                 Text {
                     id: updateTime
-                    text: "Letzte Aktualisierung: " + new Date().toLocaleTimeString()
+                    text: "Last Update: " + new Date().toLocaleTimeString()
                     color: "white"
                     font.pixelSize: 12
                 }
                 
                 Timer {
                     interval: 500  // Schnellere Aktualisierung: 0.5s statt 1s
-                    running: true
+                    running: root.isConnected
                     repeat: true
                     onTriggered: {
                         updateTime.text = "Letzte Aktualisierung: " + new Date().toLocaleTimeString()

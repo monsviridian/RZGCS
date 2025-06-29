@@ -34,7 +34,13 @@ Item {
         Text {
             id: valueLabel
             color: "#ffffff"
-            text: model ? (model.formattedValue || "N/A") : "N/A"
+            text: {
+                if (model) {
+                    return model.formattedValue || "N/A";
+                } else {
+                    return "N/A";
+                }
+            }
             font.pixelSize: 12
             anchors.horizontalCenter: parent.horizontalCenter
             horizontalAlignment: Text.AlignHCenter

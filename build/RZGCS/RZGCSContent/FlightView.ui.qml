@@ -5,27 +5,43 @@ this file manually, you might introduce QML code that is not supported by Qt Des
 Check out https://doc.qt.io/qtcreator/creator-quick-ui-forms.html for details on .ui.qml files.
 */
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtLocation
-import QtPositioning
-import QtQuick3D 6.8
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
+import RZGCS 1.0
+import "./" as Content
 
 Rectangle {
     id: flightView
+    objectName: "flightView"
     color: "#1d1d1d"
     clip: true
-
-    // Initialize map plugin
-    Plugin {
-        id: mapPlugin
-        name: "osm"
-        PluginParameter {
-            name: "osm.mapping.custom.host"
-            value: "https://tile.openstreetmap.org/"
-        }
+    width: parent ? parent.width : 800
+    height: parent ? parent.height : 600
+    
+    // Signal für Kartentyp-Änderung
+    signal mapTypeChanged(int mapType)
+    
+    // Signal zum Öffnen der externen 3D-Karte
+    signal openExternalMap()
+    
+    // Aktueller Kartentyp (0=2D-Ansicht, 1=3D-Ansicht)
+    property int currentMapType: 1
+    
+    // Hardcoded drone position data (Frankfurt coordinates)
+    property real droneLatitude: 50.110924
+    property real droneLongitude: 8.682127
+    property real droneAltitude: 100.0
+    property real droneHeading: 45.0
+    
+    // GPS position with default values
+    // Values will be updated by the FlightViewController
+    Component.onCompleted: {
+        console.log("FlightView initialized with coordinates: " + droneLatitude + ", " + droneLongitude)
     }
+    
+    // No need for GPS update timer as we're using direct values
+    // The FlightViewController handles position updates
 
     ColumnLayout {
         anchors.fill: parent
@@ -43,19 +59,66 @@ Rectangle {
                 anchors.fill: parent
                 anchors.margins: 8
                 spacing: 10
-
+                
                 Label {
-                    text: "Flugkarte"
+                    text: "Flight Map"
                     font.pixelSize: 16
                     font.bold: true
                     color: "white"
+                }
+                
+                // Switch map view (2D/3D)
+                Button {
+                    id: switchViewButton
+                    text: "Switch View"
+                    font.pixelSize: 12
+                    Layout.preferredHeight: 30
+                    background: Rectangle {
+                        color: "#2a82da"
+                        radius: 4
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: "white"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    onClicked: {
+                        var newType = flightView.currentMapType === 0 ? 1 : 0;
+                        flightView.currentMapType = newType;
+                        flightView.mapTypeChanged(newType);
+                    }
+                }
+                
+                // Open separate 3D map
+                Button {
+                    id: open3DMapButton
+                    text: "Open External 3D Map"
+                    font.pixelSize: 12
+                    font.bold: true
+                    Layout.preferredHeight: 30
+                    background: Rectangle {
+                        color: "#38b764"
+                        radius: 4
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: "white"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    onClicked: {
+                        flightView.openExternalMap()
+                    }
                 }
 
                 Item { Layout.fillWidth: true }
                 
                 Label {
                     id: statusLabel
-                    text: "Status: Nicht verbunden"
+                    text: "Status: Not connected"
                     color: "#ff6666"
                     font.pixelSize: 14
                 }
@@ -64,6 +127,7 @@ Rectangle {
 
         // Map view mit Rahmen
         Rectangle {
+            id: mapContainer
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.preferredHeight: parent.height * 0.65
@@ -72,101 +136,39 @@ Rectangle {
             border.width: 1
             radius: 5
             
-            Map {
-                id: map
+            // Call of Duty Warzone-ähnliche Karte
+            Content.WarzoneFlightView {
+                id: warzoneFlightView
                 anchors.fill: parent
-                anchors.margins: 2
-                plugin: mapPlugin
-                center: QtPositioning.coordinate(51.1657, 10.4515)
-                zoomLevel: 14
-
-                // Add drone position marker
-                MapQuickItem {
-                    id: droneMarker
-                    coordinate: QtPositioning.coordinate(51.1657, 10.4515)
-                    anchorPoint.x: sourceItem.width / 2
-                    anchorPoint.y: sourceItem.height / 2
-                    sourceItem: Rectangle {
-                        width: 40
-                        height: 40
-                        color: "transparent"
-                        
-                        Image {
-                            id: droneImage
-                            anchors.centerIn: parent
-                            source: "images/drone_marker.svg"
-                            width: 32
-                            height: 32
-                            smooth: true
-                            mipmap: true
-                        }
-                        
-                        // Pulsierender Kreis für bessere Sichtbarkeit
-                        Rectangle {
-                            id: pulseCircle
-                            anchors.centerIn: parent
-                            width: 32
-                            height: 32
-                            radius: width / 2
-                            color: "#3300ff00"
-                            border.width: 2
-                            border.color: "#80ff00"
-                            z: -1
-                            
-                            SequentialAnimation on scale {
-                                loops: Animation.Infinite
-                                NumberAnimation { from: 0.8; to: 1.5; duration: 1000; easing.type: Easing.OutQuad }
-                                NumberAnimation { from: 1.5; to: 0.8; duration: 1000; easing.type: Easing.InQuad }
-                            }
-                        }
-                    }
+                
+                // Binde die Drohnendaten an die Karte
+                droneLatitude: flightView.droneLatitude
+                droneLongitude: flightView.droneLongitude
+                droneAltitude: flightView.droneAltitude
+                droneHeading: flightView.droneHeading
+                
+                // Verbinde Signale
+                onMapClicked: {
+                    console.log("Karte angeklickt bei: " + lat + ", " + lon)
                 }
                 
-                // Kartensteuerung
-                MapItemView {
-                    model: waypointsModel
-                    delegate: waypointDelegate
+                onAddWaypoint: {
+                    console.log("Wegpunkt hinzugefügt bei: " + lat + ", " + lon)
+                    flightViewController.add_waypoint()
                 }
+            }
+            
+            // Native 3D-Karte Container wird nicht mehr benötigt, da wir die Warzone-Karte verwenden
+            Item {
+                id: map3DContainer
+                objectName: "map3DContainer"
+                anchors.fill: parent
+                visible: false // Unsichtbar machen, aber das Item belassen für Kompatibilität
                 
-                // Wegpunkte-Modell
-                ListModel {
-                    id: waypointsModel
-                    // Beispielwegpunkte werden später durch echte Daten ersetzt
-                }
-                
-                // Template für Wegpunkte
-                Component {
-                    id: waypointDelegate
-                    MapQuickItem {
-                        coordinate: QtPositioning.coordinate(model.lat, model.lon)
-                        anchorPoint.x: 16
-                        anchorPoint.y: 16
-                        sourceItem: Rectangle {
-                            width: 32
-                            height: 32
-                            color: "transparent"
-                            
-                            Text {
-                                anchors.centerIn: parent
-                                text: model.index + 1
-                                color: "white"
-                                font.bold: true
-                                font.pixelSize: 12
-                                z: 2
-                            }
-                            
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: 24
-                                height: 24
-                                radius: width / 2
-                                color: "#e67e22"
-                                border.color: "white"
-                                border.width: 2
-                                z: 1
-                            }
-                        }
-                    }
+                // Diese Funktion wird vom Python-Code aufgerufen, um das native Widget einzubetten
+                // Wir behalten diese Funktion für Kompatibilität bei
+                function setNativeWindowId(winId) {
+                    console.log("Native Window ID nicht verwendet, da Warzone-Karte aktiv");
                 }
             }
         }
@@ -174,31 +176,28 @@ Rectangle {
         // Control Panel
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 130
-            color: "#2d2d2d"
+            Layout.preferredHeight: 90
+            color: "#2a2a2a"
             radius: 5
-            border.color: "#555555"
-            border.width: 1
-
+            
             RowLayout {
                 anchors.fill: parent
                 anchors.margins: 10
                 spacing: 15
                 
-                // Linke Steuerelemente
+                // Steuerung
                 ColumnLayout {
-                    Layout.preferredWidth: 120
-                    spacing: 10
+                    Layout.preferredWidth: 160
+                    spacing: 8
                     
                     Button {
-                        id: prearmButton
-                        text: "Prearm"
-                        Layout.preferredWidth: 120
-                        Layout.preferredHeight: 36
-                        font.pixelSize: 14
+                        id: centerButton
+                        text: "Center"
+                        Layout.preferredWidth: 160
+                        Layout.preferredHeight: 30
+                        font.pixelSize: 12
                         background: Rectangle {
-                            color: parent.pressed ? "#333333" : "#444444"
-                            border.color: "#555555"
+                            color: "#2980b9"
                             radius: 4
                         }
                         contentItem: Text {
@@ -208,17 +207,20 @@ Rectangle {
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
+                        onClicked: {
+                            console.log("Zentrieren Button geklickt")
+                            flightViewController.center_on_drone()
+                        }
                     }
                     
                     Button {
-                        id: resetButton
-                        text: "Reset"
-                        Layout.preferredWidth: 120
-                        Layout.preferredHeight: 36
-                        font.pixelSize: 14
+                        id: setWaypointButton
+                        text: "Set Waypoint"
+                        Layout.preferredWidth: 160
+                        Layout.preferredHeight: 30
+                        font.pixelSize: 12
                         background: Rectangle {
-                            color: parent.pressed ? "#333333" : "#444444"
-                            border.color: "#555555"
+                            color: "#c27ba0"
                             radius: 4
                         }
                         contentItem: Text {
@@ -228,178 +230,199 @@ Rectangle {
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
-                    }
-                }
-                
-                // Mittlere Steuerelemente
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 10
-                    
-                    Button {
-                        id: positionButton
-                        text: "Set Position"
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 36
-                        font.pixelSize: 14
-                        background: Rectangle {
-                            color: parent.pressed ? "#333333" : "#444444"
-                            border.color: "#555555"
-                            radius: 4
-                        }
-                        contentItem: Text {
-                            text: parent.text
-                            font: parent.font
-                            color: "white"
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
+                        onClicked: {
+                            console.log("Wegpunkt setzen geklickt")
+                            flightViewController.add_waypoint()
                         }
                     }
                     
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 10
+                    Row {
+                        spacing: 8
+                        Layout.preferredWidth: 160
                         
-                        TextField {
-                            id: missionField
-                            Layout.fillWidth: true
-                            placeholderText: "Send Mission Plan"
-                            font.pixelSize: 14
-                            height: 36
-                            color: "white"
+                        Button {
+                            id: startButton
+                            text: "Start"
+                            width: 76
+                            height: 30
+                            font.pixelSize: 12
                             background: Rectangle {
-                                color: "#1a1a1a"
-                                border.color: "#555555"
+                                color: "#6aa84f"
                                 radius: 4
                             }
+                            contentItem: Text {
+                                text: parent.text
+                                font: parent.font
+                                color: "white"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            onClicked: {
+                                console.log("Start Button geklickt")
+                                flightViewController.start_mission()
+                            }
                         }
                         
-                        Slider {
-                            id: speedSlider
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 36
-                            from: 0
-                            to: 100
-                            value: 50
-                            stepSize: 5
+                        Button {
+                            id: landButton
+                            text: "Land"
+                            width: 76
+                            height: 30
+                            font.pixelSize: 12
                             background: Rectangle {
-                                x: speedSlider.leftPadding
-                                y: speedSlider.topPadding + speedSlider.availableHeight / 2 - height / 2
-                                width: speedSlider.availableWidth
-                                height: 4
-                                radius: 2
-                                color: "#1a1a1a"
-                                Rectangle {
-                                    width: speedSlider.visualPosition * parent.width
-                                    height: parent.height
-                                    color: "#80ff00"
-                                    radius: 2
-                                }
+                                color: "#e69138"
+                                radius: 4
                             }
-                            handle: Rectangle {
-                                x: speedSlider.leftPadding + speedSlider.visualPosition * (speedSlider.availableWidth - width)
-                                y: speedSlider.topPadding + speedSlider.availableHeight / 2 - height / 2
-                                width: 16
-                                height: 16
-                                radius: 8
-                                color: speedSlider.pressed ? "#f0f0f0" : "#f6f6f6"
-                                border.color: "#555555"
+                            contentItem: Text {
+                                text: parent.text
+                                font: parent.font
+                                color: "white"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            onClicked: {
+                                console.log("Landen Button geklickt")
+                                flightViewController.land()
+                            }
+                        }
+                    }
+                    
+                    Row {
+                        spacing: 8
+                        Layout.preferredWidth: 160
+                        
+                        Button {
+                            id: rthButton
+                            text: "RTH"
+                            width: 76
+                            height: 30
+                            font.pixelSize: 12
+                            background: Rectangle {
+                                color: "#cc0000"
+                                radius: 4
+                            }
+                            contentItem: Text {
+                                text: parent.text
+                                font: parent.font
+                                color: "white"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            onClicked: {
+                                console.log("RTH Button geklickt")
+                                flightViewController.return_to_home()
+                            }
+                        }
+                        
+                        Button {
+                            id: haltButton
+                            text: "HALT"
+                            width: 76
+                            height: 30
+                            font.pixelSize: 12
+                            background: Rectangle {
+                                color: "#990000"
+                                radius: 4
+                            }
+                            contentItem: Text {
+                                text: parent.text
+                                font: parent.font
+                                color: "white"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            onClicked: {
+                                console.log("HALT Button geklickt")
+                                flightViewController.emergency_stop()
                             }
                         }
                     }
                 }
-                
-                // Rechte Steuerelemente
-                ColumnLayout {
-                    Layout.preferredWidth: 120
-                    spacing: 10
+
+                // Status
+                GridLayout {
+                    id: statusGrid
+                    Layout.fillWidth: true
+                    columns: 4
+                    rowSpacing: 5
+                    columnSpacing: 10
                     
-                    ComboBox {
-                        id: modeComboBox
-                        Layout.preferredWidth: 120
-                        Layout.preferredHeight: 36
-                        model: ["MANUAL", "STABILIZE", "RTL", "AUTO"]
-                        font.pixelSize: 14
-                        background: Rectangle {
-                            color: "#444444"
-                            border.color: "#555555"
-                            radius: 4
-                        }
-                        contentItem: Text {
-                            text: parent.displayText
-                            font: parent.font
-                            color: "white"
-                            horizontalAlignment: Text.AlignLeft
-                            verticalAlignment: Text.AlignVCenter
-                            elide: Text.ElideRight
-                            leftPadding: 10
-                        }
-                        popup: Popup {
-                            y: modeComboBox.height
-                            width: modeComboBox.width
-                            implicitHeight: contentItem.implicitHeight
-                            padding: 1
-                            background: Rectangle {
-                                color: "#444444"
-                                border.color: "#555555"
-                            }
-                            contentItem: ListView {
-                                clip: true
-                                implicitHeight: contentHeight
-                                model: modeComboBox.popup.visible ? modeComboBox.delegateModel : null
-                                currentIndex: modeComboBox.highlightedIndex
-                            }
-                        }
+                    // Position display - hardcoded Frankfurt coordinates
+                    Text { text: "Position:"; color: "white"; font.pixelSize: 14 }
+                    Text { 
+                        id: positionText
+                        text: "50.110924, 8.682127"
+                        color: "#80ff00"
+                        font.pixelSize: 14 
                     }
                     
-                    RowLayout {
-                        Layout.preferredWidth: 120
-                        Layout.preferredHeight: 36
-                        spacing: 0
-                        
-                        Switch {
-                            id: armSwitch
-                            text: "Arm"
-                            font.pixelSize: 14
-                            Layout.fillWidth: true
-                            checked: false
-                            indicator: Rectangle {
-                                implicitWidth: 40
-                                implicitHeight: 20
-                                x: armSwitch.leftPadding
-                                y: parent.height / 2 - height / 2
-                                radius: 10
-                                color: armSwitch.checked ? "#80ff00" : "#555555"
-                                border.color: armSwitch.checked ? "#80ff00" : "#999999"
-                                Rectangle {
-                                    x: armSwitch.checked ? parent.width - width - 2 : 2
-                                    y: 2
-                                    width: 16
-                                    height: 16
-                                    radius: 8
-                                    color: "white"
-                                }
-                            }
-                            contentItem: Text {
-                                text: armSwitch.text
-                                font: armSwitch.font
-                                color: "white"
-                                verticalAlignment: Text.AlignVCenter
-                                leftPadding: armSwitch.indicator.width + armSwitch.spacing
-                            }
-                        }
+                    // Altitude display - hardcoded value
+                    Text { text: "Altitude:"; color: "white"; font.pixelSize: 14 }
+                    Text { 
+                        id: altitudeText
+                        text: "100.0 m"
+                        color: "#80ff00"
+                        font.pixelSize: 14 
+                    }
+                    
+                    // Heading display - hardcoded value
+                    Text { text: "Heading:"; color: "white"; font.pixelSize: 14 }
+                    Text { 
+                        id: headingText
+                        text: "45.0°"
+                        color: "#80ff00"
+                        font.pixelSize: 14 
                     }
                 }
             }
         }
     }
-    
-    // Connections zur Steuerung der UI-Elemente
+
+    // Update connection status and GPS data
     Connections {
         target: serialConnector
         function onConnectedChanged(connected) {
-            statusLabel.text = connected ? "Status: Verbunden" : "Status: Nicht verbunden"
+            statusLabel.text = connected ? "Status: Connected" : "Status: Disconnected"
             statusLabel.color = connected ? "#80ff00" : "#ff6666"
+        }
+        
+        // Listen for GPS position updates from the flight controller
+        function onGpsChanged(lat, lon, alt) {
+            console.log("Received GPS data from FC: " + lat + ", " + lon + ", " + alt)
+            flightView.droneLatitude = lat
+            flightView.droneLongitude = lon
+            flightView.droneAltitude = alt
+            
+            // Update position display
+            positionText.text = lat.toFixed(6) + ", " + lon.toFixed(6)
+            altitudeText.text = alt.toFixed(1) + " m"
+        }
+    }
+    
+    // Connection to FlightViewController (if available)
+    Connections {
+        target: typeof flightViewController !== 'undefined' ? flightViewController : null
+        enabled: target !== null
+        
+        // Handler for drone position updates
+        function onDronePositionChanged(lat, lon, alt) {
+            console.log("Position update received: " + lat + ", " + lon + ", " + alt)
+            flightView.droneLatitude = lat
+            flightView.droneLongitude = lon
+            flightView.droneAltitude = alt
+            
+            // Force update of position display
+            positionText.text = lat.toFixed(6) + ", " + lon.toFixed(6)
+            altitudeText.text = alt.toFixed(1) + " m"
+        }
+        
+        // Handler for drone heading updates
+        function onDroneHeadingChanged(heading) {
+            console.log("Heading update received: " + heading)
+            flightView.droneHeading = heading
+            
+            // Force update of heading display
+            headingText.text = heading.toFixed(1) + "°"
         }
     }
 }

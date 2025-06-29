@@ -82,23 +82,26 @@ ListModel {
             case "position":
                 if (telemetry_data && typeof telemetry_data === 'object') {
                     let gps_data = {"latitude": telemetry_data.latitude, "longitude": telemetry_data.longitude};
-                    update_sensor("GPS", gps_data, "");
-                    update_sensor("Altitude", telemetry_data.relative_alt || telemetry_data.altitude, "m");
+                    update_sensor("gps_latitude", gps_data.latitude, "°");
+                    update_sensor("gps_longitude", gps_data.longitude, "°");
+                    update_sensor("gps_altitude", telemetry_data.relative_alt || telemetry_data.altitude, "m");
                 }
                 break;
                 
             case "attitude":
                 if (telemetry_data && typeof telemetry_data === 'object') {
                     let imu_data = {"roll": telemetry_data.roll, "pitch": telemetry_data.pitch, "yaw": telemetry_data.yaw};
-                    update_sensor("IMU", imu_data, "");
+                    update_sensor("roll", imu_data.roll, "°");
+                    update_sensor("pitch", imu_data.pitch, "°");
+                    update_sensor("yaw", imu_data.yaw, "°");
                 }
                 break;
                 
             case "speed":
                 if (telemetry_data && typeof telemetry_data === 'object') {
-                    update_sensor("Groundspeed", telemetry_data.groundspeed, "m/s");
-                    update_sensor("Airspeed", telemetry_data.airspeed, "m/s");
-                    update_sensor("Vertical Speed", telemetry_data.vspeed || telemetry_data.climb, "m/s");
+                    update_sensor("groundspeed", telemetry_data.groundspeed, "m/s");
+                    update_sensor("airspeed", telemetry_data.airspeed, "m/s");
+                    update_sensor("vertical_speed", telemetry_data.vspeed || telemetry_data.climb, "m/s");
                 }
                 break;
                 
@@ -109,23 +112,21 @@ ListModel {
                         "current": telemetry_data.battery_current || telemetry_data.current, 
                         "remaining": telemetry_data.battery_remaining || telemetry_data.remaining
                     };
-                    update_sensor("Battery", bat_data, "");
+                    update_sensor("battery_voltage", bat_data.voltage, "V");
+                    update_sensor("battery_current", bat_data.current, "A");
+                    update_sensor("battery_percentage", bat_data.remaining, "%");
                 }
                 break;
                 
             case "environment":
                 if (telemetry_data && typeof telemetry_data === 'object') {
-                    update_sensor("Wind Speed", telemetry_data.wind_speed, "m/s");
-                    update_sensor("Wind Direction", telemetry_data.wind_direction, "°");
-                    update_sensor("Turbulence", (telemetry_data.turbulence * 100), "%");
-                    update_sensor("Temperature", telemetry_data.temperature, "°C");
+                    update_sensor("heading", telemetry_data.wind_direction, "°");
                 }
                 break;
                 
             case "status":
                 if (telemetry_data && typeof telemetry_data === 'object') {
-                    update_sensor("Mode", telemetry_data.mode, "");
-                    update_sensor("Armed", telemetry_data.armed ? "Yes" : "No", "");
+                    update_sensor("throttle", telemetry_data.mode, "%");
                 }
                 break;
                 
@@ -136,17 +137,20 @@ ListModel {
                     
                     // Position & Altitude
                     let gps_data = {"latitude": telemetry_data.latitude, "longitude": telemetry_data.longitude};
-                    update_sensor("GPS", gps_data, "");
-                    update_sensor("Altitude", telemetry_data.relative_alt || telemetry_data.altitude, "m");
+                    update_sensor("gps_latitude", gps_data.latitude, "°");
+                    update_sensor("gps_longitude", gps_data.longitude, "°");
+                    update_sensor("gps_altitude", telemetry_data.relative_alt || telemetry_data.altitude, "m");
                     
                     // Attitude
                     let imu_data = {"roll": telemetry_data.roll, "pitch": telemetry_data.pitch, "yaw": telemetry_data.yaw};
-                    update_sensor("IMU", imu_data, "");
+                    update_sensor("roll", imu_data.roll, "°");
+                    update_sensor("pitch", imu_data.pitch, "°");
+                    update_sensor("yaw", imu_data.yaw, "°");
                     
                     // Speed
-                    update_sensor("Groundspeed", telemetry_data.groundspeed, "m/s");
-                    update_sensor("Airspeed", telemetry_data.airspeed, "m/s");
-                    update_sensor("Vertical Speed", telemetry_data.vspeed || telemetry_data.climb, "m/s");
+                    update_sensor("groundspeed", telemetry_data.groundspeed, "m/s");
+                    update_sensor("airspeed", telemetry_data.airspeed, "m/s");
+                    update_sensor("vertical_speed", telemetry_data.vspeed || telemetry_data.climb, "m/s");
                     
                     // Battery
                     let bat_data = {
@@ -154,19 +158,17 @@ ListModel {
                         "current": telemetry_data.battery_current || telemetry_data.current, 
                         "remaining": telemetry_data.battery_remaining || telemetry_data.remaining
                     };
-                    update_sensor("Battery", bat_data, "");
+                    update_sensor("battery_voltage", bat_data.voltage, "V");
+                    update_sensor("battery_current", bat_data.current, "A");
+                    update_sensor("battery_percentage", bat_data.remaining, "%");
                     
                     // Environment
-                    if (telemetry_data.wind_speed !== undefined) {
-                        update_sensor("Wind Speed", telemetry_data.wind_speed, "m/s");
-                        update_sensor("Wind Direction", telemetry_data.wind_direction, "°");
-                        update_sensor("Turbulence", (telemetry_data.turbulence * 100), "%");
-                        update_sensor("Temperature", telemetry_data.temperature, "°C");
+                    if (telemetry_data.wind_direction !== undefined) {
+                        update_sensor("heading", telemetry_data.wind_direction, "°");
                     }
                     
                     // Status
-                    update_sensor("Mode", telemetry_data.mode, "");
-                    update_sensor("Armed", telemetry_data.armed ? "Yes" : "No", "");
+                    update_sensor("throttle", telemetry_data.mode, "%");
                 }
                 break;
                 
@@ -178,42 +180,42 @@ ListModel {
     // Function to format sensor values
     function formatValue(name, value, unit) {
         switch(name) {
-            case "GPS":
-                return "Lat: " + value.latitude.toFixed(6) + "\nLon: " + value.longitude.toFixed(6)
-            case "IMU":
-                return "Roll: " + value.roll.toFixed(2) + "°\nPitch: " + value.pitch.toFixed(2) + "°"
-            case "Speed":
+            case "gps_latitude":
+            case "gps_longitude":
+                return value.toFixed(6) + "°"
+            case "roll":
+            case "pitch":
+            case "yaw":
+            case "heading":
+                return value.toFixed(1) + "°"
+            case "groundspeed":
+                return (value * 3.6).toFixed(1) + " km/h"  // Convert m/s to km/h
+            case "airspeed":
+            case "vertical_speed":
                 return value.toFixed(1) + " m/s"
-            case "Groundspeed":
-                return value.toFixed(1) + " m/s"
-            case "Airspeed":
-                return value.toFixed(1) + " m/s"
-            case "Battery":
-                if (typeof value === 'object') {
-                    return value.voltage.toFixed(1) + "V, " + value.remaining + "%"
-                }
-                return value.toFixed(1) + "V"
-            case "Höhe":
-            case "Altitude":
+            case "battery_voltage":
+                return value.toFixed(1) + " V"
+            case "battery_current":
+                return value.toFixed(1) + " A"
+            case "battery_percentage":
+            case "throttle":
+                return value.toFixed(1) + " %"
+            case "gps_altitude":
                 return value.toFixed(1) + " m"
-            case "CPU Last":
-                return value.toFixed(1) + "%"
-            case "Firmware":
-            case "Frame":
-            case "Version":
-                return value
-            case "RC Inputs":
-                let channels = []
-                for (let ch in value) {
-                    channels.push(ch + ": " + value[ch])
+            case "gps_hdop":
+            case "gps_vdop":
+                return value.toFixed(1)
+            case "gps_satellites":
+                return value.toString()
+            case "gps_fix_type":
+                switch(value) {
+                    case 0: return "No Fix"
+                    case 1: return "GPS"
+                    case 2: return "DGPS"
+                    case 3: return "RTK Float"
+                    case 4: return "RTK Fixed"
+                    default: return "Unknown"
                 }
-                return channels.join("\n")
-            case "Servos":
-                let servos = []
-                for (let s in value) {
-                    servos.push(s + ": " + value[s])
-                }
-                return servos.join("\n")
             default:
                 if (unit) {
                     if (typeof value === 'number') {
@@ -225,101 +227,99 @@ ListModel {
         }
     }
 
+    // Function to find a sensor by name
+    function findSensorByName(name) {
+        for (let i = 0; i < count; i++) {
+            if (get(i).name === name) {
+                return get(i)
+            }
+        }
+        return null
+    }
+
     // Initial sensor list with FC relevant sensors
     ListElement {
-        name: "IMU"
+        name: "roll"
         value: 0
-        unit: ""
-        formattedValue: "Roll: 0.00°\nPitch: 0.00°"
+        unit: "°"
+        formattedValue: "0.0°"
     }
     ListElement {
-        name: "Groundspeed"
+        name: "pitch"
+        value: 0
+        unit: "°"
+        formattedValue: "0.0°"
+    }
+    ListElement {
+        name: "yaw"
+        value: 0
+        unit: "°"
+        formattedValue: "0.0°"
+    }
+    ListElement {
+        name: "groundspeed"
         value: 0
         unit: "m/s"
         formattedValue: "0.0 m/s"
     }
     ListElement {
-        name: "Airspeed"
+        name: "airspeed"
         value: 0
         unit: "m/s"
         formattedValue: "0.0 m/s"
     }
     ListElement {
-        name: "Altitude"
+        name: "gps_altitude"
         value: 0
         unit: "m"
         formattedValue: "0.0 m"
     }
     ListElement {
-        name: "GPS"
+        name: "gps_latitude"
         value: 0
-        unit: ""
-        formattedValue: "Lat: 0.000000\nLon: 0.000000"
+        unit: "°"
+        formattedValue: "0.000000°"
     }
     ListElement {
-        name: "Battery"
+        name: "gps_longitude"
+        value: 0
+        unit: "°"
+        formattedValue: "0.000000°"
+    }
+    ListElement {
+        name: "battery_voltage"
         value: 0
         unit: "V"
-        formattedValue: "0.0 V, 0%"
+        formattedValue: "0.0 V"
     }
     ListElement {
-        name: "CPU Last"
+        name: "battery_current"
+        value: 0
+        unit: "A"
+        formattedValue: "0.0 A"
+    }
+    ListElement {
+        name: "battery_percentage"
         value: 0
         unit: "%"
         formattedValue: "0.0 %"
     }
     ListElement {
-        name: "Firmware"
-        value: "Unbekannt"
-        unit: ""
-        formattedValue: "Unbekannt"
+        name: "throttle"
+        value: 0
+        unit: "%"
+        formattedValue: "0.0 %"
     }
     ListElement {
-        name: "Frame"
-        value: "Unbekannt"
-        unit: ""
-        formattedValue: "Unbekannt"
+        name: "vertical_speed"
+        value: 0
+        unit: "m/s"
+        formattedValue: "0.0 m/s"
     }
     ListElement {
-        name: "RC Inputs"
-        value: {}
-        unit: ""
-        formattedValue: "Keine Daten"
-    }
-    ListElement {
-        name: "Servos"
-        value: {}
-        unit: ""
-        formattedValue: "Keine Daten"
-    }
-    ListElement {
-        name: "System Servos"
-        value: "S1=0, S2=0, S3=0, S4=0"
-        unit: ""
-        formattedValue: "S1=0, S2=0, S3=0, S4=0"
-    }
-    ListElement {
-        name: "System RC"
-        value: "RC1=0, RC2=0, RC3=0, RC4=0"
-        unit: ""
-        formattedValue: "RC1=0, RC2=0, RC3=0, RC4=0"
-    }
-    ListElement {
-        name: "System Mission"
-        value: "WP#0"
-        unit: ""
-        formattedValue: "WP#0"
-    }
-    ListElement {
-        name: "System CPU"
-        value: "0.0%"
-        unit: ""
-        formattedValue: "0.0%"
-    }
-    ListElement {
-        name: "Battery %"
-        value: "0%"
-        unit: ""
-        formattedValue: "0%"
+        name: "heading"
+        value: 0
+        unit: "°"
+        formattedValue: "0.0°"
     }
 }

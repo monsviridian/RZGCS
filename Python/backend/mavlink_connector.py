@@ -19,6 +19,7 @@ from backend.exceptions import ConnectionTimeoutError, ConnectionError
 class ConnectorType(Enum):
     PYMAVLINK = "pymavlink"
     MAVSDK = "mavsdk"
+    DRONEKIT = "dronekit"  # NEU: DroneKit-Unterstützung
 
 def get_mavsdk_server_path() -> str:
     """Ermittelt den Pfad zum MAVSDK-Server basierend auf dem Betriebssystem"""
@@ -29,7 +30,7 @@ def get_mavsdk_server_path() -> str:
     if sys.platform == "win32":
         server_path = mavsdk_path / "windows" / "mavsdk-server.exe"
     elif sys.platform == "darwin":  # macOS
-        # Pru00fcfe beide mu00f6glichen Speicherorte fu00fcr macOS
+        # Prüfe beide möglichen Speicherorte für macOS
         server_path_1 = mavsdk_path / "mac" / "mavsdk-server"
         server_path_2 = mavsdk_path / "macos" / "mavsdk-server"
         
@@ -38,7 +39,7 @@ def get_mavsdk_server_path() -> str:
         elif server_path_2.exists():
             server_path = server_path_2
         else:
-            # Versuche den Server im aktuellen Verzeichnis zu finden (fu00fcr Entwicklungsumgebungen)
+            # Versuche den Server im aktuellen Verzeichnis zu finden (für Entwicklungsumgebungen)
             server_path = mavsdk_path / "mavsdk-server"
     else:  # Linux
         server_path = mavsdk_path / "linux" / "mavsdk-server"
@@ -114,6 +115,134 @@ class DroneConnectorBase(QObject, ABC, metaclass=DroneConnectorMeta):
         if self.debug:
             status = "✅ Verbunden" if connected else "❌ Getrennt"
             self._emit_log(status)
+
+class DroneKitConnector(DroneConnectorBase):
+    """DroneKit-basierte Implementierung"""
+    
+    def __init__(self, connection_string: str):
+        """Initialisiert den DroneKit-Connector"""
+        super().__init__()
+        self.connection_string = connection_string
+        self.dronekit_connector = None
+        
+    async def connect_to_drone(self) -> bool:
+        """
+        Implementiert die abstrakte connect_to_drone-Methode der Basisklasse.
+        Returns:
+            bool: True wenn die Verbindung erfolgreich war, False sonst
+        """
+        try:
+            # DroneKit-Connector importieren und erstellen
+            from backend.rzgcs_dronekit.connector import DroneKitConnector as DKConnector
+            
+            self.dronekit_connector = DKConnector(self.connection_string)
+            
+            # Verbindung herstellen (synchron, nicht async)
+            success = self.dronekit_connector.establish_connection()
+            
+            if success:
+                # Signals verbinden
+                self.dronekit_connector.connection_status_changed.connect(self._on_connection_changed)
+                self.dronekit_connector.gps_position_updated.connect(self._on_gps_updated)
+                self.dronekit_connector.attitude_updated.connect(self._on_attitude_updated)
+                self.dronekit_connector.battery_updated.connect(self._on_battery_updated)
+                self.dronekit_connector.flight_mode_changed.connect(self._on_flight_mode_changed)
+                self.dronekit_connector.armed_status_changed.connect(self._on_armed_changed)
+                self.dronekit_connector.ground_speed_updated.connect(self._on_ground_speed_updated)
+                self.dronekit_connector.altitude_updated.connect(self._on_altitude_updated)
+                self.dronekit_connector.heading_updated.connect(self._on_heading_updated)
+                self.dronekit_connector.error_occurred.connect(self._on_error)
+                self.dronekit_connector.log_message.connect(self._on_log)
+                
+                self.running = True
+                self._emit_connection_status(True)
+                return True
+            else:
+                return False
+                
+        except Exception as e:
+            self._emit_log(f"DroneKit connection failed: {str(e)}")
+            return False
+        
+    async def disconnect_from_drone(self) -> None:
+        """
+        Implementiert die abstrakte disconnect_from_drone-Methode der Basisklasse.
+        """
+        if self.dronekit_connector:
+            self.dronekit_connector.close_connection()
+            self.dronekit_connector = None
+        
+        self.running = False
+        self._emit_connection_status(False)
+        
+    async def start_monitoring(self) -> None:
+        """
+        Implementiert die abstrakte start_monitoring-Methode der Basisklasse.
+        """
+        # DroneKit-Connector startet Monitoring automatisch
+        pass
+        
+    def stop(self) -> None:
+        """
+        Implementiert die abstrakte stop-Methode der Basisklasse.
+        """
+        if self.dronekit_connector:
+            self.dronekit_connector.close_connection()
+            self.dronekit_connector = None
+        
+        self.running = False
+        self._emit_connection_status(False)
+    
+    # Signal-Handler für DroneKit-Events
+    def _on_connection_changed(self, connected: bool):
+        """Handler für Verbindungsstatus-Änderungen"""
+        self._emit_connection_status(connected)
+    
+    def _on_gps_updated(self, lat: float, lon: float, alt: float):
+        """Handler für GPS-Updates"""
+        self.gps_msg.emit(lat, lon)
+        self.sensor_data.emit("GPS Altitude", alt)
+    
+    def _on_attitude_updated(self, roll: float, pitch: float, yaw: float):
+        """Handler für Attitude-Updates"""
+        self.attitude_msg.emit(roll, pitch, yaw)
+        self.sensor_data.emit("Roll", roll)
+        self.sensor_data.emit("Pitch", pitch)
+        self.sensor_data.emit("Yaw", yaw)
+    
+    def _on_battery_updated(self, battery: float):
+        """Handler für Battery-Updates"""
+        self.sensor_data.emit("Battery %", battery)
+    
+    def _on_flight_mode_changed(self, mode: str):
+        """Handler für Flight-Mode-Updates"""
+        self.sensor_data.emit("Flight Mode", 0)  # Numerischer Wert für Kompatibilität
+        self._emit_log(f"Flight Mode: {mode}")
+    
+    def _on_armed_changed(self, armed: bool):
+        """Handler für Armed-Status-Updates"""
+        self.sensor_data.emit("Armed", 1 if armed else 0)
+        self._emit_log(f"Armed: {armed}")
+    
+    def _on_ground_speed_updated(self, speed: float):
+        """Handler für Ground-Speed-Updates"""
+        self.sensor_data.emit("Groundspeed", speed)
+    
+    def _on_altitude_updated(self, altitude: float):
+        """Handler für Altitude-Updates"""
+        self.sensor_data.emit("Altitude", altitude)
+    
+    def _on_heading_updated(self, heading: float):
+        """Handler für Heading-Updates"""
+        self.sensor_data.emit("Heading", heading)
+    
+    def _on_error(self, error: str):
+        """Handler für Fehler"""
+        self._emit_log(f"DroneKit Error: {error}")
+    
+    def _on_log(self, message: str):
+        """Handler für Log-Nachrichten"""
+        self._emit_log(f"DroneKit: {message}")
 
 class MAVSDKConnector(DroneConnectorBase):
     """MAVSDK-basierte Implementierung"""
@@ -226,269 +355,178 @@ class MAVSDKConnector(DroneConnectorBase):
                     break
                     
                 await asyncio.sleep(0.1)
-            
-            return False
-            
-        except Exception as e:
-            self._emit_log(f"❌ MAVSDK Verbindungsfehler: {str(e)}")
-            if self.debug:
-                import traceback
-                self._emit_log(f"🔍 Stacktrace: {traceback.format_exc()}")
-            return False
-        finally:
-            self._is_connecting = False
-            
-    async def close_connection(self) -> None:
-        """Trennt die MAVSDK-Verbindung"""
-        self.running = False
-        
-        if self.debug:
-            self._emit_log("🔄 Beende MAVSDK-Verbindung...")
-            
-        if self.mavsdk_server_process:
-            try:
-                self.mavsdk_server_process.terminate()
-                self.mavsdk_server_process.wait(timeout=5)
-                if self.debug:
-                    self._emit_log("✅ MAVSDK-Server beendet")
-            except Exception as e:
-                self._emit_log(f"⚠️ Fehler beim Beenden des Servers: {str(e)}")
-            finally:
-                self.mavsdk_server_process = None
                 
-        if self.drone:
-            try:
-                await self.drone.close()
-                if self.debug:
-                    self._emit_log("✅ MAVSDK System geschlossen")
-            except Exception as e:
-                self._emit_log(f"⚠️ Fehler beim Schließen des Systems: {str(e)}")
-            finally:
+        except Exception as e:
+            error_msg = f"❌ Fehler in MAVSDK-Verbindung: {str(e)}"
+            self._emit_log(error_msg)
+            self._is_connecting = False
+            return False
+            
+        self._is_connecting = False
+        return False
+
+    async def close_connection(self) -> None:
+        """Schließt die MAVSDK-Verbindung"""
+        try:
+            if self.drone:
+                await self.drone.disconnect()
                 self.drone = None
                 
-        self._emit_connection_status(False)
-        self._emit_log("🛑 MAVSDK-Verbindung getrennt")
-        
+            if self.mavsdk_server_process:
+                self.mavsdk_server_process.terminate()
+                self.mavsdk_server_process = None
+                
+            self.running = False
+            self._emit_connection_status(False)
+            self._emit_log("🔌 MAVSDK-Verbindung geschlossen")
+            
+        except Exception as e:
+            self._emit_log(f"❌ Fehler beim Schließen der Verbindung: {str(e)}")
+
     async def begin_vehicle_monitoring(self) -> None:
-        """Überwacht Drohnendaten via MAVSDK"""
+        """Startet das Monitoring der Fahrzeugdaten"""
         if not self.drone:
-            self._emit_log("⚠️ Keine Verbindung zum System")
+            self._emit_log("❌ Keine MAVSDK-Verbindung verfügbar")
             return
             
         try:
-            if self.debug:
-                self._emit_log("🔄 Aktiviere Telemetrie-Streams...")
+            self._emit_log("📡 Starte Telemetrie-Monitoring...")
+            
+            # GPS-Position
+            async for position in self.drone.telemetry.position():
+                if not self.running:
+                    break
+                lat, lon = position.latitude_deg, position.longitude_deg
+                self.gps_msg.emit(lat, lon)
+                self.sensor_data.emit("GPS Altitude", position.absolute_altitude_m)
                 
-            # Telemetrie-Streams aktivieren
-            await self.drone.telemetry.set_rate_position(10)
-            await self.drone.telemetry.set_rate_attitude(10)
-            await self.drone.telemetry.set_rate_battery(1)
-            
-            if self.debug:
-                self._emit_log("✅ Telemetrie-Streams aktiviert")
-            
-            last_connection_check = time.time()
-            
-            while self.running:
-                try:
-                    current_time = time.time()
-                    
-                    # Regelmäßige Verbindungsprüfung
-                    if current_time - last_connection_check > self._connection_check_interval:
-                        if not self._is_connection_alive():
-                            raise ConnectionError("Verbindung verloren - kein Heartbeat")
-                        last_connection_check = current_time
-                    
-                    # Position
-                    async for position in self.drone.telemetry.position():
-                        self.gps_msg.emit(position.latitude_deg, position.longitude_deg)
-                        if self.debug:
-                            self._emit_log(f"📍 Position: {position.latitude_deg:.6f}, {position.longitude_deg:.6f}")
-                        break
-                    
-                    # Attitude    
-                    async for attitude in self.drone.telemetry.attitude_euler():
-                        self.attitude_msg.emit(attitude.roll_deg, attitude.pitch_deg, attitude.yaw_deg)
-                        if self.debug:
-                            self._emit_log(f"🧭 Lage: Roll={attitude.roll_deg:.1f}°, Pitch={attitude.pitch_deg:.1f}°, Yaw={attitude.yaw_deg:.1f}°")
-                        break
-                    
-                    # Battery
-                    async for battery in self.drone.telemetry.battery():
-                        self.sensor_data.emit("battery_voltage", battery.voltage_v)
-                        if self.debug:
-                            self._emit_log(f"🔋 Batterie: {battery.voltage_v:.1f}V ({battery.remaining_percent:.0f}%)")
-                        break
-                    
-                    # Flight Mode & Connection State
-                    async for flight_mode in self.drone.telemetry.flight_mode():
-                        if self.debug:
-                            self._emit_log(f"✈️ Flugmodus: {flight_mode}")
-                        break
-                        
-                    # Aktualisiere Heartbeat-Zeitstempel
-                    self._last_heartbeat = current_time
-                    
-                    await asyncio.sleep(0.1)
-                    
-                except ConnectionError as e:
-                    self._emit_log(f"⚠️ Verbindungsfehler: {str(e)}")
-                    
-                    # Starte Reconnect wenn nicht schon einer läuft
-                    if not self._reconnect_task:
-                        self._reconnect_task = asyncio.create_task(self._restart_connection())
-                    return
-                    
-                except Exception as e:
-                    self._emit_log(f"⚠️ Fehler beim Lesen der Telemetrie: {str(e)}")
-                    await asyncio.sleep(1)
+            # Attitude
+            async for attitude in self.drone.telemetry.attitude_euler():
+                if not self.running:
+                    break
+                roll, pitch, yaw = attitude.roll_deg, attitude.pitch_deg, attitude.yaw_deg
+                self.attitude_msg.emit(roll, pitch, yaw)
+                self.sensor_data.emit("Roll", roll)
+                self.sensor_data.emit("Pitch", pitch)
+                self.sensor_data.emit("Yaw", yaw)
+                
+            # Battery
+            async for battery in self.drone.telemetry.battery():
+                if not self.running:
+                    break
+                self.sensor_data.emit("Battery %", battery.remaining_percent)
+                
+            # Flight Mode
+            async for flight_mode in self.drone.telemetry.flight_mode():
+                if not self.running:
+                    break
+                self.sensor_data.emit("Flight Mode", 0)  # Numerischer Wert für Kompatibilität
+                self._emit_log(f"Flight Mode: {flight_mode}")
+                
+            # Armed Status
+            async for armed in self.drone.telemetry.armed():
+                if not self.running:
+                    break
+                self.sensor_data.emit("Armed", 1 if armed else 0)
+                self._emit_log(f"Armed: {armed}")
+                
+            # Ground Speed
+            async for ground_speed in self.drone.telemetry.ground_speed_ned():
+                if not self.running:
+                    break
+                speed = math.sqrt(ground_speed.velocity_north_m_s**2 + ground_speed.velocity_east_m_s**2)
+                self.sensor_data.emit("Groundspeed", speed)
                 
         except Exception as e:
-            self._emit_log(f"❌ MAVSDK Monitoring Fehler: {str(e)}")
-            if self.debug:
-                import traceback
-                self._emit_log(f"🔍 Stacktrace: {traceback.format_exc()}")
-            self.running = False
-            
+            self._emit_log(f"❌ Fehler im Telemetrie-Monitoring: {str(e)}")
+
     def __del__(self):
-        """Cleanup beim Zerstören der Instanz"""
-        if hasattr(self, 'mavsdk_server_process') and self.mavsdk_server_process:
+        """Destruktor für Aufräumarbeiten"""
+        if self.mavsdk_server_process:
             try:
                 self.mavsdk_server_process.terminate()
-                self.mavsdk_server_process.wait(timeout=5)
             except:
-                if self.debug:
-                    self._emit_log("⚠️ Konnte MAVSDK-Server nicht sauber beenden")
+                pass
 
     async def start_mavsdk_server(self) -> bool:
-        """Startet den MAVSDK-Server als Subprocess"""
+        """Startet den MAVSDK-Server für serielle Verbindungen"""
         try:
-            # Hole den Pfad zum MAVSDK-Server
             server_path = get_mavsdk_server_path()
-            if self.debug:
-                self._emit_log(f"📂 MAVSDK-Server Pfad: {server_path}")
             
-            # Starte Server mit UDP Port
-            cmd = [server_path, "-p", "50051"]
+            # Verbindungsstring für Server parsen
+            if "serial://" in self.connection_string:
+                # Format: serial:///COM3:115200
+                parts = self.connection_string.replace("serial://", "").split(":")
+                if len(parts) == 2:
+                    port, baudrate = parts
+                    server_args = [server_path, "-p", "50051", f"-d=serial://{port}:{baudrate}"]
+                else:
+                    self._emit_log("❌ Ungültiges serielles Verbindungsformat")
+                    return False
+            else:
+                # Standard-UDP für andere Verbindungen
+                server_args = [server_path, "-p", "50051", f"-d={self.connection_string}"]
             
-            # Füge die Verbindungs-URL hinzu, wenn es sich um eine serielle Verbindung handelt
-            if self.connection_string.startswith("serial://"):
-                cmd.append(self.connection_string)
-                if self.debug:
-                    self._emit_log(f"🔌 Verbindungs-URL: {self.connection_string}")
+            self._emit_log(f"🚀 Starte MAVSDK-Server: {' '.join(server_args)}")
             
-            self._emit_log("🚀 Starte MAVSDK-Server...")
-            if self.debug:
-                self._emit_log(f"📋 Befehl: {' '.join(cmd)}")
-            
-            # Starte den Server
             self.mavsdk_server_process = subprocess.Popen(
-                cmd,
+                server_args,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True,
-                bufsize=1,  # Line-buffered
-                universal_newlines=True
+                text=True
             )
             
-            # Warte kurz damit der Server starten kann
+            # Warten auf Server-Start
             await asyncio.sleep(2)
             
-            # Prüfe ob der Server läuft
             if self.mavsdk_server_process.poll() is None:
                 self._emit_log("✅ MAVSDK-Server gestartet")
-                
-                # Debug-Ausgabe der Server-Ausgabe
-                if self.debug:
-                    asyncio.create_task(self._monitor_server_output())
-                    
+                # Verbindungsstring für MAVSDK-Client anpassen
+                self.connection_string = "tcp://localhost:50051"
                 return True
             else:
-                # Hole Fehlerausgabe
-                stdout, stderr = self.mavsdk_server_process.communicate()
-                error_msg = stderr.strip() if stderr else "Unbekannter Fehler"
-                self._emit_log(f"❌ MAVSDK-Server konnte nicht gestartet werden: {error_msg}")
-                if stdout and self.debug:
-                    self._emit_log(f"📤 Server stdout: {stdout.strip()}")
-                if stderr and self.debug:
-                    self._emit_log(f"⚠️ Server stderr: {stderr.strip()}")
+                self._emit_log("❌ MAVSDK-Server konnte nicht gestartet werden")
                 return False
                 
         except Exception as e:
-            self._emit_log(f"❌ MAVSDK-Server Fehler: {str(e)}")
-            if self.debug:
-                import traceback
-                self._emit_log(f"🔍 Stacktrace: {traceback.format_exc()}")
+            self._emit_log(f"❌ Fehler beim Starten des MAVSDK-Servers: {str(e)}")
             return False
-            
+
     async def _monitor_server_output(self):
         """Überwacht die Ausgabe des MAVSDK-Servers"""
+        if not self.mavsdk_server_process:
+            return
+            
         try:
-            while self.mavsdk_server_process and self.mavsdk_server_process.poll() is None:
-                # Lese stdout
-                line = self.mavsdk_server_process.stdout.readline()
-                if line:
-                    self._emit_log(f"🔧 Server: {line.strip()}")
-                
-                # Lese stderr
-                error = self.mavsdk_server_process.stderr.readline()
-                if error:
-                    self._emit_log(f"⚠️ Server Error: {error.strip()}")
-                
+            while self.running and self.mavsdk_server_process.poll() is None:
+                output = self.mavsdk_server_process.stdout.readline()
+                if output:
+                    self._emit_log(f"MAVSDK-Server: {output.strip()}")
                 await asyncio.sleep(0.1)
-                
-            # Wenn der Server beendet wurde
-            if self.mavsdk_server_process:
-                return_code = self.mavsdk_server_process.poll()
-                if return_code is not None:
-                    self._emit_log(f"⚠️ MAVSDK-Server beendet mit Code: {return_code}")
-                    
-        except Exception as e:
-            self._emit_log(f"❌ Fehler beim Überwachen der Server-Ausgabe: {str(e)}")
-            if self.debug:
-                import traceback
-                self._emit_log(f"🔍 Stacktrace: {traceback.format_exc()}")
-                
+        except:
+            pass
+
     def _is_connection_alive(self) -> bool:
-        """
-        Prüft ob die Verbindung noch aktiv ist.
-        Returns:
-            bool: True wenn die Verbindung aktiv ist, False sonst
-        """
+        """Prüft ob die Verbindung noch aktiv ist"""
         if not self.drone:
             return False
             
-        try:
-            # Prüfe Zeitstempel des letzten Heartbeats
-            if time.time() - self._last_heartbeat > self._heartbeat_timeout:
-                return False
-            return True
-        except Exception:
+        current_time = time.time()
+        if current_time - self._last_heartbeat > self._heartbeat_timeout:
             return False
             
+        return True
+
     async def _restart_connection(self):
-        """Versucht die Verbindung wiederherzustellen"""
-        self._emit_log("🔄 Versuche Verbindung wiederherzustellen...")
+        """Versucht die Verbindung neu zu starten"""
+        self._emit_log("🔄 Versuche Verbindung neu zu starten...")
         
-        try:
-            # Stoppe altes Monitoring
-            self.running = False
-            await self.disconnect_from_drone()
-            
-            # Warte kurz
-            await asyncio.sleep(1)
-            
-            # Versuche neue Verbindung
-            if await self.connect_to_drone():
-                self._emit_log("✅ Verbindung wiederhergestellt")
-                await self.begin_vehicle_monitoring()
-            else:
-                self._emit_log("❌ Wiederverbindung fehlgeschlagen")
-                
-        except Exception as e:
-            self._emit_log(f"❌ Fehler beim Wiederverbinden: {str(e)}")
-        finally:
-            self._reconnect_task = None
+        await self.close_connection()
+        await asyncio.sleep(2)
+        
+        success = await self.establish_connection()
+        if success:
+            await self.begin_vehicle_monitoring()
 
 class MAVLinkConnector(DroneConnectorBase):
     """Handles MAVLink connection to simulator"""
@@ -541,68 +579,57 @@ class MAVLinkConnector(DroneConnectorBase):
             self._log_info("Disconnected")
         except Exception as e:
             self._log_error(f"Error during disconnect: {str(e)}")
-            
+    
+    async def start_monitoring(self):
+        """Start monitoring drone data"""
+        # Implement monitoring logic here
+        pass
+    
+    def stop(self):
+        """Stop the connection"""
+        self._running = False
+        if self._connection:
+            self._connection.close()
+    
     def _send_initial_messages(self):
-        """Send initial messages to simulator"""
+        """Send initial MAVLink messages"""
         try:
             # Send heartbeat
             self._connection.mav.heartbeat_send(
                 mavutil.mavlink.MAV_TYPE_GCS,
                 mavutil.mavlink.MAV_AUTOPILOT_INVALID,
-                0,  # base mode
-                0,  # custom mode
-                mavutil.mavlink.MAV_STATE_ACTIVE
+                0, 0, 0
             )
             
-            # Send initial parameters
-            self._connection.mav.param_value_send(
-                "SIM_ENABLE", 1.0, mavutil.mavlink.MAV_PARAM_TYPE_REAL32, 1, 0
-            )
-            
-            # Request data streams
+            # Request data stream
             self._connection.mav.request_data_stream_send(
                 self._connection.target_system,
                 self._connection.target_component,
                 mavutil.mavlink.MAV_DATA_STREAM_ALL,
-                10,  # 10 Hz
-                1    # Enable
+                10, 1  # 10 Hz, 1 = start
             )
             
-            self._log_info("Initial messages sent")
         except Exception as e:
             self._log_error(f"Error sending initial messages: {str(e)}")
-            
+    
     def _log_info(self, message: str) -> None:
-        """Log an info message"""
-        print(f"[MAVLinkConnector] {message}")
-        self.log_received.emit(message)
-        
+        """Log info message"""
+        self.log_received.emit(f"[INFO] {message}")
+    
     def _log_error(self, message: str) -> None:
-        """Log an error message"""
-        print(f"[MAVLinkConnector] ❌ {message}")
-        self.log_received.emit(f"❌ {message}")
-        
-    def stop(self):
-        """Stop the connection"""
-        self._running = False
-        if self._connection:
-            try:
-                self._connection.close()
-            except:
-                pass
-            self._connection = None
+        """Log error message"""
+        self.log_received.emit(f"[ERROR] {message}")
 
 def create_connector(connector_type: ConnectorType, **kwargs) -> DroneConnectorBase:
-    """Factory-Methode für Connector-Erstellung"""
-    try:
-        if connector_type == ConnectorType.MAVSDK:
-            if 'connection_string' not in kwargs:
-                raise ValueError("connection_string ist erforderlich für MAVSDK")
-            return MAVSDKConnector(kwargs['connection_string'])
-        else:  # PYMAVLINK
-            if 'port' not in kwargs or 'baudrate' not in kwargs:
-                raise ValueError("port und baudrate sind erforderlich für MAVLink")
-            return MAVLinkConnector(kwargs['port'], kwargs['baudrate'])
-    except Exception as e:
-        print(f"Fehler beim Erstellen des Connectors: {str(e)}")
-        raise
+    """Factory-Funktion für Connector-Erstellung"""
+    if connector_type == ConnectorType.DRONEKIT:
+        connection_string = kwargs.get('connection_string', 'udp://127.0.0.1:14550')
+        return DroneKitConnector(connection_string)
+    elif connector_type == ConnectorType.MAVSDK:
+        connection_string = kwargs.get('connection_string', 'udp://127.0.0.1:14550')
+        return MAVSDKConnector(connection_string)
+    elif connector_type == ConnectorType.PYMAVLINK:
+        port = kwargs.get('port', 'simulator://')
+        return MAVLinkConnector(port)
+    else:
+        raise ValueError(f"Unknown connector type: {connector_type}")

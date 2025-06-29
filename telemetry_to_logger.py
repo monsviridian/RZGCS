@@ -4,6 +4,12 @@ import sys
 import time
 from pymavlink import mavutil
 from datetime import datetime
+import collections.abc
+import collections
+if not hasattr(collections, 'MutableMapping'):
+    collections.MutableMapping = collections.abc.MutableMapping
+
+from dronekit import connect
 
 # Importieren der Logger-Klasse, falls vorhanden (für Tests)
 try:
@@ -18,7 +24,7 @@ class TelemetryLogger:
     def __init__(self, port="COM3", baudrate=115200):
         self.port = port
         self.baudrate = baudrate
-        self.connection = None
+        self.vehicle = None
         self.logger = Logger() if has_logger else None
         self.connected = False
         
@@ -39,25 +45,13 @@ class TelemetryLogger:
         """Verbindung zur seriellen Schnittstelle herstellen"""
         try:
             print(f"Verbindung zu {self.port} wird hergestellt...")
-            self.connection = mavutil.mavlink_connection(
-                device=self.port,
-                baud=self.baudrate,
-                source_system=255,
-                source_component=0
-            )
-            
-            # Warten auf Heartbeat
-            print("Warte auf Heartbeat...")
-            msg = self.connection.wait_heartbeat(timeout=5)
-            if msg:
-                print(f"Heartbeat empfangen: {msg}")
-                self.connected = True
-                self.log_system_info(f"[SYSTEM INFO] Verbunden mit {self.port} bei {self.baudrate} Baud")
-                self.log_system_info(f"[SYSTEM INFO] Fahrzeugtyp: {msg.type}, Autopilot: {msg.autopilot}")
-                return True
-            else:
-                print("Kein Heartbeat empfangen")
-                return False
+            self.vehicle = connect(self.port, wait_ready=True, baud=self.baudrate)
+            print("Connected!")
+            print("Mode:", self.vehicle.mode.name)
+            self.connected = True
+            self.log_system_info(f"[SYSTEM INFO] Verbunden mit {self.port} bei {self.baudrate} Baud")
+            self.log_system_info(f"[SYSTEM INFO] Fahrzeugtyp: {self.vehicle.type}, Autopilot: {self.vehicle.autopilot}")
+            return True
         except Exception as e:
             print(f"Fehler beim Verbinden: {e}")
             return False
@@ -76,7 +70,7 @@ class TelemetryLogger:
     
     def run(self):
         """Telemetrie empfangen und als Logs ausgeben"""
-        if not self.connected or not self.connection:
+        if not self.connected or not self.vehicle:
             print("Nicht verbunden")
             return
             
@@ -86,7 +80,7 @@ class TelemetryLogger:
             # Telemetriedaten fortlaufend empfangen
             while True:
                 # Auf nächste Nachricht warten
-                msg = self.connection.recv_match(blocking=True, timeout=1.0)
+                msg = self.vehicle.recv_match(blocking=True, timeout=1.0)
                 if not msg:
                     continue
                     
@@ -144,9 +138,13 @@ class TelemetryLogger:
         except Exception as e:
             print(f"\nFehler: {e}")
         finally:
-            if self.connection:
-                self.connection.close()
+            if self.vehicle:
+                self.vehicle.close()
                 print("\nVerbindung geschlossen.")
+
+    def close(self):
+        if self.vehicle:
+            self.vehicle.close()
 
 if __name__ == "__main__":
     # Port und Baudrate definieren (optional über Kommandozeilenparameter)

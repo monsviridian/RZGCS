@@ -9,8 +9,22 @@
 #include "qqmlextensionplugin.h"
 
 Q_IMPORT_QML_PLUGIN(RZGCSContentPlugin)
+Q_IMPORT_QML_PLUGIN(RZGCSPlugin)
+Q_IMPORT_QML_PLUGIN(ComponentsPlugin)
+Q_IMPORT_QML_PLUGIN(com_rzgcs_licensingPlugin)
+Q_IMPORT_QML_PLUGIN(ConnectionPlugin)
+Q_IMPORT_QML_PLUGIN(ConnectionPlugin)
+Q_IMPORT_QML_PLUGIN(com_rzgcs_licensingPlugin)
 Q_IMPORT_QML_PLUGIN(ComponentsPlugin)
 Q_IMPORT_QML_PLUGIN(RZGCSPlugin)
+Q_IMPORT_QML_PLUGIN(RZGCSContentPlugin)
+Q_IMPORT_QML_PLUGIN(ConnectionPlugin)
+Q_IMPORT_QML_PLUGIN(ComponentsPlugin)
+Q_IMPORT_QML_PLUGIN(RZGCSPlugin)
+Q_IMPORT_QML_PLUGIN(com_rzgcs_licensingPlugin)
+Q_IMPORT_QML_PLUGIN(ConnectionPlugin)
+Q_IMPORT_QML_PLUGIN(ComponentsPlugin)
+Q_IMPORT_QML_PLUGIN(com_rzgcs_licensingPlugin)
 Q_IMPORT_QML_PLUGIN(RZGCSPlugin)
 
 const char mainQmlFile[] = "qrc:/qt/qml/RZGCSContent/App.qml";

@@ -1,0 +1,7 @@
+pyside6>=6.5.0
+pymavlink>=2.4.37
+pyserial>=3.5
+numpy>=1.24.0
+pandas>=2.0.0
+pyqtgraph>=0.13.3
+dronekit>=2.9.2 

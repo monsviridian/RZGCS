@@ -1,26 +1,26 @@
 from typing import Optional
 
 class DroneException(Exception):
-    """Basis-Exception für alle drohnenbezogenen Fehler"""
+    """Base exception for all drone-related errors"""
     def __init__(self, message: str, error_code: Optional[int] = None):
         self.message = message
         self.error_code = error_code
         super().__init__(self.message)
 
 class ConnectionException(DroneException):
-    """Exception für Verbindungsfehler"""
+    """Exception for connection errors"""
     pass
 
 class SensorException(DroneException):
-    """Exception für Sensorfehler"""
+    """Exception for sensor errors"""
     pass
 
 class MotorException(DroneException):
-    """Exception für Motorfehler"""
+    """Exception for motor errors"""
     pass
 
 class CalibrationException(DroneException):
-    """Exception für Kalibrierungsfehler"""
+    """Exception for calibration errors"""
     pass
 
 class ConnectionTimeoutError(Exception):

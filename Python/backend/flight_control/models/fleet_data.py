@@ -75,13 +75,15 @@ class SensorData:
     roll: float = 0.0
     pitch: float = 0.0
     yaw: float = 0.0
+    heading: float = 0.0
     
     # GPS-Daten
-    gps_lat: float = 0.0
-    gps_lon: float = 0.0
-    altitude: float = 0.0
+    gps_latitude: float = 0.0
+    gps_longitude: float = 0.0
+    gps_altitude: float = 0.0
     groundspeed: float = 0.0
     airspeed: float = 0.0
+    vertical_speed: float = 0.0
     gps_satellites: float = 0
     
     # Batterie-Daten
@@ -90,6 +92,9 @@ class SensorData:
     battery_remaining: float = 0.0
     battery_percentage: float = 0.0
     battery_temperature: float = 0.0
+    
+    # VFR HUD Daten
+    throttle: float = 0.0
     
     # Erweiterte Sensordaten
     motor_temperature: float = 0.0

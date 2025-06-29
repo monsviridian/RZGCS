@@ -29,7 +29,17 @@ def get_mavsdk_server_path() -> str:
     if sys.platform == "win32":
         server_path = mavsdk_path / "windows" / "mavsdk-server.exe"
     elif sys.platform == "darwin":  # macOS
-        server_path = mavsdk_path / "mac" / "mavsdk-server"
+        # Pru00fcfe beide mu00f6glichen Speicherorte fu00fcr macOS
+        server_path_1 = mavsdk_path / "mac" / "mavsdk-server"
+        server_path_2 = mavsdk_path / "macos" / "mavsdk-server"
+        
+        if server_path_1.exists():
+            server_path = server_path_1
+        elif server_path_2.exists():
+            server_path = server_path_2
+        else:
+            # Versuche den Server im aktuellen Verzeichnis zu finden (fu00fcr Entwicklungsumgebungen)
+            server_path = mavsdk_path / "mavsdk-server"
     else:  # Linux
         server_path = mavsdk_path / "linux" / "mavsdk-server"
     

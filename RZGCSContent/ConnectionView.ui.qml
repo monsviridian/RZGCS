@@ -90,13 +90,34 @@ Item {
                 onClicked: {
                     if (connectionType.currentText === "Serial") {
                         var port = portCombo.currentText
-                        if (port) {
-                            serialConnector.establish_serial_connection(port)
-                        }
+                        var baudrate = connectionString.text || "115200"
+                        
+                        // Port und Baudrate setzen
+                        serialConnector.setPort(port)
+                        serialConnector.setBaudRate(parseInt(baudrate))
+                        
+                        // Verbindung herstellen
+                        serialConnector.connect()
+                        
+                        // Log-Eintrag
+                        messageManager.addMessage("Verbinde mit " + port + " bei " + baudrate + " Baud", 1)
+                    } else if (connectionType.currentText === "Simulator") {
+                        // Direkt mit Simulator verbinden
+                        serialConnector.setPort("tcp:127.0.0.1:5760")
+                        serialConnector.connect()
+                        messageManager.addMessage("Verbinde mit Simulator", 1)
                     } else {
+                        // TCP/UDP Verbindung
                         var connString = connectionString.text
                         if (connString) {
-                            serialConnector.establish_serial_connection(connString)
+                            if (connectionType.currentText === "UDP" && !connString.startsWith("udp:")) {
+                                connString = "udp:" + connString
+                            } else if (connectionType.currentText === "TCP" && !connString.startsWith("tcp:")) {
+                                connString = "tcp:" + connString
+                            }
+                            serialConnector.setPort(connString)
+                            serialConnector.connect()
+                            messageManager.addMessage("Verbinde mit " + connString, 1)
                         }
                     }
                 }

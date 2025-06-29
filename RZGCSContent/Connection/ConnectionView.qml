@@ -71,11 +71,11 @@ Rectangle {
         Button {
             id: connectButton
             Layout.fillWidth: true
-            text: backend && backend.connectionStatus === "CONNECTED" ? "Disconnect" : "Connect"
+            text: backend && backend.isConnected ? "Disconnect" : "Connect"
             onClicked: {
                 if (backend) {
-                    if (backend.connectionStatus === "CONNECTED") {
-                        backend.disconnect()
+                    if (backend.isConnected) {
+                        backend.disconnect_from_drone()
                     } else {
                         backend.connect()
                     }
@@ -121,8 +121,8 @@ Rectangle {
         // Status-Anzeige
         Label {
             Layout.fillWidth: true
-            text: backend ? "Status: " + backend.connectionStatus : "Status: Disconnected"
-            color: "white"
+            text: backend && backend.isConnected ? "Status: Connected" : "Status: Disconnected"
+            color: backend && backend.isConnected ? "green" : "red"
             horizontalAlignment: Text.AlignHCenter
         }
     }

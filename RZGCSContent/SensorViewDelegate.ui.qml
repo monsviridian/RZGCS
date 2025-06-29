@@ -36,14 +36,7 @@ Item {
             color: "#ffffff"
             text: {
                 if (model) {
-                    // Kombiniere value und unit, falls beide verfügbar sind
-                    if (model.value !== undefined && model.unit !== undefined) {
-                        return model.value + " " + model.unit;
-                    } else if (model.value !== undefined) {
-                        return model.value;
-                    } else {
-                        return "N/A";
-                    }
+                    return model.formattedValue || "N/A";
                 } else {
                     return "N/A";
                 }

@@ -22,7 +22,8 @@ Item {
         text: modelData
         color: "white"
         font.family: "Consolas, 'Courier New', monospace"
-        font.pixelSize: 12
+        font.pixelSize: 16
+        font.bold: modelData.includes("Frame:") || modelData.includes("RCOut:") || modelData.includes("MicoAir") || modelData.includes("ChibiOS:") || modelData.includes("ArduCopter") || modelData.includes("PreArm:")
         wrapMode: Text.WordWrap
         width: parent.width - 10
         anchors {

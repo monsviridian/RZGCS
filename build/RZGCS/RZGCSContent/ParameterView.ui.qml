@@ -260,11 +260,9 @@ Item {
         // Automatisches Laden der Parameter nach Verbindung
         Connections {
             target: serialConnector
-            function onConnectedChanged(connected) {
-                if (connected) {
-                    console.log("Verbindung hergestellt, lade Parameter...")
-                    serialConnector.load_parameters()
-                }
+            function onParameterManagerReady() {
+                console.log("ParameterManager bereit, lade Parameter...")
+                serialConnector.load_parameters()
             }
         }
 

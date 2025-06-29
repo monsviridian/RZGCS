@@ -275,3 +275,4 @@ class MAVLinkManager(QObject):
         except Exception as e:
             self.logger.error(f"Fehler beim Senden der Nachricht: {str(e)}")
             return False
+ 

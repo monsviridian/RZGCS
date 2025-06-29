@@ -13,9 +13,6 @@ qt6_add_qml_module(Components
     URI "Components"
     VERSION 1.0
     RESOURCE_PREFIX "/qt/qml"
-    QML_FILES
-        "BusyIndicatorManager.qml"
-        "BusyIndicator.qml"
 )
 
 

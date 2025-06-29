@@ -1,0 +1,602 @@
+/*
+This is a UI file (.ui.qml) that is intended to be edited in Qt Design Studio only.
+It is supposed to be strictly declarative and only uses a subset of QML. If you edit
+this file manually, you might introduce QML code that is not supported by Qt Design Studio.
+Check out https://doc.qt.io/qtcreator/creator-quick-ui-forms.html for details on .ui.qml files.
+*/
+import QtQuick 2.15
+import QtQuick.Controls.Material 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
+import QtQuick.Window 2.15
+
+// Lokale Komponenten importieren
+import "./" as RZGCS
+import "./Connection/" as Connection
+
+Item {
+    id: root
+    width: 800
+    height: 600
+
+    // Instanziiere FirmwareViewModel direkt
+    property var firmwareViewModel: FirmwareViewModel {}
+    
+    // messageManager wird von Python bereitgestellt und im Kontext registriert
+
+    // Schwarzer Hintergrund
+    Rectangle {
+        anchors.fill: parent
+        color: "black"
+        z: -1  // Hinter allen Elementen
+    }
+
+    // Toast Notification Container
+    Item {
+        id: toastContainer
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.margins: 20
+        z: 1000
+    }
+
+    // Ensure serialConnector is available
+    Component.onCompleted: {
+        if (serialConnector) {
+            serialConnector.load_ports()
+            messageManager.addMessage("Application started", MessageManager.MessageType.Info)
+            showToast("RZGCS started successfully", 1) // Success
+        }
+        
+        // Connect serialConnector signals to message manager
+        if (serialConnector) {
+            serialConnector.connectedChanged.connect(function() {
+                var status = serialConnector.connected ? "Connected" : "Disconnected"
+                messageManager.updateConnectionStatus(serialConnector.connected, status)
+                
+                // Show toast for connection changes
+                if (serialConnector.connected) {
+                    showToast("Connected to vehicle", 1) // Success
+                } else {
+                    showToast("Disconnected from vehicle", 2) // Warning
+                }
+            })
+        }
+        
+        // Connect message manager signals to show toasts for important messages
+        messageManager.messageAdded.connect(function(message, type) {
+            // Show toast for warnings and errors
+            if (type === MessageManager.MessageType.Warning || type === MessageManager.MessageType.Error) {
+                showToast(message, type)
+            }
+        })
+    }
+    
+    // Function to show toast notification
+    function showToast(message, type) {
+        var toast = Qt.createComponent("ToastNotification.qml").createObject(toastContainer, {
+            message: message,
+            type: type,
+            duration: type === 3 ? 5000 : 3000 // Longer duration for errors
+        })
+        
+        // Position the toast
+        toast.x = toastContainer.width - toast.width
+        
+        // Show the toast
+        toast.show()
+        
+        // Clean up after animation
+        toast.hideAnimation.finished.connect(function() {
+            toast.destroy()
+        })
+    }
+
+    // Hauptlayout: Status Bar oben, Content unten
+    ColumnLayout {
+        anchors.fill: parent
+        spacing: 5
+
+        // Status Bar
+        StatusBar {
+            Layout.fillWidth: true
+            // messageManager wird direkt aus dem Kontext geladen
+        }
+
+        // Hauptbereich: Content links, Messages rechts
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: 10
+
+            // Linker Content-Bereich mit Connection Controls und TabBar
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: 5
+
+                // Connection controls
+                Rectangle {
+                    Layout.fillWidth: true
+                    color: "black"
+                    implicitHeight: connectionControlsRow.implicitHeight + 16  // Add some padding
+                    
+                    RowLayout {
+                        id: connectionControlsRow
+                        anchors {
+                            left: parent.left
+                            right: parent.right
+                            top: parent.top
+                            margins: 8
+                        }
+                        spacing: 10
+
+                        ComboBox {
+                            id: portComboBox
+                            model: serialConnector ? serialConnector.availablePorts : []
+                            Layout.preferredWidth: 200
+                            onCurrentIndexChanged: {
+                                if (serialConnector && currentIndex >= 0 && currentText !== "") {
+                                    serialConnector.setPort(currentText)
+                                }
+                            }
+                            
+                            // Style the ComboBox
+                            background: Rectangle {
+                                color: "black"
+                                border.color: "gray"
+                                border.width: 1
+                                radius: 2
+                            }
+                            
+                            contentItem: Text {
+                                text: portComboBox.displayText
+                                color: "white"
+                                verticalAlignment: Text.AlignVCenter
+                                leftPadding: 5
+                            }
+                            
+                            popup.background: Rectangle {
+                                color: "black"
+                                border.color: "gray"
+                            }
+                            
+                            delegate: ItemDelegate {
+                                width: portComboBox.width
+                                contentItem: Text {
+                                    text: modelData
+                                    color: "white"
+                                    elide: Text.ElideRight
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                                background: Rectangle {
+                                    color: highlighted ? "gray" : "black"
+                                }
+                                highlighted: portComboBox.highlightedIndex === index
+                            }
+                            
+                            // Add tooltip to show when no ports are available
+                            ToolTip.visible: model.length <= 1
+                            ToolTip.text: "No serial ports found. Please check your device connection and drivers."
+                        }
+
+                        ComboBox {
+                            id: baudComboBox
+                            model: serialConnector ? serialConnector.availableBaudRates : []
+                            currentIndex: 4  // 115200
+                            Layout.preferredWidth: 100
+                            
+                            // Style the ComboBox
+                            background: Rectangle {
+                                color: "black"
+                                border.color: "gray"
+                                border.width: 1
+                                radius: 2
+                            }
+                            
+                            contentItem: Text {
+                                text: baudComboBox.displayText
+                                color: "white"
+                                verticalAlignment: Text.AlignVCenter
+                                leftPadding: 5
+                            }
+                            
+                            popup.background: Rectangle {
+                                color: "black"
+                                border.color: "gray"
+                            }
+                            
+                            delegate: ItemDelegate {
+                                width: baudComboBox.width
+                                contentItem: Text {
+                                    text: modelData
+                                    color: "white"
+                                    elide: Text.ElideRight
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                                background: Rectangle {
+                                    color: highlighted ? "gray" : "black"
+                                }
+                                highlighted: baudComboBox.highlightedIndex === index
+                            }
+                            onCurrentTextChanged: if (serialConnector) serialConnector.setBaudRate(parseInt(currentText))
+                        }
+
+                        Button {
+                            text: serialConnector && serialConnector.connected ? "Disconnect" : "Connect"
+                            Layout.preferredWidth: 80
+                            background: Rectangle {
+                                color: "black"
+                                border.color: "gray"
+                                border.width: 1
+                                radius: 2
+                            }
+                            contentItem: Text {
+                                text: parent.text
+                                color: "white"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            onClicked: {
+                                if (serialConnector) {
+                                    if (serialConnector.connected) {
+                                        serialConnector.disconnect()
+                                    } else {
+                                        // Check if port is selected
+                                        if (portComboBox.currentText !== "") {
+                                            console.log("Connecting to: " + portComboBox.currentText)
+                                            serialConnector.connect()
+                                        } else {
+                                            showToast("Please select a port first", 2) // Warning
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Button {
+                            text: "Refresh Ports"
+                            Layout.preferredWidth: 100
+                            background: Rectangle {
+                                color: "black"
+                                border.color: "gray"
+                                border.width: 1
+                                radius: 2
+                            }
+                            contentItem: Text {
+                                text: parent.text
+                                color: "white"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            onClicked: {
+                                if (serialConnector) {
+                                    serialConnector.load_ports()
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Tab Bar and Stack Layout
+                TabBar {
+                    id: tabBar
+                    width: parent.width
+                    background: Rectangle { color: "black" }
+                    
+                    TabButton {
+                        text: "Connection"
+                        width: implicitWidth
+                        contentItem: Text {
+                            text: parent.text
+                            color: parent.checked ? "white" : "lightgray"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: "transparent"
+                            border.color: parent.checked ? "white" : "transparent"
+                            border.width: parent.checked ? 2 : 0
+                        }
+                    }
+                    
+                    TabButton {
+                        text: "Preflight"
+                        width: implicitWidth
+                        contentItem: Text {
+                            text: parent.text
+                            color: parent.checked ? "white" : "lightgray"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: "transparent"
+                            border.color: parent.checked ? "white" : "transparent"
+                            border.width: parent.checked ? 2 : 0
+                        }
+                    }
+                    
+                    TabButton {
+                        text: "Parameters"
+                        width: implicitWidth
+                        contentItem: Text {
+                            text: parent.text
+                            color: parent.checked ? "white" : "lightgray"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: "transparent"
+                            border.color: parent.checked ? "white" : "transparent"
+                            border.width: parent.checked ? 2 : 0
+                        }
+                    }
+                    
+                    TabButton {
+                        text: "Calibration"
+                        width: implicitWidth
+                        contentItem: Text {
+                            text: parent.text
+                            color: parent.checked ? "white" : "lightgray"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: "transparent"
+                            border.color: parent.checked ? "white" : "transparent"
+                            border.width: parent.checked ? 2 : 0
+                        }
+                    }
+                    
+                    TabButton {
+                        text: "Flight"
+                        width: implicitWidth
+                        contentItem: Text {
+                            text: parent.text
+                            color: parent.checked ? "white" : "lightgray"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: "transparent"
+                            border.color: parent.checked ? "white" : "transparent"
+                            border.width: parent.checked ? 2 : 0
+                        }
+                    }
+                    
+                    TabButton {
+                        text: "Angel Mode"
+                        width: implicitWidth
+                        contentItem: Text {
+                            text: parent.text
+                            color: parent.checked ? "white" : "lightgray"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: "transparent"
+                            border.color: parent.checked ? "white" : "transparent"
+                            border.width: parent.checked ? 2 : 0
+                        }
+                    }
+                    
+                    TabButton {
+                        text: "License"
+                        width: implicitWidth
+                        contentItem: Text {
+                            text: parent.text
+                            color: parent.checked ? "white" : "lightgray"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: "transparent"
+                            border.color: parent.checked ? "white" : "transparent"
+                            border.width: parent.checked ? 2 : 0
+                        }
+                    }
+                    
+                    TabButton {
+                        text: "Support"
+                        width: implicitWidth
+                        contentItem: Text {
+                            text: parent.text
+                            color: parent.checked ? "white" : "lightgray"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: "transparent"
+                            border.color: parent.checked ? "white" : "transparent"
+                            border.width: parent.checked ? 2 : 0
+                        }
+                    }
+                    
+                    TabButton {
+                        text: "Store"
+                        width: implicitWidth
+                        contentItem: Text {
+                            text: parent.text
+                            color: parent.checked ? "white" : "lightgray"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: "transparent"
+                            border.color: parent.checked ? "white" : "transparent"
+                            border.width: parent.checked ? 2 : 0
+                        }
+                    }
+                    
+                    TabButton {
+                        text: "Firmware"
+                        width: implicitWidth
+                        contentItem: Text {
+                            text: parent.text
+                            color: parent.checked ? "white" : "lightgray"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: "transparent"
+                            border.color: parent.checked ? "white" : "transparent"
+                            border.width: parent.checked ? 2 : 0
+                        }
+                    }
+                    
+                    TabButton {
+                        text: "Dashboard"
+                        width: implicitWidth
+                        contentItem: Text {
+                            text: parent.text
+                            color: parent.checked ? "white" : "lightgray"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: "transparent"
+                            border.color: parent.checked ? "white" : "transparent"
+                            border.width: parent.checked ? 2 : 0
+                        }
+                    }
+                }
+
+                // Stack Layout für Tab-Inhalte
+                StackLayout {
+                    currentIndex: tabBar.currentIndex
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    
+                    // Tab 0: Connection
+                    RZGCS.ConnectionView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                    }
+                    
+                    // Tab 1: Preflight
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        
+                        // PreflightView ohne eigene StatusBar
+                        RZGCS.PreflightView {
+                            id: preflightViewContent
+                            anchors.fill: parent
+                            // Deaktiviere die eigene StatusBar von PreflightView
+                            Component.onCompleted: {
+                                if (preflightViewContent.children) {
+                                    for (var i = 0; i < preflightViewContent.children.length; i++) {
+                                        var child = preflightViewContent.children[i];
+                                        if (child.objectName === "statusBar") {
+                                            child.visible = false;
+                                            child.height = 0;
+                                        } else if (child.id === "mainContent") {
+                                            child.anchors.top = preflightViewContent.top;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Tab 2: Parameters
+                    RZGCS.ParameterView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                    }
+                    
+                    // Tab 3: Calibration
+                    RZGCS.CalibrationView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        // Use conditional property binding to avoid errors when controller is not defined
+                        controller: typeof calibrationViewController !== 'undefined' ? calibrationViewController : null
+                    }
+                    
+                    // Tab 4: Flight (Mission Planner)
+                    RZGCS.FlightView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                    }
+                    
+                    // Tab 5: Angel Mode
+                    RZGCS.AngelView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                    }
+                    
+                    // Tab 6: License
+                    RZGCS.LicenseView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                    }
+                    
+                    // Tab 7: Support View
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        
+                        // Implement simple Support view
+                        Rectangle {
+                            anchors.fill: parent
+                            color: "#1e1e1e"
+                            
+                            ColumnLayout {
+                                anchors.centerIn: parent
+                                width: parent.width * 0.8
+                                spacing: 20
+                                
+                                Text {
+                                    text: "Support Center"
+                                    font.pixelSize: 24
+                                    color: "white"
+                                    Layout.alignment: Qt.AlignHCenter
+                                }
+                                
+                                Text {
+                                    text: "Need help? Contact our support team."
+                                    font.pixelSize: 16
+                                    color: "white"
+                                    Layout.alignment: Qt.AlignHCenter
+                                }
+                                
+                                Button {
+                                    text: "Contact Support"
+                                    Layout.alignment: Qt.AlignHCenter
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Tab 8: Store
+                    RZGCS.StoreView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                    }
+
+                    // Tab 9: Firmware View
+                    RZGCS.FirmwareView {
+                        id: firmwareViewTab
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        isConnected: serialConnector ? serialConnector.connected : false
+                        firmwareViewModel: root.firmwareViewModel
+                    }
+
+                    // Tab 10: Dashboard
+                    RZDroneDashboard {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                    }
+                }
+            }
+            
+            // Rechter Message-Panel (immer sichtbar)
+            MessageList {
+                Layout.preferredWidth: 300
+                Layout.fillHeight: true
+                messageManager: root.messageManager
+            }
+        }
+    }
+}

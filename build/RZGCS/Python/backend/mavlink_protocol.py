@@ -79,75 +79,88 @@ class MAVLinkProtocol(QObject):
             
     def connect_to_port(self, port: str, baudrate: int) -> bool:
         """
-        Connects to a serial port.
+        Stellt eine Verbindung zum seriellen Port her.
         
         Args:
-            port: Serial port name
-            baudrate: Baud rate
+            port: Serieller Port (z.B. COM3, /dev/ttyACM0)
+            baudrate: Baudrate (z.B. 57600, 115200)
             
         Returns:
-            bool: True if connection was successful
+            bool: True wenn die Verbindung erfolgreich war
         """
         try:
             self._update_connection_state("connecting")
             
-            # Create MAVLink connection
+            # Verbindungsstring erstellen
+            conn_string = f"serial://{port}:{baudrate}"
+            
+            # MAVLink-Verbindung erstellen
             self.connection = mavutil.mavlink_connection(
-                port,
+                conn_string,
                 baud=baudrate,
                 source_system=255,  # GCS System ID
                 source_component=1,  # GCS Component ID
-                dialect='ardupilotmega'
+                dialect='ardupilotmega',
+                autoreconnect=True,
+                retries=3
             )
             
-            # Wait for heartbeat
-            self._log_info("Waiting for heartbeat...")
+            # Warte auf Heartbeat mit Timeout
+            self._log_info("Warte auf Heartbeat...")
             msg = self.connection.recv_match(type='HEARTBEAT', blocking=True, timeout=self.HEARTBEAT_TIMEOUT)
             
-            if msg:
-                self._system_id = msg.get_srcSystem()
-                self._component_id = msg.get_srcComponent()
-                self._last_heartbeat = time.time()
-                self._log_info(f"Connected to system {self._system_id}, component {self._component_id}")
-                self._update_connection_state("connected")
-                self._reconnect_attempts = 0
-                return True
-            else:
-                self._log_error("No heartbeat received")
+            if not msg:
+                self._log_error("Kein Heartbeat empfangen")
                 self._update_connection_state("error")
                 return False
-                
+            
+            # System und Component ID speichern
+            self._system_id = msg.get_srcSystem()
+            self._component_id = msg.get_srcComponent()
+            self._last_heartbeat = time.time()
+            
+            # Verbindung erfolgreich
+            self._log_info(f"Verbunden mit System {self._system_id}, Component {self._component_id}")
+            self._update_connection_state("connected")
+            self._reconnect_attempts = 0
+            
+            # Heartbeat-Timer starten
+            self._heartbeat_timer.start(self.HEARTBEAT_TIMEOUT * 1000)  # in ms
+            
+            return True
+            
         except Exception as e:
-            self._log_error(f"Connection error: {str(e)}")
+            self._log_error(f"Verbindungsfehler: {str(e)}")
             self._update_connection_state("error")
             return False
             
     def send_message(self, message: mavlink.MAVLink_message) -> bool:
         """
-        Sends a MAVLink message.
+        Sendet eine MAVLink-Nachricht.
         
         Args:
-            message: MAVLink message to send
+            message: MAVLink-Nachricht zum Senden
             
         Returns:
-            bool: True if message was sent successfully
+            bool: True wenn die Nachricht erfolgreich gesendet wurde
         """
         if not self.connection or self._connection_state != "connected":
+            self._log_error("Keine aktive Verbindung")
             return False
             
         try:
             self.connection.mav.send(message)
             return True
         except Exception as e:
-            self._log_error(f"Error sending message: {str(e)}")
+            self._log_error(f"Fehler beim Senden der Nachricht: {str(e)}")
             return False
             
     def receive_message(self) -> Optional[mavlink.MAVLink_message]:
         """
-        Receives a MAVLink message.
+        Empfängt eine MAVLink-Nachricht.
         
         Returns:
-            Optional[mavlink.MAVLink_message]: Received message or None
+            Optional[mavlink.MAVLink_message]: Empfangene Nachricht oder None
         """
         if not self.connection:
             return None
@@ -160,7 +173,7 @@ class MAVLinkProtocol(QObject):
                 self.message_received.emit(msg)
             return msg
         except Exception as e:
-            self._log_error(f"Error receiving message: {str(e)}")
+            self._log_error(f"Fehler beim Empfangen der Nachricht: {str(e)}")
             return None
             
     def request_data_stream(self, stream_id: int, rate: int) -> bool:

@@ -144,11 +144,7 @@ ApplicationWindow {
                 backend: backend
             }
 
-            // Sensors Tab
-            SensorView {
-                id: sensorView
-                backend: backend
-            }
+            // Sensors Tab entfernt
 
             // Calibration Tab
             CalibrationView {
@@ -190,9 +186,7 @@ ApplicationWindow {
             KeyDecryptor {
                 id: keyDecryptor
             }
-            KeyManager {
-                id: keyManager
-            }
+            // KeyManager entfernt
         }
 
         // Tab Bar
@@ -235,20 +229,7 @@ ApplicationWindow {
                 }
             }
 
-            TabButton {
-                text: "Sensors"
-                Material.foreground: "white"
-                background: Rectangle {
-                    implicitWidth: 100
-                    implicitHeight: 40
-                    color: parent.checked ? "#303030" : (parent.hovered ? "#404040" : "#2C2C2C")
-                    border.color: "gray"
-                    border.width: parent.checked ? 1 : 0
-                    Behavior on color {
-                        ColorAnimation { duration: 150 }
-                    }
-                }
-            }
+            // Sensors Tab Button entfernt
 
             TabButton {
                 text: "Calibration"
@@ -385,20 +366,7 @@ ApplicationWindow {
                 }
             }
 
-            TabButton {
-                text: "Key Manager"
-                Material.foreground: "white"
-                background: Rectangle {
-                    implicitWidth: 100
-                    implicitHeight: 40
-                    color: parent.checked ? "#303030" : (parent.hovered ? "#404040" : "#2C2C2C")
-                    border.color: "gray"
-                    border.width: parent.checked ? 1 : 0
-                    Behavior on color {
-                        ColorAnimation { duration: 150 }
-                    }
-                }
-            }
+            // Key Manager Tab Button entfernt
         }
     }
 

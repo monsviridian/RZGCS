@@ -8,6 +8,7 @@ from typing import Optional, Dict, Any
 from pymavlink import mavutil
 from pymavlink.dialects.v20 import ardupilotmega as mavlink
 from PySide6.QtCore import QObject, Signal, QTimer
+from dronekit import connect
 
 class MAVLinkProtocol(QObject):
     """
@@ -90,47 +91,14 @@ class MAVLinkProtocol(QObject):
         """
         try:
             self._update_connection_state("connecting")
-            
-            # Verbindungsstring erstellen
-            conn_string = f"serial://{port}:{baudrate}"
-            
-            # MAVLink-Verbindung erstellen
-            self.connection = mavutil.mavlink_connection(
-                conn_string,
-                baud=baudrate,
-                source_system=255,  # GCS System ID
-                source_component=1,  # GCS Component ID
-                dialect='ardupilotmega',
-                autoreconnect=True,
-                retries=3
-            )
-            
-            # Warte auf Heartbeat mit Timeout
-            self._log_info("Warte auf Heartbeat...")
-            msg = self.connection.recv_match(type='HEARTBEAT', blocking=True, timeout=self.HEARTBEAT_TIMEOUT)
-            
-            if not msg:
-                self._log_error("Kein Heartbeat empfangen")
-                self._update_connection_state("error")
-                return False
-            
-            # System und Component ID speichern
-            self._system_id = msg.get_srcSystem()
-            self._component_id = msg.get_srcComponent()
-            self._last_heartbeat = time.time()
-            
-            # Verbindung erfolgreich
-            self._log_info(f"Verbunden mit System {self._system_id}, Component {self._component_id}")
+            # Use DroneKit connect for serial
+            vehicle = connect(port, wait_ready=True, baud=baudrate)
+            self.vehicle = vehicle
+            self._log_info("Connected!")
             self._update_connection_state("connected")
-            self._reconnect_attempts = 0
-            
-            # Heartbeat-Timer starten
-            self._heartbeat_timer.start(self.HEARTBEAT_TIMEOUT * 1000)  # in ms
-            
             return True
-            
         except Exception as e:
-            self._log_error(f"Verbindungsfehler: {str(e)}")
+            self._log_error(f"Connection error: {e}")
             self._update_connection_state("error")
             return False
             

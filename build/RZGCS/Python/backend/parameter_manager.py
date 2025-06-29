@@ -6,7 +6,8 @@ class ParameterManager(QObject):
     """Manages parameter data and updates"""
     
     # Signals
-    parametersLoaded = Signal(list)  # Emits list of parameters
+    parametersLoading = Signal()  # Emitted when parameter loading begins
+    parametersLoaded = Signal(list)  # Emits list of parameters when loading completes
     parameterUpdated = Signal(str, float)  # Emits parameter name and value
     errorOccurred = Signal(str)  # Emits error message
     
@@ -29,6 +30,9 @@ class ParameterManager(QObject):
             self.errorOccurred.emit(error_msg)
             return
             
+        # Signal that parameter loading has begun
+        self.parametersLoading.emit()
+        
         try:
             self._logger.addLog("[LOAD] Loading parameters from FC...")
             params = []

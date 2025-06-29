@@ -2,7 +2,12 @@
 # Test-Skript, um eine direkte MAVLink-Verbindung zu testen
 import sys
 import time
-from pymavlink import mavutil
+import collections.abc
+import collections
+if not hasattr(collections, 'MutableMapping'):
+    collections.MutableMapping = collections.abc.MutableMapping
+
+from dronekit import connect
 
 print("MAVLink-Verbindungstest mit verbesserten Parametern")
 
@@ -15,17 +20,10 @@ print(f"Versuche Verbindung zu {port} mit {baudrate} Baud...")
 try:
     # Normaler Verbindungsversuch
     print("Methode 1: Standard-Verbindung")
-    connection = mavutil.mavlink_connection(
-        device=port,
-        baud=baudrate
-    )
-    print(f"Verbindung erfolgreich! Heartbeat warten...")
-    msg = connection.wait_heartbeat(timeout=5)
-    if msg:
-        print(f"Heartbeat empfangen: {msg}")
-    else:
-        print("Kein Heartbeat empfangen")
-    connection.close()
+    vehicle = connect(port, wait_ready=True, baud=baudrate)
+    print("Connected!")
+    print("Mode:", vehicle.mode.name)
+    vehicle.close()
     
 except Exception as e:
     print(f"Fehler bei Methode 1: {e}")
@@ -35,17 +33,10 @@ except Exception as e:
         print("\nMethode 2: Windows-spezifisch")
         alt_port = f"\\\\.\\{port}"
         print(f"Versuche mit alternativem Port-Format: {alt_port}")
-        connection = mavutil.mavlink_connection(
-            device=alt_port,
-            baud=baudrate
-        )
-        print(f"Verbindung erfolgreich! Heartbeat warten...")
-        msg = connection.wait_heartbeat(timeout=5)
-        if msg:
-            print(f"Heartbeat empfangen: {msg}")
-        else:
-            print("Kein Heartbeat empfangen")
-        connection.close()
+        vehicle = connect(alt_port, wait_ready=True, baud=baudrate)
+        print("Connected!")
+        print("Mode:", vehicle.mode.name)
+        vehicle.close()
         
     except Exception as e:
         print(f"Fehler bei Methode 2: {e}")
@@ -55,17 +46,10 @@ except Exception as e:
             print("\nMethode 3: Mission Planner-Stil (com)")
             mp_port = f"com{port[3:]}" if port.startswith("COM") else port
             print(f"Versuche Mission Planner Format: {mp_port}")
-            connection = mavutil.mavlink_connection(
-                device=mp_port,
-                baud=baudrate
-            )
-            print(f"Verbindung erfolgreich! Heartbeat warten...")
-            msg = connection.wait_heartbeat(timeout=5)
-            if msg:
-                print(f"Heartbeat empfangen: {msg}")
-            else:
-                print("Kein Heartbeat empfangen")
-            connection.close()
+            vehicle = connect(mp_port, wait_ready=True, baud=baudrate)
+            print("Connected!")
+            print("Mode:", vehicle.mode.name)
+            vehicle.close()
             
         except Exception as e:
             print(f"Fehler bei Methode 3: {e}")

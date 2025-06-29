@@ -26,6 +26,7 @@ class FlightStatus(Enum):
     
 class FlightMode(Enum):
     """Flugmodus"""
+    UNKNOWN = auto()      # Unbekannt
     MANUAL = auto()       # Manuell
     STABILIZE = auto()    # Stabilisiert
     ALT_HOLD = auto()     # Höhenhaltung

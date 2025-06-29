@@ -54,6 +54,11 @@ class Backend(QObject):
             try:
                 self.serial_connector = SerialConnector(self.sensor_model, self.logger, self.parameter_model)
                 self.connector = self.serial_connector  # Alias für einheitlichen Zugriff
+                
+                # Verbinde SerialConnector-Signale mit SensorViewModel
+                print("Backend: Verbinde SerialConnector-Signale mit SensorViewModel...")
+                self._connect_serial_signals_to_sensor_model()
+                
             except Exception as e:
                 print(f"FEHLER bei der SerialConnector-Initialisierung: {str(e)}")
                 print("Stack-Trace:")
@@ -137,14 +142,22 @@ class Backend(QObject):
             
             # TelemetryViewModel initialisieren und mit SerialConnector verbinden
             print("Backend: Initialisiere TelemetryViewModel...")
-            self.telemetry_viewmodel = TelemetryViewModel()
-            if self.serial_connector:
-                # Verwende die neue Hilfsfunktion zum Registrieren des TelemetryViewModel
-                success = self.serial_connector.register_telemetry_viewmodel(self.telemetry_viewmodel)
-                if success:
-                    print("Backend: TelemetryViewModel erfolgreich registriert")
-                else:
-                    print("Backend: Fehler beim Registrieren des TelemetryViewModel")
+            try:
+                self.telemetry_viewmodel = TelemetryViewModel()
+                if self.serial_connector:
+                    # Verwende die neue Hilfsfunktion zum Registrieren des TelemetryViewModel
+                    success = self.serial_connector.register_telemetry_viewmodel(self.telemetry_viewmodel)
+                    if success:
+                        print("Backend: TelemetryViewModel erfolgreich registriert")
+                    else:
+                        print("Backend: Fehler beim Registrieren des TelemetryViewModel")
+                print("Backend: TelemetryViewModel erfolgreich initialisiert")
+            except Exception as e:
+                print(f"FEHLER bei der TelemetryViewModel-Initialisierung: {str(e)}")
+                print("Stack-Trace:")
+                traceback.print_exc()
+                # Erstelle ein Dummy-TelemetryViewModel als Fallback
+                self.telemetry_viewmodel = None
             
             # Verbinde den ParameterManager mit dem SerialConnector
             if self.serial_connector:
@@ -168,6 +181,126 @@ class Backend(QObject):
             print(f"FEHLER bei der Backend-Initialisierung: {str(e)}")
             print("Stack-Trace:")
             traceback.print_exc()
+
+    def _connect_serial_signals_to_sensor_model(self):
+        """Verbinde SerialConnector-Signale mit SensorViewModel-Methoden"""
+        try:
+            if not self.serial_connector or not self.sensor_model:
+                print("WARNUNG: SerialConnector oder SensorViewModel nicht verfügbar")
+                return
+                
+            print("Verbinde SerialConnector-Signale mit SensorViewModel...")
+            
+            # Verbinde Attitude-Signal
+            self.serial_connector.attitudeUpdated.connect(self._on_attitude_updated)
+            print("✓ Attitude-Signal verbunden")
+            
+            # Verbinde GPS-Signal
+            self.serial_connector.gpsUpdated.connect(self._on_gps_updated)
+            print("✓ GPS-Signal verbunden")
+            
+            # Verbinde Battery-Signal
+            self.serial_connector.batteryUpdated.connect(self._on_battery_updated)
+            print("✓ Battery-Signal verbunden")
+            
+            # Verbinde Velocity-Signal
+            self.serial_connector.velocityUpdated.connect(self._on_velocity_updated)
+            print("✓ Velocity-Signal verbunden")
+            
+            # Verbinde VFR_HUD-Signal
+            self.serial_connector.vfrHudUpdated.connect(self._on_vfr_hud_updated)
+            print("✓ VFR_HUD-Signal verbunden")
+            
+            print("SerialConnector-Signale erfolgreich mit SensorViewModel verbunden")
+            
+        except Exception as e:
+            print(f"FEHLER beim Verbinden der SerialConnector-Signale: {str(e)}")
+            traceback.print_exc()
+    
+    def _on_attitude_updated(self, roll, pitch, yaw):
+        """Handler für Attitude-Updates"""
+        try:
+            print(f"Backend: Received attitude update - roll={roll}, pitch={pitch}, yaw={yaw}")
+            self.sensor_model.update_sensor_value("roll", roll)
+            self.sensor_model.update_sensor_value("pitch", pitch)
+            self.sensor_model.update_sensor_value("yaw", yaw)
+            # Heading ist normalerweise gleich Yaw für die meisten UAVs
+            self.sensor_model.update_sensor_value("heading", yaw)
+        except Exception as e:
+            print(f"FEHLER beim Verarbeiten von Attitude-Update: {str(e)}")
+    
+    def _on_gps_updated(self, lat, lon, alt):
+        """Handler für GPS-Updates"""
+        try:
+            print(f"Backend: Received GPS update - lat={lat}, lon={lon}, alt={alt}")
+            self.sensor_model.update_sensor_value("gps_latitude", lat)
+            self.sensor_model.update_sensor_value("gps_longitude", lon)
+            self.sensor_model.update_sensor_value("gps_altitude", alt)
+        except Exception as e:
+            print(f"FEHLER beim Verarbeiten von GPS-Update: {str(e)}")
+    
+    def _on_battery_updated(self, voltage, current, remaining):
+        """Handler für Battery-Updates"""
+        try:
+            print(f"Backend: Received battery update - voltage={voltage}, current={current}, remaining={remaining}")
+            self.sensor_model.update_sensor_value("battery_voltage", voltage)
+            self.sensor_model.update_sensor_value("battery_current", current)
+            self.sensor_model.update_sensor_value("battery_percentage", remaining)
+        except Exception as e:
+            print(f"FEHLER beim Verarbeiten von Battery-Update: {str(e)}")
+    
+    def _on_velocity_updated(self, groundspeed, airspeed, vertical_speed):
+        """Handler für Velocity-Updates"""
+        try:
+            print(f"Backend: Received velocity update - groundspeed={groundspeed}, airspeed={airspeed}, vertical_speed={vertical_speed}")
+            self.sensor_model.update_sensor_value("groundspeed", groundspeed)
+            self.sensor_model.update_sensor_value("airspeed", airspeed)
+            self.sensor_model.update_sensor_value("vertical_speed", vertical_speed)
+        except Exception as e:
+            print(f"FEHLER beim Verarbeiten von Velocity-Update: {str(e)}")
+    
+    def _on_vfr_hud_updated(self, groundspeed, airspeed, heading, throttle):
+        """Handler für VFR_HUD-Updates"""
+        try:
+            print(f"Backend: Received VFR_HUD update - groundspeed={groundspeed}, airspeed={airspeed}, heading={heading}, throttle={throttle}")
+            self.sensor_model.update_sensor_value("groundspeed", groundspeed)
+            self.sensor_model.update_sensor_value("airspeed", airspeed)
+            self.sensor_model.update_sensor_value("heading", heading)
+            self.sensor_model.update_sensor_value("throttle", throttle)
+        except Exception as e:
+            print(f"FEHLER beim Verarbeiten von VFR_HUD-Update: {str(e)}")
+
+def cleanup_resources(backend, engine):
+    """
+    Saubere Bereinigung aller Ressourcen beim Beenden der Anwendung
+    
+    Args:
+        backend: Backend-Instanz
+        engine: QML-Engine
+    """
+    try:
+        print("Starte Cleanup-Prozess...")
+        
+        # SerialConnector sauber beenden
+        if hasattr(backend, 'serial_connector') and backend.serial_connector:
+            print("Beende SerialConnector...")
+            backend.serial_connector.cleanup()
+            
+        # QML-Engine sauber beenden
+        if engine:
+            print("Beende QML-Engine...")
+            engine.deleteLater()
+            
+        # Logger-Nachricht
+        if hasattr(backend, 'logger') and backend.logger:
+            backend.logger.addLog("[INFO] Application cleanup completed")
+            
+        print("Cleanup-Prozess abgeschlossen")
+        
+    except Exception as e:
+        print(f"WARNING: Error during cleanup: {e}")
+        import traceback
+        traceback.print_exc()
 
 def main():
     # QApplication statt QGuiApplication für Widget-Support
@@ -207,7 +340,13 @@ def main():
     engine.rootContext().setContextProperty("connection_adapter", backend.connection_viewmodel)
     engine.rootContext().setContextProperty("parameterController", backend.parameter_manager)
     engine.rootContext().setContextProperty("licenseController", backend.license_controller)
-    engine.rootContext().setContextProperty("telemetryViewModel", backend.telemetry_viewmodel)
+    
+    # Registriere TelemetryViewModel nur wenn es existiert
+    if hasattr(backend, 'telemetry_viewmodel') and backend.telemetry_viewmodel is not None:
+        engine.rootContext().setContextProperty("telemetryViewModel", backend.telemetry_viewmodel)
+        print("TelemetryViewModel erfolgreich im QML-Kontext registriert")
+    else:
+        print("Warnung: TelemetryViewModel nicht verfügbar, wird nicht im QML-Kontext registriert")
     
     # Registriere FirmwareViewModel für QML
     try:
@@ -313,6 +452,14 @@ def main():
         print("Logger erfolgreich im QML-Kontext registriert")
     except Exception as e:
         print(f"Fehler beim Registrieren des Loggers: {str(e)}")
+        
+    # Cleanup-Handler für Anwendungsbeendigung
+    def on_about_to_quit():
+        print("Anwendung wird beendet, starte Cleanup...")
+        cleanup_resources(backend, engine)
+    
+    # Verbinde Cleanup-Handler mit QApplication
+    app.aboutToQuit.connect(on_about_to_quit)
         
     return app.exec()
 

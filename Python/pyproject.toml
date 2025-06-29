@@ -1,0 +1,5 @@
+[project]
+name = "RZGCS"
+
+[tool.pyside6-project]
+files = ["main.py", "autogen/settings.py"]

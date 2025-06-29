@@ -1,6 +1,6 @@
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 import QtPositioning
 import QtLocation
 import QtQuick.Controls.Material
@@ -14,35 +14,174 @@ Page {
     property var serialConnector
     property var sensorModel
 
+    // Signale
+    signal modeChanged(string mode)
+    signal controlModeChanged(string mode)
+    signal emergencyTriggered(string procedure)
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 20
 
-        // Flight Mode Selection
+        // Flugmodus
         GroupBox {
             title: "Flight Mode"
             Layout.fillWidth: true
 
-            RowLayout {
+            ColumnLayout {
                 anchors.fill: parent
                 spacing: 10
 
                 ComboBox {
-                    id: flightModeCombo
-                    model: ["STABILIZE", "LOITER", "RTL"]
+                    id: modeCombo
                     Layout.fillWidth: true
+                    model: ["MANUAL", "STABILIZE", "ALTHOLD", "LOITER", "RTL", "AUTO"]
                     onCurrentTextChanged: {
-                        if (serialConnector) {
-                            serialConnector.set_flight_mode(currentText)
-                        }
+                        modeChanged(currentText)
                     }
                 }
             }
         }
 
-        // Arm/Disarm Control
+        // Steuerungsmodus
         GroupBox {
-            title: "System Control"
+            title: "Control Mode"
+            Layout.fillWidth: true
+
+            ColumnLayout {
+                anchors.fill: parent
+                spacing: 10
+
+                ComboBox {
+                    id: controlModeCombo
+                    Layout.fillWidth: true
+                    model: ["BASIC", "ADVANCED", "EXPERT"]
+                    onCurrentTextChanged: {
+                        controlModeChanged(currentText)
+                    }
+                }
+            }
+        }
+
+        // Notfall-Prozeduren
+        GroupBox {
+            title: "Emergency Procedures"
+            Layout.fillWidth: true
+
+            GridLayout {
+                anchors.fill: parent
+                columns: 2
+                columnSpacing: 10
+                rowSpacing: 10
+
+                Button {
+                    text: "Return to Home"
+                    Layout.fillWidth: true
+                    onClicked: {
+                        emergencyTriggered("RETURN_TO_HOME")
+                    }
+                }
+
+                Button {
+                    text: "Land"
+                    Layout.fillWidth: true
+                    onClicked: {
+                        emergencyTriggered("LAND")
+                    }
+                }
+
+                Button {
+                    text: "Kill Motors"
+                    Layout.fillWidth: true
+                    onClicked: {
+                        emergencyTriggered("KILL_MOTORS")
+                    }
+                }
+
+                Button {
+                    text: "Terminate"
+                    Layout.fillWidth: true
+                    onClicked: {
+                        emergencyTriggered("TERMINATE")
+                    }
+                }
+            }
+        }
+
+        // Steuerung
+        GroupBox {
+            title: "Control"
+            Layout.fillWidth: true
+
+            ColumnLayout {
+                anchors.fill: parent
+                spacing: 10
+
+                // Pitch/Roll
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
+
+                    Label {
+                        text: "Pitch"
+                    }
+
+                    Slider {
+                        id: pitchSlider
+                        Layout.fillWidth: true
+                        from: -1.0
+                        to: 1.0
+                        value: 0.0
+                    }
+
+                    Label {
+                        text: "Roll"
+                    }
+
+                    Slider {
+                        id: rollSlider
+                        Layout.fillWidth: true
+                        from: -1.0
+                        to: 1.0
+                        value: 0.0
+                    }
+                }
+
+                // Yaw/Thrust
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
+
+                    Label {
+                        text: "Yaw"
+                    }
+
+                    Slider {
+                        id: yawSlider
+                        Layout.fillWidth: true
+                        from: -1.0
+                        to: 1.0
+                        value: 0.0
+                    }
+
+                    Label {
+                        text: "Thrust"
+                    }
+
+                    Slider {
+                        id: thrustSlider
+                        Layout.fillWidth: true
+                        from: 0.0
+                        to: 1.0
+                        value: 0.0
+                    }
+                }
+            }
+        }
+
+        // Safety
+        GroupBox {
+            title: "Safety"
             Layout.fillWidth: true
 
             RowLayout {
@@ -50,24 +189,18 @@ Page {
                 spacing: 10
 
                 Button {
-                    text: "ARM"
+                    text: "Enable Safety"
                     Layout.fillWidth: true
-                    Material.background: Material.Green
                     onClicked: {
-                        if (serialConnector) {
-                            serialConnector.set_armed(true)
-                        }
+                        backend.enableSafety()
                     }
                 }
 
                 Button {
-                    text: "DISARM"
+                    text: "Disable Safety"
                     Layout.fillWidth: true
-                    Material.background: Material.Red
                     onClicked: {
-                        if (serialConnector) {
-                            serialConnector.set_armed(false)
-                        }
+                        backend.disableSafety()
                     }
                 }
             }

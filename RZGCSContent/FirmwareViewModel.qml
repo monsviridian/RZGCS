@@ -1,9 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import RZGCS.Backend 1.0
 
-QtObject {
+Item {
     id: root
     
     // Eigenschaften für die UI-Bindung
@@ -15,6 +14,10 @@ QtObject {
     property int progress: 0
     property string statusMessage: "Nicht verbunden"
     property bool firmwareDownloaded: false
+    property bool isConnected: false
+    property bool isInitialized: false
+    property int attempts: 0
+    property int maxAttempts: 5
     
     // Geräteinformationen
     property var deviceInfo: null
@@ -30,7 +33,7 @@ QtObject {
         id: connectionTimer
         interval: 500  // 500ms zwischen Versuchen
         repeat: true
-        running: !isConnected && !isInitialized && attempts < maxAttempts
+        running: !root.isConnected && !root.isInitialized && root.attempts < root.maxAttempts
         onTriggered: {
             attempts++
             console.log("FirmwareViewModel: Versuche Verbindung zum Backend... (Versuch " + attempts + ")")

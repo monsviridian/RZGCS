@@ -4,8 +4,7 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Window 2.15
 
-// Lokale Komponenten importieren
-import "./" as RZGCS
+// Kein Import nötig, der Screen01 wird über die QML-Engine direkt registriert
 
 Window {
     id: window
@@ -16,8 +15,10 @@ Window {
     minimumWidth: 800
     minimumHeight: 600
 
-    RZGCS.Screen01 {
+    // Direktes Laden der QML-Datei mit einem Loader
+    Loader {
+        id: mainLoader
         anchors.fill: parent
+        source: "Screen01.ui.qml"
     }
 }
-

@@ -52,6 +52,8 @@ class SerialConnector(QObject):
     attitudeUpdated = Signal(float, float, float)  # roll, pitch, yaw
     gpsUpdated = Signal(float, float, float)  # lat, lon, alt
     batteryUpdated = Signal(float, float, float)  # voltage, current, remaining
+    velocityUpdated = Signal(float, float, float)  # groundspeed, airspeed, vertical_speed
+    vfrHudUpdated = Signal(float, float, float, float)  # groundspeed, airspeed, heading, throttle
 
     def __init__(self, sensor_model=None, logger=None, parameter_model=None):
         super().__init__()
@@ -66,10 +68,17 @@ class SerialConnector(QObject):
         self._available_baud_rates = [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600]
         
         # MAVLink-Handler initialisieren
-        self._mavlink_handler = MAVLinkHandler()
+        self._mavlink_handler = MAVLinkHandler(logger=self._logger)
         
         # Verbinde MAVLink-Handler Signale
         self._mavlink_handler.connection_state_changed.connect(self._on_connection_status_changed)
+        self._mavlink_handler.attitude_updated.connect(self._on_attitude_updated)
+        self._mavlink_handler.gps_updated.connect(self._on_gps_updated)
+        self._mavlink_handler.battery_updated.connect(self._on_battery_updated)
+        self._mavlink_handler.velocity_updated.connect(self._on_velocity_updated)
+        self._mavlink_handler.vfr_hud_updated.connect(self._on_vfr_hud_updated)
+        self._mavlink_handler.status_text_received.connect(self._on_status_text_received)
+        self._mavlink_handler.error_occurred.connect(self._on_error_occurred)
         
         # Weitere Komponenten
         self._connection_manager = ConnectionManager()
@@ -91,7 +100,7 @@ class SerialConnector(QObject):
         if self._connecting:
             self._logger.addLog("Ein Verbindungsversuch läuft bereits. Bitte warten...")
             return False
-            
+        
         self._connecting = True
         self.connectionStatusChanged.emit(1)  # connecting
         
@@ -112,12 +121,13 @@ class SerialConnector(QObject):
                 self._logger.addLog("[ERR] Kein Port ausgewählt")
                 self._connecting = False
                 return False
-
+            
             # Prüfe ob der Port verfügbar ist
             if self._port != "Simulator" and self._port not in self._available_ports:
                 self._logger.addLog(f"[ERR] Port {self._port} nicht verfügbar")
+                self._connecting = False
                 return False
-
+            
             # Verbindung über MAVLink-Handler herstellen
             success = self._mavlink_handler.connect(self._port, self._baud_rate)
             if success:
@@ -126,7 +136,7 @@ class SerialConnector(QObject):
                 self.connectionStatusChanged.emit(2)  # connected
                 self._logger.addLog(f"[OK] Verbunden mit {self._port}")
             return success
-                
+            
         except Exception as e:
             error_msg = f"Verbindungsfehler: {str(e)}"
             self._logger.addLog(f"[ERR] {error_msg}")
@@ -154,7 +164,6 @@ class SerialConnector(QObject):
         try:
             self._logger.addLog("[DEBUG] Starte Port-Scan...")
             ports = ["Simulator"]  # Simulator immer als erste Option
-            
             # Verwende QSerialPortInfo für die Port-Erkennung
             self._logger.addLog("[DEBUG] Suche Ports mit QSerialPortInfo...")
             try:
@@ -165,7 +174,6 @@ class SerialConnector(QObject):
                         self._logger.addLog(f"[PORT-DEBUG] Port gefunden (QSerialPortInfo): {port_name} ({port.description()})")
             except Exception as e:
                 self._logger.addLog(f"[WARN] Fehler bei QSerialPortInfo: {str(e)}")
-            
             # Zusätzlich auch serial.tools.list_ports verwenden
             self._logger.addLog("[DEBUG] Suche Ports mit serial.tools.list_ports...")
             try:
@@ -175,15 +183,12 @@ class SerialConnector(QObject):
                         self._logger.addLog(f"[PORT-DEBUG] Port gefunden (serial.tools): {port.device} ({port.description})")
             except Exception as e:
                 self._logger.addLog(f"[WARN] Fehler bei serial.tools.list_ports: {str(e)}")
-            
             # Prüfe auf leere Port-Liste
             if len(ports) == 1 and ports[0] == "Simulator":
                 self._logger.addLog("[WARN] Keine seriellen Ports gefunden")
-            
             self._logger.addLog(f"[PORT-DEBUG] Alle gefundenen Ports: {ports}")
             self._available_ports = ports
             self.availablePortsChanged.emit(ports)
-            
         except Exception as e:
             self._logger.addLog(f"[ERR] Fehler beim Laden der Ports: {str(e)}")
             import traceback
@@ -242,34 +247,71 @@ class SerialConnector(QObject):
         else:
             self._logger.addLog("[INFO] MAVLink-Verbindung getrennt")
 
-    def _on_error_occurred(self, error_msg: str):
-        """Handler für MAVLink-Fehler"""
-        self._logger.addLog(f"[ERR] {error_msg}")
-        self.errorOccurred.emit(error_msg)
-    
+    def _on_attitude_updated(self, roll, pitch, yaw):
+        """Handler für Attitude-Updates vom MAVLinkHandler"""
+        self._logger.addLog(f"[SIGNAL] SerialConnector: Received attitude - roll={roll}, pitch={pitch}, yaw={yaw}")
+        self.attitudeUpdated.emit(roll, pitch, yaw)
+
+    def _on_gps_updated(self, lat, lon, alt):
+        """Handler für GPS-Updates vom MAVLinkHandler"""
+        self._logger.addLog(f"[SIGNAL] SerialConnector: Received GPS - lat={lat}, lon={lon}, alt={alt}")
+        self.gpsUpdated.emit(lat, lon, alt)
+
+    def _on_battery_updated(self, voltage, current, remaining):
+        """Handler für Battery-Updates vom MAVLinkHandler"""
+        self._logger.addLog(f"[SIGNAL] SerialConnector: Received battery - voltage={voltage}, current={current}, remaining={remaining}")
+        self.batteryUpdated.emit(voltage, current, remaining)
+
+    def _on_velocity_updated(self, groundspeed, airspeed, vertical_speed):
+        """Handler für Velocity-Updates vom MAVLinkHandler"""
+        self._logger.addLog(f"[SIGNAL] SerialConnector: Received velocity - groundspeed={groundspeed}, airspeed={airspeed}, vertical_speed={vertical_speed}")
+        self.velocityUpdated.emit(groundspeed, airspeed, vertical_speed)
+
+    def _on_vfr_hud_updated(self, groundspeed, airspeed, heading, throttle):
+        """Handler für VFR_HUD-Updates vom MAVLinkHandler"""
+        self._logger.addLog(f"[SIGNAL] SerialConnector: Received VFR_HUD - groundspeed={groundspeed}, airspeed={airspeed}, heading={heading}, throttle={throttle}")
+        self.vfrHudUpdated.emit(groundspeed, airspeed, heading, throttle)
+
+    def _on_status_text_received(self, text):
+        """Wird aufgerufen, wenn eine STATUSTEXT-Nachricht vom Fluggerät empfangen wird"""
+        self._logger.addLog(f"[FC] {text}")
+
+    def _on_error_occurred(self, error_message):
+        """Wird aufgerufen, wenn ein Fehler im MAVLink-Handler auftritt"""
+        self._logger.addLog(f"[FEHLER] {error_message}")
+
+        self.errorOccurred.emit(error_message)
+
     def register_telemetry_viewmodel(self, telemetry_viewmodel):
         """Registriert ein TelemetryViewModel für Telemetrie-Updates
         
         Args:
             telemetry_viewmodel: Eine Instanz von TelemetryViewModel
-            
+        
         Returns:
             bool: True wenn erfolgreich registriert, False sonst
         """
         try:
             self._logger.addLog("[INFO] Registriere TelemetryViewModel")
-            
             # Verbinde die Signale des MAVLinkHandlers mit dem TelemetryViewModel
             if self._mavlink_handler:
                 # Verbinde Attitude-Signal
                 self.attitudeUpdated.connect(telemetry_viewmodel.set_attitude)
-                
                 # Verbinde GPS-Signal
                 self.gpsUpdated.connect(telemetry_viewmodel.set_gps_position)
-                
-                # Verbinde Battery-Signal
-                self.batteryUpdated.connect(telemetry_viewmodel.set_battery_status)
-                
+                # Verbinde Battery-Signal - prüfe ob set_battery_status existiert, sonst verwende set_battery
+                if hasattr(telemetry_viewmodel, 'set_battery_status'):
+                    self.batteryUpdated.connect(telemetry_viewmodel.set_battery_status)
+                elif hasattr(telemetry_viewmodel, 'set_battery'):
+                    self.batteryUpdated.connect(telemetry_viewmodel.set_battery)
+                else:
+                    self._logger.addLog("[WARN] TelemetryViewModel hat keine set_battery_status oder set_battery Methode")
+                # Verbinde Velocity-Signal
+                if hasattr(telemetry_viewmodel, 'set_velocity'):
+                    self.velocityUpdated.connect(telemetry_viewmodel.set_velocity)
+                # Verbinde VFR_HUD-Signal
+                if hasattr(telemetry_viewmodel, 'set_vfr_hud'):
+                    self.vfrHudUpdated.connect(telemetry_viewmodel.set_vfr_hud)
                 self._logger.addLog("[INFO] TelemetryViewModel erfolgreich registriert")
                 return True
             else:
@@ -278,3 +320,26 @@ class SerialConnector(QObject):
         except Exception as e:
             self._logger.addLog(f"[ERR] Fehler bei der Registrierung des TelemetryViewModel: {str(e)}")
             return False
+
+    def __del__(self):
+        """Destruktor - stellt sicher, dass alle Ressourcen korrekt freigegeben werden"""
+        self.cleanup()
+        
+    def cleanup(self):
+        """Saubere Bereinigung aller Ressourcen"""
+        try:
+            # MAVLink-Handler sauber beenden
+            if hasattr(self, '_mavlink_handler') and self._mavlink_handler:
+                self._mavlink_handler.cleanup()
+                self._mavlink_handler = None
+                
+            # Verbindungsstatus zurücksetzen
+            self._connected = False
+            self._connecting = False
+            
+            # Logger-Nachricht
+            if hasattr(self, '_logger') and self._logger:
+                self._logger.addLog("[INFO] SerialConnector cleanup completed")
+                        
+        except Exception as e:
+            print(f"WARNING: Error during SerialConnector cleanup: {e}")
