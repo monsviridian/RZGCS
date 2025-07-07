@@ -20,10 +20,10 @@ Rectangle {
     readonly property int textSize: Math.max(10, height * 0.3)
     readonly property int labelSize: Math.max(8, height * 0.25)
 
-    // Safe model data access
-    property string paramName: model && model.name ? model.name : ""
-    property string paramValue: model && model.value ? model.value : "0"
-    property string paramUnit: model && model.unit ? model.unit : ""
+    // Use correct roles from Python model
+    property string paramName: model && model.NameRole ? model.NameRole : ""
+    property string paramValue: model && model.ValueRole ? model.ValueRole : "0"
+    property string paramUnit: model && model.UnitsRole ? model.UnitsRole : ""
 
     RowLayout {
         anchors.fill: parent
@@ -64,5 +64,9 @@ Rectangle {
         hoverEnabled: true
         onEntered: parent.color = "#3d3d3d"
         onExited: parent.color = "#2d2d2d"
+    }
+
+    Component.onCompleted: {
+        console.log("Delegate created for", paramName)
     }
 }

@@ -15,6 +15,8 @@ Item {
     property string mapStyle: "satellite"  // Options: "satellite", "terrain", "night"
     property real zoomLevel: 1.0           // Zoom level 1.0 = normal
     
+    signal mapClicked(real latitude, real longitude)
+    
     // Map background image
     Rectangle {
         id: mapBackground
@@ -108,6 +110,18 @@ Item {
                         PropertyAction { target: pulse; property: "opacity"; value: 0.7 }
                     }
                 }
+            }
+        }
+        
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                // Beispiel-Umrechnung: Passe ggf. an deine Projektion an!
+                var dx = mouse.x - mapBackground.width/2
+                var dy = mapBackground.height/2 - mouse.y
+                var lon = root.droneLongitude + dx / (50000 * root.zoomLevel)
+                var lat = root.droneLatitude + dy / (50000 * root.zoomLevel)
+                root.mapClicked(lat, lon)
             }
         }
     }

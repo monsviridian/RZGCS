@@ -7,12 +7,15 @@ class Logger(QObject):
     logAdded = Signal(str)
     logsChanged = Signal()
     systemInfoLogsChanged = Signal()
+    # New signal for forwarding to MessageManager
+    messageForwarded = Signal(str, int)  # message, type
 
     def __init__(self):
         super().__init__()
         self._logs = []
         self._system_info_logs = []
         self._max_logs = 1000  # Maximum number of logs to keep
+        self._message_callback = None  # Callback for forwarding to MessageManager
         
         # Patterns für wichtige Systeminformationen
         self._system_info_patterns = [
@@ -45,6 +48,11 @@ class Logger(QObject):
         )
         self.logger = logging.getLogger(__name__)
         self.addLog("Logger initialized")
+
+    def set_message_callback(self, callback):
+        """Setzt eine Callback-Funktion für die Weiterleitung an MessageManager"""
+        self._message_callback = callback
+        print("[DEBUG] Logger: Message callback gesetzt")
 
     @Property('QVariantList', notify=logsChanged)
     def logs(self):
@@ -93,6 +101,38 @@ class Logger(QObject):
         # Emit signals
         self.logAdded.emit(log_entry)
         self.logsChanged.emit()
+        
+        # Forward to MessageManager if callback is set
+        if self._message_callback:
+            try:
+                # Determine message type based on content
+                message_type = self._determine_message_type(message)
+                self._message_callback(message, message_type)
+            except Exception as e:
+                print(f"[ERROR] Logger: Fehler beim Weiterleiten an MessageManager: {e}")
+
+    def _determine_message_type(self, message):
+        """Bestimmt den Message-Typ basierend auf dem Inhalt"""
+        message_lower = message.lower()
+        
+        # Error messages
+        if any(keyword in message_lower for keyword in ['error', 'failed', 'fehlgeschlagen', 'ungültig']):
+            return 3  # Error
+        
+        # Warning messages
+        if any(keyword in message_lower for keyword in ['warn', 'warning', 'warnung']):
+            return 2  # Warning
+        
+        # Success messages
+        if any(keyword in message_lower for keyword in ['ok', 'success', 'erfolgreich', 'connected', 'verbunden']):
+            return 4  # Success
+        
+        # Debug messages
+        if message.startswith('[DEBUG]') or message.startswith('[FIRMWARE]'):
+            return 1  # Info
+        
+        # Default to info
+        return 1  # Info
 
     @Slot(result=str)
     def getLogs(self):
@@ -122,4 +162,12 @@ class Logger(QObject):
         self._system_info_logs.append(log_entry)
         print(f"Manually added system info log: {log_entry}")
         self.systemInfoLogsChanged.emit()
+        
+        # Forward to MessageManager if callback is set
+        if self._message_callback:
+            try:
+                self._message_callback(f"[SYSTEM INFO] {message}", 1)  # Info type
+            except Exception as e:
+                print(f"[ERROR] Logger: Fehler beim Weiterleiten an MessageManager: {e}")
+        
         return True

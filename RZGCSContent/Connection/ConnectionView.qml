@@ -10,6 +10,7 @@ Rectangle {
     
     // Properties
     property var backend
+    property var mavlinkV2Backend
     
     ColumnLayout {
         anchors.fill: parent
@@ -67,17 +68,39 @@ Rectangle {
             }
         }
         
+        // Verbindungstyp-Auswahl
+        RowLayout {
+            spacing: 10
+            Text { text: "Verbindungstyp:"; color: "white" }
+            ComboBox {
+                id: connectionTypeComboBox
+                model: ["Serial", "UDP", "TCP", "Simulator", "MAVLink 2"]
+                currentIndex: 0
+                Layout.preferredWidth: 150
+                onCurrentIndexChanged: {
+                    // Optional: Logik für Umschalten des Verbindungstyps
+                }
+            }
+        }
+        
         // Verbindungs-Button
         Button {
             id: connectButton
             Layout.fillWidth: true
             text: backend && backend.isConnected ? "Disconnect" : "Connect"
             onClicked: {
-                if (backend) {
-                    if (backend.isConnected) {
-                        backend.disconnect_from_drone()
-                    } else {
-                        backend.connect()
+                if (connectionTypeComboBox.currentText === "MAVLink 2") {
+                    if (mavlinkV2Backend) {
+                        if (mavlinkV2Backend.isConnected) mavlinkV2Backend.disconnect_mavlink()
+                        else mavlinkV2Backend.connect_mavlink()
+                    }
+                } else {
+                    if (backend) {
+                        if (backend.isConnected) {
+                            backend.disconnect_from_drone()
+                        } else {
+                            backend.connect()
+                        }
                     }
                 }
             }

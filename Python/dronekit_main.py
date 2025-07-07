@@ -33,6 +33,21 @@ from mavlink_connector import MavlinkConnector
 from dronekit_sensor_viewmodel import DroneKitSensorViewModel
 from viewmodel.mission_planner_viewmodel import MissionPlannerViewModel
 
+# Importiere den ParameterManager
+from backend.parameter_manager import ParameterManager
+from dronekit_parameter_viewmodel import DroneKitParameterViewModel as ParameterViewModel
+
+# Importiere die FlightNavigationViewModel
+from backend.flight_control.viewmodels.flight_navigation_viewmodel import FlightNavigationViewModel
+from backend.firmware.firmware_viewmodel import FirmwareViewModel
+
+# Importiere MAVLinkV2Integration
+from backend.mavlink_v2_integration import MAVLinkV2Integration
+# Importiere ProtocolConnectionManager
+from backend.protocol_connection_manager import ProtocolConnectionManager
+# Importiere CalibrationController
+from backend.calibration_controller import CalibrationController
+
 # Einfacher Logger für die UI (unverändert von main_ui_only.py)
 class SimpleLogger(QObject):
     logAdded = Signal(str, str)  # type, message
@@ -40,12 +55,50 @@ class SimpleLogger(QObject):
     def __init__(self):
         super().__init__()
         self._logs = []
+        self._message_callback = None  # Callback für MessageManager
         print("[OK]SimpleLogger initialisiert")
+    
+    def set_message_callback(self, callback):
+        """Setzt eine Callback-Funktion für die Weiterleitung an MessageManager"""
+        self._message_callback = callback
+        print("[DEBUG] SimpleLogger: Message callback gesetzt")
     
     def addLog(self, message, log_type="INFO"):
         print(f"[{log_type}] {message}")
         self._logs.append({"type": log_type, "message": message})
         self.logAdded.emit(log_type, message)
+        
+        # Forward to MessageManager if callback is set
+        if self._message_callback:
+            try:
+                # Determine message type based on content
+                message_type = self._determine_message_type(message)
+                self._message_callback(message, message_type)
+            except Exception as e:
+                print(f"[ERROR] SimpleLogger: Fehler beim Weiterleiten an MessageManager: {e}")
+    
+    def _determine_message_type(self, message):
+        """Bestimmt den Message-Typ basierend auf dem Inhalt"""
+        message_lower = message.lower()
+        
+        # Error messages
+        if any(keyword in message_lower for keyword in ['error', 'failed', 'fehlgeschlagen', 'ungültig']):
+            return 3  # Error
+        
+        # Warning messages
+        if any(keyword in message_lower for keyword in ['warn', 'warning', 'warnung']):
+            return 2  # Warning
+        
+        # Success messages
+        if any(keyword in message_lower for keyword in ['ok', 'success', 'erfolgreich', 'connected', 'verbunden']):
+            return 4  # Success
+        
+        # Debug messages
+        if message.startswith('[DEBUG]') or message.startswith('[FIRMWARE]'):
+            return 1  # Info
+        
+        # Default to info
+        return 1  # Info
     
     def getLogs(self):
         return self._logs
@@ -95,24 +148,6 @@ class MessageManager(QObject):
         self.messagesChanged.emit()
         print("[OK]MessageManager: Alle Nachrichten gelöscht")
 
-# Dummy FirmwareViewModel (unverändert von main_ui_only.py)
-class FirmwareViewModel(QObject):
-    firmwareVersionChanged = Signal()
-    
-    def __init__(self):
-        super().__init__()
-        self._firmware_version = "PyMAVLink Firmware v1.0"
-        print("[OK]FirmwareViewModel initialisiert")
-    
-    @Property(str, notify=firmwareVersionChanged)
-    def firmwareVersion(self):
-        return self._firmware_version
-    
-    def setFirmwareVersion(self, value):
-        if self._firmware_version != value:
-            self._firmware_version = value
-            self.firmwareVersionChanged.emit(value)
-
 # PyMAVLink Serial Connector (Ersatz für DroneKitSerialConnector)
 class MavlinkSerialConnector(QObject):
     connectedChanged = Signal(bool)
@@ -122,6 +157,11 @@ class MavlinkSerialConnector(QObject):
     batteryChanged = Signal(float, float, float)  # voltage, current, remaining
     statusMessageChanged = Signal(str)
     portsChanged = Signal()  # Neues Signal für Port-Änderungen
+    # --- WICHTIG: Parameter-Signale für ViewModel ---
+    parameters_received = Signal(object)
+    parameter_updated = Signal(str, float)
+    parameter_write_complete = Signal(str, bool)
+    # --- ENDE: Parameter-Signale ---
     CONNECTION_STATUS_DISCONNECTED = 0
     CONNECTION_STATUS_CONNECTING = 1
     CONNECTION_STATUS_CONNECTED = 2
@@ -326,6 +366,168 @@ class MavlinkSerialConnector(QObject):
     def set_message_manager(self, mm):
         self.message_manager = mm
 
+    def _mavset(self, name, value, parm_type=None, retries=3):
+        '''Set a parameter on a mavlink connection with type safety and retries.'''
+        mav = self.mavlink_connector.connection
+        got_ack = False
+        import struct
+        from pymavlink import mavutil
+
+        if parm_type is not None and parm_type != mavutil.mavlink.MAV_PARAM_TYPE_REAL32:
+            # need to encode as a float for sending
+            if parm_type == mavutil.mavlink.MAV_PARAM_TYPE_UINT8:
+                vstr = struct.pack(">xxxB", int(value))
+            elif parm_type == mavutil.mavlink.MAV_PARAM_TYPE_INT8:
+                vstr = struct.pack(">xxxb", int(value))
+            elif parm_type == mavutil.mavlink.MAV_PARAM_TYPE_UINT16:
+                vstr = struct.pack(">xxH", int(value))
+            elif parm_type == mavutil.mavlink.MAV_PARAM_TYPE_INT16:
+                vstr = struct.pack(">xxh", int(value))
+            elif parm_type == mavutil.mavlink.MAV_PARAM_TYPE_UINT32:
+                vstr = struct.pack(">I", int(value))
+            elif parm_type == mavutil.mavlink.MAV_PARAM_TYPE_INT32:
+                vstr = struct.pack(">i", int(value))
+            else:
+                print(f"[ERROR] Can't send {name} of type {parm_type}")
+                return False
+            numeric_value, = struct.unpack(">f", vstr)
+        else:
+            if isinstance(value, str) and value.lower().startswith('0x'):
+                numeric_value = int(value[2:], 16)
+            else:
+                numeric_value = float(value)
+
+        while retries > 0 and not got_ack:
+            retries -= 1
+            mav.mav.param_set_send(
+                mav.target_system,
+                mav.target_component,
+                name.encode('utf-8'),
+                numeric_value,
+                parm_type if parm_type is not None else mavutil.mavlink.MAV_PARAM_TYPE_REAL32
+            )
+            tstart = time.time()
+            while time.time() - tstart < 1:
+                ack = mav.recv_match(type='PARAM_VALUE', blocking=False)
+                if ack is None:
+                    time.sleep(0.1)
+                    continue
+                param_id = ack.param_id.rstrip('\x00')
+                if str(name).upper() == str(param_id).upper():
+                    got_ack = True
+                    break
+        if not got_ack:
+            print(f"[ERROR] Timeout setting {name} to {numeric_value}")
+            return False
+        return True
+
+    def write_parameter(self, name, value, parm_type=None):
+        """Set a parameter on the FC and emit parameter_write_complete when done, with type safety."""
+        if not self.mavlink_connector.connection:
+            print("[ERROR] No MAVLink connection for parameter write")
+            self.parameter_write_complete.emit(name, False)
+            return
+        try:
+            print(f"[MAVLINK] Setting parameter {name} = {value}")
+            success = self._mavset(name, value, parm_type)
+            if success:
+                self.parameter_updated.emit(name, float(value))
+            self.parameter_write_complete.emit(name, success)
+        except Exception as e:
+            print(f"[ERROR] Parameter write failed: {e}")
+            self.parameter_write_complete.emit(name, False)
+
+    @Slot(str)
+    def save_parameters_to_file(self, filename):
+        '''Save all parameters to a file.'''
+        if not hasattr(self, 'last_parameters') or not self.last_parameters:
+            print("[ERROR] No parameters to save.")
+            return False
+        try:
+            with open(filename, 'w') as f:
+                keys = sorted(self.last_parameters.keys())
+                count = 0
+                for param_name in keys:
+                    value = self.last_parameters[param_name]['value']
+                    if isinstance(value, float):
+                        f.write(f"{param_name:<16} {value}\n")
+                    else:
+                        f.write(f"{param_name:<16} {str(value)}\n")
+                    count += 1
+            print(f"[OK] Saved {count} parameters to {filename}")
+            return True
+        except Exception as e:
+            print(f"[ERROR] Failed to save parameters: {e}")
+            return False
+
+    @Slot(str)
+    def load_parameters_from_file(self, filename):
+        '''Load parameters from a file and write them to the FC.'''
+        try:
+            with open(filename, 'r') as f:
+                count = 0
+                for line in f:
+                    line = line.strip()
+                    if not line or line[0] == "#":
+                        continue
+                    line = line.replace(',', ' ')
+                    parts = line.split()
+                    if len(parts) != 2:
+                        print(f"[ERROR] Invalid line: {line}")
+                        continue
+                    param_name = parts[0]
+                    value_str = parts[1].strip()
+                    if value_str.lower().startswith('0x'):
+                        value = int(value_str[2:], 16)
+                    else:
+                        value = float(value_str)
+                    self.write_parameter(param_name, value)
+                    count += 1
+            print(f"[OK] Loaded and wrote {count} parameters from {filename}")
+            return True
+        except Exception as e:
+            print(f"[ERROR] Failed to load parameters: {e}")
+            return False
+
+    def fetch_parameters(self):
+        """Fetch all parameters from the FC and emit parameters_received when done."""
+        if not self.mavlink_connector.connection:
+            print("[ERROR] No MAVLink connection for parameter fetch")
+            return
+        try:
+            print("[MAVLINK] Requesting all parameters...")
+            self.mavlink_connector.connection.mav.param_request_list_send(
+                self.mavlink_connector.connection.target_system,
+                self.mavlink_connector.connection.target_component
+            )
+            params = {}
+            start_time = time.time()
+            timeout = 30
+            while time.time() - start_time < timeout:
+                msg = self.mavlink_connector.connection.recv_match(type='PARAM_VALUE', blocking=False)
+                if msg is None:
+                    time.sleep(0.05)
+                    continue
+                param_id = msg.param_id.rstrip('\x00')
+                param_value = msg.param_value
+                param_type = msg.param_type
+                params[param_id] = {
+                    "value": param_value,
+                    "type": param_type,
+                    "index": msg.param_index,
+                    "count": msg.param_count
+                }
+                if len(params) >= msg.param_count:
+                    break
+            print(f"[MAVLINK] Received {len(params)} parameters")
+            self.last_parameters = params  # For save/restore
+            self.parameters_received.emit(params)
+        except Exception as e:
+            print(f"[ERROR] Parameter fetch failed: {e}")
+
+    def is_connected(self):
+        return self.connected
+
 def main():
     # Qt-Anwendung initialisieren
     QCoreApplication.setApplicationName("RZGCS")
@@ -340,7 +542,10 @@ def main():
     # Instanzen der Komponenten erstellen
     logger = SimpleLogger()
     message_manager = MessageManager()
-    firmware_vm = FirmwareViewModel()
+    firmware_viewmodel = FirmwareViewModel()
+    
+    # Verbinde Logger mit MessageManager
+    logger.set_message_callback(message_manager.addMessage)
     
     # Test-Message beim Start der Anwendung
     message_manager.addMessage("RZGCS mit PyMAVLink-Integration gestartet", 4)
@@ -353,15 +558,53 @@ def main():
     sensor_viewmodel = DroneKitSensorViewModel()
     mission_planner_viewmodel = MissionPlannerViewModel(serial_connector)
     
+    # Parameter-Manager erstellen
+    parameter_manager = ParameterManager()
+    parameter_viewmodel = ParameterViewModel(serial_connector)  # DroneKit-Connector übergeben
+    
+    # FlightNavigationViewModel für das Flight-Tab
+    flight_navigation_viewmodel = FlightNavigationViewModel()
+    # FirmwareViewModel für das Firmware-Tab
+    firmware_viewmodel = FirmwareViewModel()
+    
+    # Verbinde SerialConnector mit MessageManager für Logger-Integration
+    if hasattr(serial_connector, 'set_message_manager'):
+        serial_connector.set_message_manager(message_manager)
+    
     # Test-Messages für Komponenten-Erstellung
     message_manager.addMessage("MavlinkSerialConnector erstellt", 1)
     message_manager.addMessage("DroneKitSensorViewModel erstellt", 1)
     message_manager.addMessage("MissionPlannerViewModel erstellt", 1)
+    message_manager.addMessage("ParameterManager erstellt", 1)
+    message_manager.addMessage("ParameterViewModel erstellt", 1)
+    message_manager.addMessage("FlightNavigationViewModel erstellt", 1)
     message_manager.addMessage("MessageManager an SerialConnector übergeben", 1)
     
     # Verbindung zwischen Serial Connector und Sensor ViewModel herstellen
     serial_connector.attitudeChanged.connect(sensor_viewmodel.set_attitude)
     serial_connector.gpsChanged.connect(sensor_viewmodel.set_gps_position)
+    
+    # Parameter-Manager mit MAVLink-Verbindung verbinden
+    serial_connector.connectedChanged.connect(lambda connected: 
+        parameter_manager.set_mavlink_connection(
+            serial_connector.mavlink_connector.connection if connected else None
+        )
+    )
+    
+    # ParameterViewModel mit SerialConnector verbinden
+    serial_connector.connectedChanged.connect(lambda connected:
+        parameter_viewmodel.set_drone_connector(serial_connector if connected else None)
+    )
+    
+    # Direkte Verbindung der Parameter-Signale
+    serial_connector.parameters_received.connect(parameter_viewmodel._on_parameters_received)
+    serial_connector.parameter_updated.connect(parameter_viewmodel._on_parameter_updated)
+    serial_connector.parameter_write_complete.connect(parameter_viewmodel._on_parameter_write_complete)
+    
+    # Automatisches Parameter-Laden nach Verbindung
+    serial_connector.connectedChanged.connect(lambda connected:
+        parameter_viewmodel.refreshParameters() if connected else None
+    )
     
     # Test-Messages für Signal-Verbindungen
     message_manager.addMessage("Signal-Verbindungen hergestellt", 1)
@@ -392,9 +635,11 @@ def main():
         'serial_connector': serial_connector,
         'sensor_viewmodel': sensor_viewmodel,
         'mission_planner_viewmodel': mission_planner_viewmodel,
+        'parameter_viewmodel': parameter_viewmodel,
         'message_manager': message_manager,
         'logger': logger,
-        'firmware_vm': firmware_vm
+        'firmware_vm': firmware_viewmodel,
+        'flight_navigation_viewmodel': flight_navigation_viewmodel
     }
     
     # Test-Messages für Dictionary-Erstellung
@@ -404,17 +649,11 @@ def main():
     engine.rootContext().setContextProperty("serialConnector", serial_connector)
     engine.rootContext().setContextProperty("sensorViewModel", sensor_viewmodel)
     engine.rootContext().setContextProperty("missionPlannerViewModel", mission_planner_viewmodel)
+    engine.rootContext().setContextProperty("parameterViewModel", parameter_viewmodel)
     engine.rootContext().setContextProperty("messageManager", message_manager)
     engine.rootContext().setContextProperty("logger", logger)
-    engine.rootContext().setContextProperty("firmwareVm", firmware_vm)
-    
-    # Debug: Prüfe ob messageManager korrekt gesetzt wurde
-    test_mm = engine.rootContext().contextProperty("messageManager")
-    print(f"DEBUG: messageManager Context Property Test: {test_mm}")
-    if test_mm:
-        print("[OK]DEBUG: [OK] messageManager erfolgreich als Context Property gesetzt")
-    else:
-        print("[OK]DEBUG: ✗ messageManager konnte nicht als Context Property gesetzt werden")
+    engine.rootContext().setContextProperty("firmwareViewModel", firmware_viewmodel)
+    engine.rootContext().setContextProperty("flightNavigationViewModel", flight_navigation_viewmodel)
     
     # Test-Messages für Context Properties
     message_manager.addMessage("Context Properties für QML gesetzt", 1)
@@ -422,10 +661,63 @@ def main():
     
     # Zusätzliche Context Properties für QML-Kompatibilität
     engine.rootContext().setContextProperty("connectionViewModel", serial_connector)  # Alias für serialConnector
-    engine.rootContext().setContextProperty("parameterModel", None)  # Wird später implementiert
+    engine.rootContext().setContextProperty("parameterModel", parameter_viewmodel.parameterModel)  # Parameter-Model für QML
     
     # Stelle sicher, dass der logger auch direkt verfügbar ist
     engine.rootContext().setContextProperty("logger", logger)
+    
+    # Instantiate and expose MAVLinkV2Integration for the new MAVLink 2 tab
+    mavlink_v2_backend = MAVLinkV2Integration()
+    mavlink_v2_backend.set_message_manager(message_manager)  # Connect message manager
+    engine.rootContext().setContextProperty("mavlinkV2Backend", mavlink_v2_backend)
+    
+    # Create and expose ProtocolConnectionManager for protocol switching
+    protocol_connection_manager = ProtocolConnectionManager(mavlink_v2_backend)
+    protocol_connection_manager.setMavlinkV1Connector(serial_connector)
+    protocol_connection_manager.setMessageManager(message_manager)  # Connect message manager
+    engine.rootContext().setContextProperty("protocolConnectionManager", protocol_connection_manager)
+    
+    # CalibrationController erstellen und für QML verfügbar machen
+    calibration_controller = CalibrationController()
+    calibration_controller.set_mavlink_connection(serial_connector.mavlink_connector.connection)
+    
+    # Connect calibration controller logs to message manager
+    calibration_controller.logMessageReceived.connect(
+        lambda log_type, message: message_manager.addMessage(
+            f"[CALIBRATION] {message}", 
+            4 if log_type == "success" else (3 if log_type == "error" else (2 if log_type == "warning" else 1))
+        )
+    )
+    
+    # Connect calibration progress to message manager
+    calibration_controller.calibrationProgressChanged.connect(
+        lambda progress, message: message_manager.addMessage(
+            f"[CALIBRATION] {message} ({int(progress*100)}%)", 1
+        )
+    )
+    
+    # Connect calibration finished to message manager
+    calibration_controller.calibrationFinished.connect(
+        lambda success, message: message_manager.addMessage(
+            f"[CALIBRATION] {message}", 4 if success else 3
+        )
+    )
+    
+    engine.rootContext().setContextProperty("calibrationController", calibration_controller)
+    
+    # FirmwareViewModel initialisieren
+    firmware_viewmodel.initialize()
+    
+    # MessageManager-Verbindung für FirmwareViewModel
+    firmware_viewmodel.set_message_manager(message_manager)
+    
+    # Test-Message für Protocol Connection Manager
+    message_manager.addMessage("ProtocolConnectionManager erstellt und für QML verfügbar gemacht", 1)
+    message_manager.addMessage("MAVLink v1/v2 Protokoll-Umschaltung implementiert", 4)
+    message_manager.addMessage("CalibrationController erstellt und für QML verfügbar gemacht", 1)
+    
+    # Test-Message für FirmwareViewModel
+    message_manager.addMessage("FirmwareViewModel initialisiert und für QML verfügbar", 1)
     
     # Test-Message für zusätzliche Context Properties
     message_manager.addMessage("Zusätzliche Context Properties gesetzt", 1)
@@ -495,10 +787,10 @@ def main():
         print(f"FEHLER: QML-Datei nicht gefunden: {qml_file_path}")
         message_manager.addMessage(f"FEHLER: QML-Datei nicht gefunden: {qml_file_path}", 3)
         return -1
-    
+        
     # Test-Message für QML-Datei gefunden
     message_manager.addMessage(f"QML-Datei gefunden: {qml_file_path}", 1)
-    
+        
     # QML-Debug und Fehlerberichterstattung aktivieren
     os.environ["QT_VERBOSE_ERRORS"] = "1"
     os.environ["QT_MESSAGE_PATTERN"] = "%{if-debug}D%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}: %{message}"
@@ -564,6 +856,49 @@ def main():
     serial_connector.load_ports()
     message_manager.addMessage("Port-Erkennung abgeschlossen", 1)
     message_manager.addMessage("RZGCS vollständig initialisiert und bereit", 4)
+    
+    # Telemetrie-Signale an das FlightNavigationViewModel weiterleiten
+    serial_connector.gpsChanged.connect(
+        lambda lat, lon, alt: flight_navigation_viewmodel.set_current_position(lat, lon, alt)
+    )
+    serial_connector.attitudeChanged.connect(
+        lambda roll, pitch, yaw: flight_navigation_viewmodel.set_current_attitude(roll, pitch, yaw)
+    )
+    serial_connector.batteryChanged.connect(
+        lambda voltage, current, remaining: flight_navigation_viewmodel.set_current_battery(voltage)
+    )
+    
+    # Telemetrie-Signale auch an den MAVLinkV2Integration weiterleiten für den MAVLink 2 Tab
+    serial_connector.gpsChanged.connect(
+        lambda lat, lon, alt: mavlink_v2_backend.update_gps_position(lat, lon, alt)
+    )
+    serial_connector.attitudeChanged.connect(
+        lambda roll, pitch, yaw: mavlink_v2_backend.update_attitude(roll, pitch, yaw)
+    )
+    serial_connector.batteryChanged.connect(
+        lambda voltage, current, remaining: mavlink_v2_backend.update_battery(voltage, current, remaining)
+    )
+    
+    # Verbindungsstatus vom SerialConnector an den MAVLinkV2Integration weiterleiten
+    serial_connector.connectedChanged.connect(
+        lambda connected: mavlink_v2_backend.connectedChanged.emit(connected)
+    )
+    
+    # Status-Nachrichten vom SerialConnector an den MAVLinkV2Integration weiterleiten
+    serial_connector.statusMessageChanged.connect(
+        lambda message: mavlink_v2_backend._send_status_message(message, 1)
+    )
+    
+    # Sensor-Kalibrierungsstatus ins Message Panel schreiben
+    def on_sensors_to_calibrate_changed(sensor_list):
+        if sensor_list:
+            message_manager.addMessage(f"Sensoren benötigen Kalibrierung: {', '.join(sensor_list)}", 2)
+        # Keine Nachricht mehr, wenn alle Sensoren gesund sind!
+    mavlink_v2_backend.sensorsToCalibrateChanged.connect(on_sensors_to_calibrate_changed)
+    
+    # Nach der Initialisierung von mavlink_v2_integration und parameter_viewmodel:
+    if hasattr(mavlink_v2_backend, 'parameterListReceived'):
+        mavlink_v2_backend.parameterListReceived.connect(parameter_viewmodel._on_parameters_received)
     
     return app.exec()
 

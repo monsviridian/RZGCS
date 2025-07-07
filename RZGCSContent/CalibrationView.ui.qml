@@ -4,7 +4,36 @@ import QtQuick.Layouts
 
 Item {
     id: root
-    property var controller: null  // Controller-Referenz, die von außen gesetzt wird
+    property var controller: calibrationController  // Use the calibrationController from main app
+    
+    // Ensure all calibration messages go to the message panel
+    Connections {
+        target: calibrationController
+        
+        function onLogMessageReceived(type, message) {
+            if (messageManager) {
+                var messageType = 1; // Default to info
+                if (type === "error") messageType = 3;
+                else if (type === "warning") messageType = 2;
+                else if (type === "success") messageType = 4;
+                
+                messageManager.addMessage(`[CALIBRATION] ${message}`, messageType);
+            }
+        }
+        
+        function onCalibrationProgressChanged(progress, message) {
+            if (messageManager) {
+                messageManager.addMessage(`[CALIBRATION] ${message} (${Math.round(progress*100)}%)`, 1);
+            }
+        }
+        
+        function onCalibrationFinished(success, message) {
+            if (messageManager) {
+                var messageType = success ? 4 : 3; // Success or Error
+                messageManager.addMessage(`[CALIBRATION] ${message}`, messageType);
+            }
+        }
+    }
     
     Rectangle {
         anchors.fill: parent
@@ -43,15 +72,13 @@ Item {
                 id: calibrationTabBar
                 Layout.fillWidth: true
                 
-                TabButton {
-                    text: "Kompass"
-                    width: implicitWidth
-                }
-                
-                TabButton {
-                    text: "Beschleunigungssensor"
-                    width: implicitWidth
-                }
+                TabButton { text: "Kompass"; width: implicitWidth }
+                TabButton { text: "Beschleunigungssensor"; width: implicitWidth }
+                TabButton { text: "Gyroskop"; width: implicitWidth }
+                TabButton { text: "Level"; width: implicitWidth }
+                TabButton { text: "RC"; width: implicitWidth }
+                TabButton { text: "ESC"; width: implicitWidth }
+                TabButton { text: "Joystick"; width: implicitWidth }
             }
             
             StackLayout {
@@ -264,9 +291,16 @@ Item {
                                     }
                                     onClicked: {
                                         if (root.controller) {
+                                            if (messageManager) {
+                                                messageManager.addMessage("[CALIBRATION] Starting compass calibration...", 1);
+                                            }
                                             root.controller.start_calibration("compass");
                                             compassStatusText.text = "Kalibrierung läuft..."
                                             compassStatusText.color = "#ffff99"
+                                        } else {
+                                            if (messageManager) {
+                                                messageManager.addMessage("[CALIBRATION] Error: No calibration controller available", 3);
+                                            }
                                         }
                                     }
                                 }
@@ -289,12 +323,19 @@ Item {
                                     }
                                     onClicked: {
                                         if (root.controller) {
-                                            root.controller.cancelCalibration();
+                                            if (messageManager) {
+                                                messageManager.addMessage("[CALIBRATION] Cancelling compass calibration...", 2);
+                                            }
+                                            root.controller.cancel_calibration();
                                             compassStatusText.text = "Kalibrierung abgebrochen"
                                             compassStatusText.color = "#ff9999"
                                             
                                             // Animation optional neu starten für Demo
                                             compass3DView.stopRotationAnimation();
+                                        } else {
+                                            if (messageManager) {
+                                                messageManager.addMessage("[CALIBRATION] Error: No calibration controller available", 3);
+                                            }
                                         }
                                     }
                                 }
@@ -364,7 +405,14 @@ Item {
                                         }
                                         onClicked: {
                                             if (root.controller) {
+                                                if (messageManager) {
+                                                    messageManager.addMessage("[CALIBRATION] Sending reboot command to flight controller...", 2);
+                                                }
                                                 root.controller.reboot_flight_controller();
+                                            } else {
+                                                if (messageManager) {
+                                                    messageManager.addMessage("[CALIBRATION] Error: No calibration controller available", 3);
+                                                }
                                             }
                                         }
                                     }
@@ -768,7 +816,14 @@ Item {
                                         }
                                         onClicked: {
                                             if (root.controller) {
+                                                if (messageManager) {
+                                                    messageManager.addMessage("[CALIBRATION] Sending reboot command to flight controller...", 2);
+                                                }
                                                 root.controller.reboot_flight_controller();
+                                            } else {
+                                                if (messageManager) {
+                                                    messageManager.addMessage("[CALIBRATION] Error: No calibration controller available", 3);
+                                                }
                                             }
                                         }
                                     }
@@ -806,6 +861,410 @@ Item {
                         }
                     }
                 }
+                
+                // Gyroskop-Kalibrierung
+                Item {
+                    id: gyroCalibration
+                    
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 10
+                        spacing: 15
+                        
+                        Text {
+                            Layout.fillWidth: true
+                            text: "Gyroskop-Kalibrierung"
+                            font.pixelSize: 18
+                            font.bold: true
+                            color: "white"
+                        }
+                        
+                        Text {
+                            Layout.fillWidth: true
+                            text: "Halten Sie die Drohne ruhig und bewegen Sie sie nicht während der Gyroskop-Kalibrierung."
+                            wrapMode: Text.WordWrap
+                            color: "#cccccc"
+                        }
+                        
+                        // Hauptbereich mit Status und Steuerung
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            Layout.minimumHeight: 300
+                            color: "#222222"
+                            radius: 8
+                            
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: 20
+                                spacing: 20
+                                
+                                // Status-Anzeige
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    color: "#333333"
+                                    radius: 5
+                                    height: 100
+                                    
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 15
+                                        spacing: 10
+                                        
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: "Gyroskop-Status"
+                                            font.pixelSize: 16
+                                            font.bold: true
+                                            color: "#66ccff"
+                                        }
+                                        
+                                        ProgressBar {
+                                            id: gyroProgressBar
+                                            Layout.fillWidth: true
+                                            value: 0.0
+                                        }
+                                        
+                                        Text {
+                                            id: gyroStatusText
+                                            Layout.fillWidth: true
+                                            text: "Bereit für Kalibrierung"
+                                            horizontalAlignment: Text.AlignHCenter
+                                            color: "#aaffaa"
+                                            font.pixelSize: 14
+                                        }
+                                    }
+                                }
+                                
+                                // Anweisungen
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    color: "#333333"
+                                    radius: 5
+                                    height: 120
+                                    
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 15
+                                        spacing: 10
+                                        
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: "Anweisungen"
+                                            font.pixelSize: 16
+                                            font.bold: true
+                                            color: "#66ccff"
+                                        }
+                                        
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: "1. Stellen Sie sicher, dass die Drohne auf einer ebenen Fläche steht"
+                                            wrapMode: Text.WordWrap
+                                            color: "white"
+                                            font.pixelSize: 12
+                                        }
+                                        
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: "2. Starten Sie die Kalibrierung und bewegen Sie die Drohne NICHT"
+                                            wrapMode: Text.WordWrap
+                                            color: "white"
+                                            font.pixelSize: 12
+                                        }
+                                        
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: "3. Warten Sie bis die Kalibrierung abgeschlossen ist"
+                                            wrapMode: Text.WordWrap
+                                            color: "white"
+                                            font.pixelSize: 12
+                                        }
+                                    }
+                                }
+                                
+                                // Steuerungsschaltflächen
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 15
+                                    
+                                    Button {
+                                        text: "Starten"
+                                        Layout.fillWidth: true
+                                        implicitHeight: 40
+                                        background: Rectangle {
+                                            color: parent.pressed ? "#2980b9" : (parent.hovered ? "#3498db" : "#2c3e50")
+                                            radius: 4
+                                        }
+                                        contentItem: Text {
+                                            text: parent.text
+                                            font.pixelSize: 14
+                                            font.bold: true
+                                            color: "white"
+                                            horizontalAlignment: Text.AlignHCenter
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+                                        onClicked: {
+                                            if (calibrationController) {
+                                                calibrationController.start_calibration("gyro");
+                                                gyroStatusText.text = "Kalibrierung läuft..."
+                                                gyroStatusText.color = "#ffff99"
+                                            }
+                                        }
+                                    }
+                                    
+                                    Button {
+                                        text: "Abbrechen"
+                                        Layout.fillWidth: true
+                                        implicitHeight: 40
+                                        background: Rectangle {
+                                            color: parent.pressed ? "#c0392b" : (parent.hovered ? "#e74c3c" : "#7f8c8d")
+                                            radius: 4
+                                        }
+                                        contentItem: Text {
+                                            text: parent.text
+                                            font.pixelSize: 14
+                                            font.bold: true
+                                            color: "white"
+                                            horizontalAlignment: Text.AlignHCenter
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+                                        onClicked: {
+                                            if (calibrationController) {
+                                                calibrationController.cancel_calibration();
+                                                gyroStatusText.text = "Kalibrierung abgebrochen"
+                                                gyroStatusText.color = "#ff9999"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Verbindung zum Controller
+                        Connections {
+                            target: calibrationController
+                            
+                            function onCalibrationProgressChanged(progress, message) {
+                                if (calibrationTabBar.currentIndex === 2) { // Gyroskop-Tab
+                                    gyroProgressBar.value = progress;
+                                    gyroStatusText.text = message;
+                                    gyroStatusText.color = "#ffff99";
+                                }
+                            }
+                            
+                            function onCalibrationFinished(success, message) {
+                                if (calibrationTabBar.currentIndex === 2) { // Gyroskop-Tab
+                                    gyroStatusText.text = message;
+                                    gyroStatusText.color = success ? "#aaffaa" : "#ff9999";
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Level-Kalibrierung
+                Item {
+                    id: levelCalibration
+                    
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 10
+                        spacing: 15
+                        
+                        Text {
+                            Layout.fillWidth: true
+                            text: "Level-Kalibrierung"
+                            font.pixelSize: 18
+                            font.bold: true
+                            color: "white"
+                        }
+                        
+                        Text {
+                            Layout.fillWidth: true
+                            text: "Kalibrieren Sie die Level-Sensoren für eine präzise horizontale Ausrichtung."
+                            wrapMode: Text.WordWrap
+                            color: "#cccccc"
+                        }
+                        
+                        // Hauptbereich mit Status und Steuerung
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            Layout.minimumHeight: 300
+                            color: "#222222"
+                            radius: 8
+                            
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: 20
+                                spacing: 20
+                                
+                                // Status-Anzeige
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    color: "#333333"
+                                    radius: 5
+                                    height: 100
+                                    
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 15
+                                        spacing: 10
+                                        
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: "Level-Status"
+                                            font.pixelSize: 16
+                                            font.bold: true
+                                            color: "#66ccff"
+                                        }
+                                        
+                                        ProgressBar {
+                                            id: levelProgressBar
+                                            Layout.fillWidth: true
+                                            value: 0.0
+                                        }
+                                        
+                                        Text {
+                                            id: levelStatusText
+                                            Layout.fillWidth: true
+                                            text: "Bereit für Kalibrierung"
+                                            horizontalAlignment: Text.AlignHCenter
+                                            color: "#aaffaa"
+                                            font.pixelSize: 14
+                                        }
+                                    }
+                                }
+                                
+                                // Anweisungen
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    color: "#333333"
+                                    radius: 5
+                                    height: 120
+                                    
+                                    ColumnLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 15
+                                        spacing: 10
+                                        
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: "Anweisungen"
+                                            font.pixelSize: 16
+                                            font.bold: true
+                                            color: "#66ccff"
+                                        }
+                                        
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: "1. Stellen Sie die Drohne auf eine perfekt ebene Fläche"
+                                            wrapMode: Text.WordWrap
+                                            color: "white"
+                                            font.pixelSize: 12
+                                        }
+                                        
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: "2. Stellen Sie sicher, dass die Drohne waagerecht steht"
+                                            wrapMode: Text.WordWrap
+                                            color: "white"
+                                            font.pixelSize: 12
+                                        }
+                                        
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: "3. Starten Sie die Level-Kalibrierung"
+                                            wrapMode: Text.WordWrap
+                                            color: "white"
+                                            font.pixelSize: 12
+                                        }
+                                    }
+                                }
+                                
+                                // Steuerungsschaltflächen
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 15
+                                    
+                                    Button {
+                                        text: "Starten"
+                                        Layout.fillWidth: true
+                                        implicitHeight: 40
+                                        background: Rectangle {
+                                            color: parent.pressed ? "#2980b9" : (parent.hovered ? "#3498db" : "#2c3e50")
+                                            radius: 4
+                                        }
+                                        contentItem: Text {
+                                            text: parent.text
+                                            font.pixelSize: 14
+                                            font.bold: true
+                                            color: "white"
+                                            horizontalAlignment: Text.AlignHCenter
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+                                        onClicked: {
+                                            if (calibrationController) {
+                                                calibrationController.start_calibration("level");
+                                                levelStatusText.text = "Kalibrierung läuft..."
+                                                levelStatusText.color = "#ffff99"
+                                            }
+                                        }
+                                    }
+                                    
+                                    Button {
+                                        text: "Abbrechen"
+                                        Layout.fillWidth: true
+                                        implicitHeight: 40
+                                        background: Rectangle {
+                                            color: parent.pressed ? "#c0392b" : (parent.hovered ? "#e74c3c" : "#7f8c8d")
+                                            radius: 4
+                                        }
+                                        contentItem: Text {
+                                            text: parent.text
+                                            font.pixelSize: 14
+                                            font.bold: true
+                                            color: "white"
+                                            horizontalAlignment: Text.AlignHCenter
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+                                        onClicked: {
+                                            if (calibrationController) {
+                                                calibrationController.cancel_calibration();
+                                                levelStatusText.text = "Kalibrierung abgebrochen"
+                                                levelStatusText.color = "#ff9999"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Verbindung zum Controller
+                        Connections {
+                            target: calibrationController
+                            
+                            function onCalibrationProgressChanged(progress, message) {
+                                if (calibrationTabBar.currentIndex === 3) { // Level-Tab
+                                    levelProgressBar.value = progress;
+                                    levelStatusText.text = message;
+                                    levelStatusText.color = "#ffff99";
+                                }
+                            }
+                            
+                            function onCalibrationFinished(success, message) {
+                                if (calibrationTabBar.currentIndex === 3) { // Level-Tab
+                                    levelStatusText.text = message;
+                                    levelStatusText.color = success ? "#aaffaa" : "#ff9999";
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                Loader { source: "RCControl3DView.qml"; visible: calibrationTabBar.currentIndex === 4; property var controller: root.controller }
+                Loader { source: "ESCCalibrationView.qml"; visible: calibrationTabBar.currentIndex === 5; property var controller: root.controller }
+                Loader { source: "JoystickCalibrationView.qml"; visible: calibrationTabBar.currentIndex === 6; property var controller: root.controller }
             }
         }
     }

@@ -29,6 +29,18 @@ class DroneKitSensorViewModel(QObject):
     currentChanged = Signal()
     batteryPercentChanged = Signal()
     
+    # New signals for additional fields
+    satellitesChanged = Signal()
+    hdopChanged = Signal()
+    vdopChanged = Signal()
+    groundspeedChanged = Signal()
+    airspeedChanged = Signal()
+    verticalSpeedChanged = Signal()
+    throttleChanged = Signal()
+    pressureChanged = Signal()
+    temperatureChanged = Signal()
+    humidityChanged = Signal()
+    
     def __init__(self, drone_connector=None, parent=None):
         """Initialisiert das ViewModel mit optionaler Verbindung zum Connector"""
         super().__init__(parent)
@@ -44,6 +56,16 @@ class DroneKitSensorViewModel(QObject):
         self._voltage = 0.0
         self._current = 0.0
         self._battery_percent = 0.0
+        self._satellites = 0
+        self._hdop = 0.0
+        self._vdop = 0.0
+        self._groundspeed = 0.0
+        self._airspeed = 0.0
+        self._vertical_speed = 0.0
+        self._throttle = 0.0
+        self._pressure = 0.0
+        self._temperature = 0.0
+        self._humidity = 0.0
         
         # UI-Einstellungen
         self._decimals = 1  # Anzahl der Dezimalstellen für die UI
@@ -180,6 +202,47 @@ class DroneKitSensorViewModel(QObject):
     def battery_percent(self):
         return round(self._battery_percent, self._decimals)
     
+    # QML properties for new fields
+    @Property(int, notify=satellitesChanged)
+    def satellites(self):
+        return self._satellites
+
+    @Property(float, notify=hdopChanged)
+    def hdop(self):
+        return self._hdop
+
+    @Property(float, notify=vdopChanged)
+    def vdop(self):
+        return self._vdop
+
+    @Property(float, notify=groundspeedChanged)
+    def groundspeed(self):
+        return self._groundspeed
+
+    @Property(float, notify=airspeedChanged)
+    def airspeed(self):
+        return self._airspeed
+
+    @Property(float, notify=verticalSpeedChanged)
+    def vertical_speed(self):
+        return self._vertical_speed
+
+    @Property(float, notify=throttleChanged)
+    def throttle(self):
+        return self._throttle
+
+    @Property(float, notify=pressureChanged)
+    def pressure(self):
+        return self._pressure
+
+    @Property(float, notify=temperatureChanged)
+    def temperature(self):
+        return self._temperature
+
+    @Property(float, notify=humidityChanged)
+    def humidity(self):
+        return self._humidity
+    
     # === Setter-Methoden ===
     
     @Slot(float, float, float)
@@ -238,3 +301,54 @@ class DroneKitSensorViewModel(QObject):
             self.sensorUpdated.emit("voltage", voltage)
             self.sensorUpdated.emit("current", current)
             self.sensorUpdated.emit("battery_percent", remaining)
+
+    # Setters for new fields
+    def set_satellites(self, value):
+        if self._satellites != value:
+            self._satellites = value
+            self.satellitesChanged.emit()
+
+    def set_hdop(self, value):
+        if self._hdop != value:
+            self._hdop = value
+            self.hdopChanged.emit()
+
+    def set_vdop(self, value):
+        if self._vdop != value:
+            self._vdop = value
+            self.vdopChanged.emit()
+
+    def set_groundspeed(self, value):
+        if self._groundspeed != value:
+            self._groundspeed = value
+            self.groundspeedChanged.emit()
+
+    def set_airspeed(self, value):
+        if self._airspeed != value:
+            self._airspeed = value
+            self.airspeedChanged.emit()
+
+    def set_vertical_speed(self, value):
+        if self._vertical_speed != value:
+            self._vertical_speed = value
+            self.verticalSpeedChanged.emit()
+
+    def set_throttle(self, value):
+        if self._throttle != value:
+            self._throttle = value
+            self.throttleChanged.emit()
+
+    def set_pressure(self, value):
+        if self._pressure != value:
+            self._pressure = value
+            self.pressureChanged.emit()
+
+    def set_temperature(self, value):
+        if self._temperature != value:
+            self._temperature = value
+            self.temperatureChanged.emit()
+
+    def set_humidity(self, value):
+        if self._humidity != value:
+            self._humidity = value
+            self.humidityChanged.emit()

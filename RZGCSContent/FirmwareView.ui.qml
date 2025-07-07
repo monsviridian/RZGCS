@@ -1,491 +1,478 @@
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
+import QtQuick.Dialogs
 
-Item {
+Rectangle {
     id: root
-    property var firmwareViewModel: null  // Referenz zum ViewModel, wird von außen gesetzt
-    property bool isConnected: false
+    color: "#181818"
+    border.color: "#333"
+    border.width: 1
 
-    Rectangle {
+    // ViewModel binding - must be set from parent
+    property var firmwareViewModel
+    
+    // File Dialog for importing firmware files
+    FileDialog {
+        id: fileDialog
+        title: "Firmware-Datei auswählen"
+        nameFilters: ["Firmware-Dateien (*.hex *.bin *.px4)", "HEX-Dateien (*.hex)", "BIN-Dateien (*.bin)", "PX4-Dateien (*.px4)", "Alle Dateien (*)"]
+        onAccepted: {
+            if (firmwareViewModel) {
+                firmwareViewModel.import_firmware_file(fileDialog.fileUrl.toString().replace("file:///", ""))
+            }
+        }
+    }
+    
+    Component.onCompleted: {
+        console.log("FirmwareView: Component completed")
+        console.log("FirmwareView: firmwareViewModel:", firmwareViewModel)
+        if (firmwareViewModel) {
+            console.log("FirmwareView: is_connected:", firmwareViewModel.is_connected)
+            console.log("FirmwareView: available_ports:", firmwareViewModel.available_ports)
+            console.log("FirmwareView: imported_file_path:", firmwareViewModel.imported_file_path)
+            firmwareViewModel.initialize()
+        } else {
+            console.log("W: FirmwareView: firmwareViewModel not available")
+        }
+    }
+    
+    ColumnLayout {
         anchors.fill: parent
-        color: "#2c2c2c"
-        
-        ScrollView {
-            id: scrollView
-            anchors.fill: parent
-            clip: true
-            ScrollBar.vertical.policy: ScrollBar.AlwaysOn
-            ScrollBar.horizontal.policy: ScrollBar.AsNeeded
-            
-            ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 20
-            spacing: 15
-            
+        anchors.margins: 24
+        spacing: 24
+
+        // Header
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 20
+
             Text {
-                Layout.fillWidth: true
-                text: "Firmware Installation"
-                font.pixelSize: 24
+                text: "Firmware Flasher"
+                color: "#e0e0e0"
+                font.pixelSize: 28
                 font.bold: true
-                color: "white"
             }
-            
-            Text {
-                Layout.fillWidth: true
-                text: "Installieren oder aktualisieren Sie die Firmware Ihres Flugcontrollers."
-                font.pixelSize: 16
-                color: "#cccccc"
-                wrapMode: Text.WordWrap
-            }
-            
+
+            Item { Layout.fillWidth: true }
+
+            // Status-Rechteck im JAGCS-Stil
             Rectangle {
-                Layout.fillWidth: true
-                height: 1
-                color: "#555555"
-                Layout.topMargin: 10
-                Layout.bottomMargin: 10
-            }
-            
-            // Hauptbereich mit zwei Spalten
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                spacing: 20
-                
-                // Linke Spalte - Geräteauswahl und Firmware-Typ
-                ColumnLayout {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: parent.width * 0.4
-                    spacing: 15
-                    
-                    // Geräteauswahl
-                    Rectangle {
-                        Layout.fillWidth: true
-                        color: "#333333"
-                        radius: 5
-                        height: deviceColumn.height + 20
-                        
-                        ColumnLayout {
-                            id: deviceColumn
-                            anchors.top: parent.top
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.margins: 10
-                            spacing: 10
-                            
-                            Text {
-                                text: "Verbundenes Gerät"
-                                font.pixelSize: 16
-                                font.bold: true
-                                color: "white"
-                            }
-                            
-                            Rectangle {
-                                Layout.fillWidth: true
-                                height: 1
-                                color: "#555555"
-                            }
-                            
-                            Text {
-                                text: root.isConnected ? "Flugcontroller erkannt" : "Kein Gerät verbunden"
-                                color: root.isConnected ? "#00ff00" : "#ff9900"
-                                font.pixelSize: 14
-                            }
-                            
-                            Text {
-                                visible: root.isConnected && firmwareViewModel && firmwareViewModel.deviceInfo
-                                text: firmwareViewModel && firmwareViewModel.deviceInfo ? 
-                                    "Typ: " + firmwareViewModel.deviceInfo.boardType + "\nBootloader: " + 
-                                    firmwareViewModel.deviceInfo.bootloaderVersion : ""
-                                color: "#cccccc"
-                                font.pixelSize: 12
-                            }
-                            
-                            Button {
-                                Layout.fillWidth: true
-                                text: "Gerät verbinden"
-                                enabled: !root.isConnected
-                                
-                                onClicked: {
-                                    if (firmwareViewModel) {
-                                        firmwareViewModel.connectDevice()
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    // Firmware-Typ-Auswahl
-                    Rectangle {
-                        Layout.fillWidth: true
-                        color: "#333333"
-                        radius: 5
-                        height: firmwareTypeColumn.height + 20
-                        enabled: root.isConnected
-                        opacity: enabled ? 1.0 : 0.6
-                        
-                        ColumnLayout {
-                            id: firmwareTypeColumn
-                            anchors.top: parent.top
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.margins: 10
-                            spacing: 10
-                            
-                            Text {
-                                text: "Firmware-Typ"
-                                font.pixelSize: 16
-                                font.bold: true
-                                color: "white"
-                            }
-                            
-                            Rectangle {
-                                Layout.fillWidth: true
-                                height: 1
-                                color: "#555555"
-                            }
-                            
-                            RadioButton {
-                                id: ardupilotRadio
-                                text: "ArduPilot"
-                                checked: firmwareViewModel ? firmwareViewModel.firmwareType === "ardupilot" : true
-                                onCheckedChanged: {
-                                    if (checked && firmwareViewModel) {
-                                        firmwareViewModel.firmwareType = "ardupilot"
-                                    }
-                                }
-                                
-                                contentItem: Text {
-                                    text: ardupilotRadio.text
-                                    font.pixelSize: 14
-                                    color: "white"
-                                    leftPadding: ardupilotRadio.indicator.width + ardupilotRadio.spacing
-                                    verticalAlignment: Text.AlignVCenter
-                                }
-                            }
-                            
-                            RadioButton {
-                                id: px4Radio
-                                text: "PX4"
-                                checked: firmwareViewModel ? firmwareViewModel.firmwareType === "px4" : false
-                                onCheckedChanged: {
-                                    if (checked && firmwareViewModel) {
-                                        firmwareViewModel.firmwareType = "px4"
-                                    }
-                                }
-                                
-                                contentItem: Text {
-                                    text: px4Radio.text
-                                    font.pixelSize: 14
-                                    color: "white"
-                                    leftPadding: px4Radio.indicator.width + px4Radio.spacing
-                                    verticalAlignment: Text.AlignVCenter
-                                }
-                            }
-                        }
-                    }
-                    
-                    // Erweiterte Optionen
-                    Rectangle {
-                        Layout.fillWidth: true
-                        color: "#333333"
-                        radius: 5
-                        height: advancedColumn.height + 20
-                        enabled: root.isConnected
-                        opacity: enabled ? 1.0 : 0.6
-                        
-                        ColumnLayout {
-                            id: advancedColumn
-                            anchors.top: parent.top
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.margins: 10
-                            spacing: 10
-                            
-                            Text {
-                                text: "Erweiterte Optionen"
-                                font.pixelSize: 16
-                                font.bold: true
-                                color: "white"
-                            }
-                            
-                            Rectangle {
-                                Layout.fillWidth: true
-                                height: 1
-                                color: "#555555"
-                            }
-                            
-                            CheckBox {
-                                id: wipeSettingsCheck
-                                text: "Einstellungen löschen"
-                                checked: firmwareViewModel ? firmwareViewModel.wipeSettings : false
-                                onCheckedChanged: {
-                                    if (firmwareViewModel) {
-                                        firmwareViewModel.wipeSettings = checked
-                                    }
-                                }
-                                
-                                contentItem: Text {
-                                    text: wipeSettingsCheck.text
-                                    font.pixelSize: 14
-                                    color: "white"
-                                    leftPadding: wipeSettingsCheck.indicator.width + wipeSettingsCheck.spacing
-                                    verticalAlignment: Text.AlignVCenter
-                                }
-                            }
-                            
-                            CheckBox {
-                                id: developerVersionsCheck
-                                text: "Entwicklerversionen anzeigen"
-                                checked: firmwareViewModel ? firmwareViewModel.showDeveloperVersions : false
-                                onCheckedChanged: {
-                                    if (firmwareViewModel) {
-                                        firmwareViewModel.showDeveloperVersions = checked
-                                    }
-                                }
-                                
-                                contentItem: Text {
-                                    text: developerVersionsCheck.text
-                                    font.pixelSize: 14
-                                    color: "white"
-                                    leftPadding: developerVersionsCheck.indicator.width + developerVersionsCheck.spacing
-                                    verticalAlignment: Text.AlignVCenter
-                                }
-                            }
-                        }
-                    }
-                    
-                    // Platzhalter
-                    Item {
-                        Layout.fillHeight: true
-                    }
-                }
-                
-                // Rechte Spalte - Firmware-Auswahl und Installation
-                ColumnLayout {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    spacing: 15
-                    
-                    // Firmware-Varianten
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        Layout.minimumHeight: 200
-                        color: "#333333"
-                        radius: 5
-                        enabled: root.isConnected
-                        opacity: enabled ? 1.0 : 0.6
-                        
-                        ColumnLayout {
-                            anchors.fill: parent
-                            anchors.margins: 10
-                            spacing: 10
-                            
-                            Text {
-                                text: ardupilotRadio.checked ? "ArduPilot Firmware Varianten" : "PX4 Firmware Versionen"
-                                font.pixelSize: 16
-                                font.bold: true
-                                color: "white"
-                            }
-                            
-                            Rectangle {
-                                Layout.fillWidth: true
-                                height: 1
-                                color: "#555555"
-                            }
-                            
-                            ScrollView {
-                                Layout.fillWidth: true
-                                Layout.fillHeight: true
-                                clip: true
-                                
-                                ListView {
-                                    id: firmwareList
-                                    anchors.fill: parent
-                                    model: firmwareViewModel ? firmwareViewModel.firmwareList : null
-                                    spacing: 5
-                                    
-                                    delegate: Rectangle {
-                                        width: ListView.view.width
-                                        height: delegateLayout.height + 20
-                                        color: firmwareList.currentIndex === index ? "#4a6fb5" : "#444444"
-                                        radius: 3
-                                        
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            onClicked: {
-                                                firmwareList.currentIndex = index
-                                                if (firmwareViewModel) {
-                                                    firmwareViewModel.selectedFirmwareIndex = index
-                                                }
-                                            }
-                                        }
-                                        
-                                        ColumnLayout {
-                                            id: delegateLayout
-                                            anchors.left: parent.left
-                                            anchors.right: parent.right
-                                            anchors.top: parent.top
-                                            anchors.margins: 10
-                                            spacing: 5
-                                            
-                                            Text {
-                                                Layout.fillWidth: true
-                                                text: modelData.name
-                                                font.bold: true
-                                                font.pixelSize: 14
-                                                color: "white"
-                                                elide: Text.ElideRight
-                                            }
-                                            
-                                            Text {
-                                                Layout.fillWidth: true
-                                                text: modelData.version
-                                                font.pixelSize: 12
-                                                color: "#cccccc"
-                                                elide: Text.ElideRight
-                                            }
-                                            
-                                            Text {
-                                                Layout.fillWidth: true
-                                                text: modelData.description || ""
-                                                font.pixelSize: 12
-                                                color: "#aaaaaa"
-                                                wrapMode: Text.WordWrap
-                                                visible: modelData.description && modelData.description.length > 0
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    // Status und Fortschritt
-                    Rectangle {
-                        Layout.fillWidth: true
-                        color: "#333333"
-                        radius: 5
-                        height: statusColumn.height + 20
-                        
-                        ColumnLayout {
-                            id: statusColumn
-                            anchors.top: parent.top
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.margins: 10
-                            spacing: 10
-                            
-                            Text {
-                                text: "Status"
-                                font.pixelSize: 16
-                                font.bold: true
-                                color: "white"
-                            }
-                            
-                            Rectangle {
-                                Layout.fillWidth: true
-                                height: 1
-                                color: "#555555"
-                            }
-                            
-                            Text {
-                                Layout.fillWidth: true
-                                text: firmwareViewModel ? firmwareViewModel.statusMessage : "Bereit"
-                                font.pixelSize: 14
-                                color: "#cccccc"
-                                wrapMode: Text.WordWrap
-                            }
-                            
-                            ProgressBar {
-                                Layout.fillWidth: true
-                                height: 6
-                                from: 0
-                                to: 100
-                                value: firmwareViewModel ? firmwareViewModel.progress : 0
-                                visible: firmwareViewModel && firmwareViewModel.inProgress
-                                
-                                background: Rectangle {
-                                    implicitWidth: 200
-                                    implicitHeight: 6
-                                    color: "#222222"
-                                    radius: 3
-                                }
-                                
-                                contentItem: Rectangle {
-                                    width: parent.visualPosition * parent.width
-                                    height: parent.height
-                                    radius: 2
-                                    color: "#00aa00"
-                                }
-                            }
-                        }
-                    }
-                    
-                    // Aktionsschaltflächen
-                    Rectangle {
-                        Layout.fillWidth: true
-                        color: "#333333"
-                        radius: 5
-                        height: actionColumn.height + 20
-                        
-                        ColumnLayout {
-                            id: actionColumn
-                            anchors.top: parent.top
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.margins: 10
-                            spacing: 10
-                            
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: 10
-                                
-                                Button {
-                                    Layout.fillWidth: true
-                                    text: "Firmware herunterladen"
-                                    enabled: root.isConnected && firmwareList.count > 0 && 
-                                             firmwareViewModel && !firmwareViewModel.inProgress
-                                    
-                                    onClicked: {
-                                        if (firmwareViewModel) {
-                                            firmwareViewModel.downloadFirmware()
-                                        }
-                                    }
-                                }
-                                
-                                Button {
-                                    Layout.fillWidth: true
-                                    text: "Firmware installieren"
-                                    enabled: root.isConnected && firmwareViewModel && 
-                                             firmwareViewModel.firmwareDownloaded && !firmwareViewModel.inProgress
-                                    
-                                    onClicked: {
-                                        if (firmwareViewModel) {
-                                            firmwareViewModel.flashFirmware()
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            Button {
-                                Layout.fillWidth: true
-                                text: "Abbrechen"
-                                enabled: firmwareViewModel && firmwareViewModel.inProgress
-                                
-                                onClicked: {
-                                    if (firmwareViewModel) {
-                                        firmwareViewModel.cancelOperation()
-                                    }
-                                }
-                            }
-                        }
-                    }
+                width: 140
+                height: 36
+                radius: 18
+                color: firmwareViewModel && firmwareViewModel.is_connected ? "#4caf50" : "#f44336"
+                border.color: firmwareViewModel && firmwareViewModel.is_connected ? "#45a049" : "#d32f2f"
+                border.width: 1
+                Text {
+                    anchors.centerIn: parent
+                    text: firmwareViewModel && firmwareViewModel.is_connected ? "✓ Verbunden" : "✗ Nicht verbunden"
+                    color: "white"
+                    font.pixelSize: 14
+                    font.bold: true
                 }
             }
         }
+
+        // Hauptbereich
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: 32
+
+            // Linke Spalte: Geräte, Firmware, Import
+            ColumnLayout {
+                spacing: 20
+                Layout.preferredWidth: 400
+
+                // Geräteverbindung (Mehrfachauswahl)
+                GroupBox {
+                    title: "Geräteverbindung (Mehrfachauswahl)"
+                    Layout.fillWidth: true
+                    background: Rectangle {
+                        color: "#232323"
+                        border.color: "#34495e"
+                        border.width: 1
+                        radius: 6
+                    }
+                    label: Text {
+                        text: parent.title
+                        color: "#00bcd4"
+                        font.pixelSize: 16
+                        font.bold: true
+                    }
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 12
+                        spacing: 12
+                        ListView {
+                            id: portListView
+                            Layout.fillWidth: true
+                            height: Math.min(200, (firmwareViewModel && firmwareViewModel.available_ports ? firmwareViewModel.available_ports.length * 36 : 0))
+                            model: firmwareViewModel ? firmwareViewModel.available_ports : []
+                            delegate: RowLayout {
+                                spacing: 8
+                                CheckBox {
+                                    id: portCheckBox
+                                    checked: firmwareViewModel && firmwareViewModel.selected_ports && firmwareViewModel.selected_ports.indexOf(modelData) !== -1
+                                    onCheckedChanged: {
+                                        if (firmwareViewModel) {
+                                            firmwareViewModel.toggle_port_selection(modelData, checked)
+                                        }
+                                    }
+                                }
+                                Text { text: modelData; color: "white"; font.pixelSize: 14 }
+                            }
+                        }
+                    }
+                }
+
+                // Firmware-Auswahl
+                GroupBox {
+                    title: "Firmware-Auswahl"
+                    Layout.fillWidth: true
+                    background: Rectangle {
+                        color: "#232323"
+                        border.color: "#34495e"
+                        border.width: 1
+                        radius: 6
+                    }
+                    label: Text {
+                        text: parent.title
+                        color: "#00bcd4"
+                        font.pixelSize: 16
+                        font.bold: true
+                    }
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 12
+                        spacing: 12
+                        CheckBox {
+                            id: developerVersionsCheck
+                            text: "Entwicklungsversionen anzeigen"
+                            checked: firmwareViewModel ? firmwareViewModel.show_developer_versions : false
+                            onCheckedChanged: if (firmwareViewModel) firmwareViewModel.show_developer_versions = checked
+                            contentItem: Text {
+                                text: developerVersionsCheck.text
+                                color: "white"
+                                font.pixelSize: 14
+                                leftPadding: developerVersionsCheck.indicator.width + developerVersionsCheck.spacing
+                            }
+                        }
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 140
+                            color: "#2a2a2a"
+                            radius: 4
+                            border.color: "#555"
+                            border.width: 1
+                            ListView {
+                                anchors.fill: parent
+                                anchors.margins: 4
+                                model: firmwareViewModel ? firmwareViewModel.firmware_list : []
+                                delegate: Rectangle {
+                                    width: parent.width; height: 44; 
+                                    color: ListView.isCurrentItem ? "#3a3a3a" : "transparent"
+                                    radius: 4
+                                    RowLayout {
+                                        anchors.fill: parent; 
+                                        anchors.margins: 8
+                                        spacing: 12
+                                        Text { 
+                                            text: modelData.name; 
+                                            color: "white"; 
+                                            font.bold: true; 
+                                            font.pixelSize: 14 
+                                        }
+                                        Text { 
+                                            text: modelData.version; 
+                                            color: "#00bcd4"; 
+                                            font.pixelSize: 12 
+                                        }
+                                        Item { Layout.fillWidth: true }
+                                        Text { 
+                                            text: modelData.description; 
+                                            color: "#999999"; 
+                                            font.pixelSize: 11 
+                                        }
+                                    }
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: {
+                                            parent.ListView.view.currentIndex = index
+                                            if (firmwareViewModel) {
+                                                firmwareViewModel.selected_firmware_index = index
+                                                firmwareViewModel.clear_imported_file()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        Button {
+                            Layout.fillWidth: true
+                            height: 40
+                            text: "⬇️ Firmware herunterladen"
+                            enabled: firmwareViewModel && firmwareViewModel.selected_firmware_index >= 0 && !firmwareViewModel.in_progress && !firmwareViewModel.imported_file_path
+                            onClicked: if (firmwareViewModel) firmwareViewModel.download_firmware()
+                            background: Rectangle {
+                                color: parent.enabled ? "#ff9800" : "#555"
+                                radius: 6
+                            }
+                            contentItem: Text {
+                                text: parent.text
+                                color: "white"
+                                font.pixelSize: 16
+                                font.bold: true
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                        }
+                    }
+                }
+
+                // Eigene Firmware importieren
+                GroupBox {
+                    title: "Eigene Firmware importieren"
+                    Layout.fillWidth: true
+                    background: Rectangle {
+                        color: "#232323"
+                        border.color: "#34495e"
+                        border.width: 1
+                        radius: 6
+                    }
+                    label: Text {
+                        text: parent.title
+                        color: "#00ff00"
+                        font.pixelSize: 16
+                        font.bold: true
+                    }
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 12
+                        spacing: 12
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Button {
+                                height: 40
+                                text: "📁 Datei auswählen"
+                                onClicked: fileDialog.open()
+                                background: Rectangle {
+                                    color: "#9c27b0"
+                                    radius: 6
+                                }
+                                contentItem: Text {
+                                    text: parent.text
+                                    color: "white"
+                                    font.pixelSize: 16
+                                    font.bold: true
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                            }
+                            Text {
+                                text: firmwareViewModel && firmwareViewModel.imported_file_path ? firmwareViewModel.imported_file_name : "Keine Datei ausgewählt"
+                                color: firmwareViewModel && firmwareViewModel.imported_file_path ? "#00ff00" : "#999999"
+                                font.pixelSize: 13
+                                elide: Text.ElideMiddle
+                                Layout.fillWidth: true
+                            }
+                        }
+                        Text {
+                            visible: firmwareViewModel && firmwareViewModel.imported_file_info
+                            text: firmwareViewModel ? firmwareViewModel.imported_file_info : ""
+                            color: "#cccccc"; font.pixelSize: 11
+                        }
+                    }
+                }
+
+                // Flash-Button (groß und prominent)
+                Button {
+                    Layout.fillWidth: true
+                    height: 50
+                    text: "⚡ Alle ausgewählten flashen"
+                    enabled: firmwareViewModel && firmwareViewModel.selected_ports && firmwareViewModel.selected_ports.length > 0 && ((firmwareViewModel.firmware_downloaded && !firmwareViewModel.imported_file_path) || firmwareViewModel.imported_file_path) && !firmwareViewModel.in_progress
+                    onClicked: if (firmwareViewModel) firmwareViewModel.flash_multiple_devices()
+                    background: Rectangle {
+                        color: parent.enabled ? "#ffb300" : "#555"
+                        radius: 8
+                        border.color: parent.enabled ? "#ffa000" : "#444"
+                        border.width: 2
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        color: "white"
+                        font.pixelSize: 18
+                        font.bold: true
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+
+                // Wipe Settings Checkbox
+                CheckBox {
+                    id: wipeSettingsCheck
+                    text: "🗑️ Einstellungen löschen (Wipe Settings)"
+                    checked: firmwareViewModel ? firmwareViewModel.wipe_settings : false
+                    onCheckedChanged: if (firmwareViewModel) firmwareViewModel.wipe_settings = checked
+                    contentItem: Text {
+                        text: wipeSettingsCheck.text
+                        color: "#ff6600"
+                        font.pixelSize: 14
+                        font.bold: true
+                        leftPadding: wipeSettingsCheck.indicator.width + wipeSettingsCheck.spacing
+                    }
+                }
+            }
+
+            // Rechte Spalte: Status, Log, Anleitung
+            ColumnLayout {
+                spacing: 20
+                Layout.preferredWidth: 500
+
+                // Status & Fortschritt
+                GroupBox {
+                    title: "Flash-Status pro Port"
+                    Layout.fillWidth: true
+                    background: Rectangle {
+                        color: "#232323"
+                        border.color: "#34495e"
+                        border.width: 1
+                        radius: 6
+                    }
+                    label: Text {
+                        text: parent.title
+                        color: "#00bcd4"
+                        font.pixelSize: 16
+                        font.bold: true
+                    }
+                    ListView {
+                        Layout.fillWidth: true
+                        height: Math.min(200, (firmwareViewModel && firmwareViewModel.selected_ports ? firmwareViewModel.selected_ports.length * 36 : 0))
+                        model: firmwareViewModel ? firmwareViewModel.selected_ports : []
+                        delegate: RowLayout {
+                            spacing: 8
+                            Text { text: modelData; color: "#00bcd4"; font.pixelSize: 14 }
+                            ProgressBar {
+                                value: firmwareViewModel && firmwareViewModel.port_progress && firmwareViewModel.port_progress[modelData] ? firmwareViewModel.port_progress[modelData] / 100.0 : 0
+                                width: 120
+                                height: 12
+                            }
+                            Text {
+                                text: firmwareViewModel && firmwareViewModel.port_status && firmwareViewModel.port_status[modelData] ? firmwareViewModel.port_status[modelData] : ""
+                                color: "#cccccc"
+                                font.pixelSize: 12
+                            }
+                        }
+                    }
+                }
+
+                // Log-Bereich
+                GroupBox {
+                    title: "Log"
+                    Layout.fillWidth: true
+                    background: Rectangle {
+                        color: "#232323"
+                        border.color: "#34495e"
+                        border.width: 1
+                        radius: 6
+                    }
+                    label: Text {
+                        text: parent.title
+                        color: "#00bcd4"
+                        font.pixelSize: 16
+                        font.bold: true
+                    }
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 12
+                        spacing: 8
+                        ScrollView {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 150
+                            clip: true
+                            TextArea {
+                                id: logTextArea
+                                readOnly: true
+                                text: firmwareViewModel ? firmwareViewModel.log_text : ""
+                                color: "#cccccc"
+                                font.pixelSize: 12
+                                font.family: "Consolas, Monaco, monospace"
+                                wrapMode: TextArea.Wrap
+                                background: Rectangle {
+                                    color: "#1a1a1a"
+                                    border.color: "#555"
+                                    border.width: 1
+                                    radius: 4
+                                }
+                            }
+                        }
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Button {
+                                text: "🗑️ Log löschen"
+                                height: 32
+                                onClicked: if (firmwareViewModel) firmwareViewModel.clear_log()
+                                background: Rectangle {
+                                    color: "#f44336"
+                                    radius: 4
+                                }
+                                contentItem: Text {
+                                    text: parent.text
+                                    color: "white"
+                                    font.pixelSize: 12
+                                    font.bold: true
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                            }
+                            Item { Layout.fillWidth: true }
+                            Text {
+                                text: "Auto-Scroll: "
+                                color: "#cccccc"
+                                font.pixelSize: 12
+                            }
+                            CheckBox {
+                                id: autoScrollCheck
+                                checked: true
+                                contentItem: Text {
+                                    text: "Aktiviert"
+                                    color: "#cccccc"
+                                    font.pixelSize: 12
+                                    leftPadding: autoScrollCheck.indicator.width + autoScrollCheck.spacing
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Anleitung
+                GroupBox {
+                    title: "Anleitung"
+                    Layout.fillWidth: true
+                    background: Rectangle {
+                        color: "#232323"
+                        border.color: "#34495e"
+                        border.width: 1
+                        radius: 6
+                    }
+                    label: Text {
+                        text: parent.title
+                        color: "#00bcd4"
+                        font.pixelSize: 16
+                        font.bold: true
+                    }
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 12
+                        spacing: 8
+                        Text {
+                            text: "1. 🔌 COM-Port wählen und Gerät verbinden\n2. 📋 Firmware aus Liste wählen ODER eigene Datei importieren\n3. ⬇️ Firmware herunterladen (optional)\n4. ⚡ Firmware flashen\n\n⚠️ Wichtige Hinweise:\n• Gerät muss im Bootloader-Modus sein\n• Flash-Vorgang nicht unterbrechen\n• Wipe Settings löscht alle Parameter\n• Backup vor dem Flashen erstellen"
+                            color: "#cccccc"; font.pixelSize: 13; wrapMode: Text.WordWrap
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -26,10 +26,35 @@ Rectangle {
         function onMessagesChanged() {
             console.log("D: MessageList: messagesChanged signal received")
             console.log("D: messageManager.messages.length:", messageManager ? messageManager.messages.length : 0)
+            // Auto-scroll to top when messages change
+            scrollToLatestMessage()
         }
         
         function onMessageAdded(message, type) {
             console.log("D: MessageList: messageAdded signal received:", message, type)
+            // Auto-scroll to top when new message is added
+            scrollToLatestMessage()
+        }
+    }
+    
+    // Function to scroll to the latest message (bottom)
+    function scrollToLatestMessage() {
+        if (listView.count > 0) {
+            // Use a small delay to ensure the model is updated
+            scrollTimer.start()
+        }
+    }
+    
+    // Timer for delayed scrolling to ensure model is updated
+    Timer {
+        id: scrollTimer
+        interval: 50  // 50ms delay
+        repeat: false
+        onTriggered: {
+            if (listView.count > 0) {
+                listView.positionViewAtEnd()  // Scroll to bottom (newest message)
+                console.log("D: Scrolled to latest message (bottom)")
+            }
         }
     }
     
@@ -78,6 +103,9 @@ Rectangle {
         
         model: messageManager && messageManager.messages ? messageManager.messages : []
         
+        // Ensure latest messages are always visible at the top
+        verticalLayoutDirection: ListView.TopToBottom
+        
         delegate: Rectangle {
             width: listView.width
             height: messageText.height + 20
@@ -95,14 +123,26 @@ Rectangle {
                     color: getTypeColor(modelData.type)
                 }
                 
-                // Message text
-                Label {
-                    id: messageText
-                    text: modelData.message
-                    color: "white"
-                    font.pixelSize: 12
-                    wrapMode: Text.WordWrap
+                // Message text with timestamp
+                ColumnLayout {
                     Layout.fillWidth: true
+                    spacing: 2
+                    
+                    Label {
+                        id: messageText
+                        text: modelData.text || modelData.message
+                        color: "white"
+                        font.pixelSize: 12
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+                    
+                    Label {
+                        text: modelData.timestamp || ""
+                        color: "#888888"
+                        font.pixelSize: 10
+                        Layout.fillWidth: true
+                    }
                 }
             }
         }
@@ -111,6 +151,13 @@ Rectangle {
         ScrollBar.vertical: ScrollBar {
             active: true
             policy: ScrollBar.AsNeeded
+        }
+        
+        // Auto-scroll to bottom when model changes
+        onModelChanged: {
+            if (count > 0) {
+                positionViewAtEnd()  // Scroll to bottom (newest message)
+            }
         }
     }
     

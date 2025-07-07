@@ -1,151 +1,171 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
-Rectangle {
+Item {
     id: root
-    color: "#303030"
-    border.color: "#404040"
-    border.width: 1
-
-    ColumnLayout {
+    anchors.fill: parent
+    
+    // Simple preflight view with connection controls
+    Rectangle {
         anchors.fill: parent
-        anchors.margins: 10
-        spacing: 10
-
-        // Checkliste
-        GroupBox {
-            title: "Preflight Checklist"
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-
-            ColumnLayout {
-                anchors.fill: parent
-                spacing: 5
-
-                // Batterie
-                CheckBox {
-                    text: "Battery fully charged"
-                    checked: false
-                }
-
-                // Propeller
-                CheckBox {
-                    text: "Propellers securely attached"
-                    checked: false
-                }
-
-                // GPS
-                CheckBox {
-                    text: "GPS signal acquired"
-                    checked: false
-                }
-
-                // IMU
-                CheckBox {
-                    text: "IMU calibrated"
-                    checked: false
-                }
-
-                // RC
-                CheckBox {
-                    text: "RC transmitter connected"
-                    checked: false
-                }
-
-                // Flight Mode
-                CheckBox {
-                    text: "Flight mode set to STABILIZE"
-                    checked: false
-                }
-
-                // Failsafe
-                CheckBox {
-                    text: "Failsafe configured"
-                    checked: false
-                }
-
-                // Geofence
-                CheckBox {
-                    text: "Geofence configured"
-                    checked: false
-                }
-
-                // Mission
-                CheckBox {
-                    text: "Mission uploaded (if applicable)"
-                    checked: false
-                }
-
-                // Weather
-                CheckBox {
-                    text: "Weather conditions suitable"
-                    checked: false
-                }
-
-                // Area
-                CheckBox {
-                    text: "Flight area clear"
-                    checked: false
-                }
-
-                // Emergency
-                CheckBox {
-                    text: "Emergency procedures reviewed"
-                    checked: false
-                }
-            }
-        }
-
-        // Status
-        GroupBox {
-            title: "System Status"
-            Layout.fillWidth: true
-
-            GridLayout {
-                anchors.fill: parent
-                columns: 2
-                columnSpacing: 10
-                rowSpacing: 5
-
-                Label { text: "Battery Voltage:" }
-                Label { text: "0.0V" }
-
-                Label { text: "GPS Satellites:" }
-                Label { text: "0" }
-
-                Label { text: "GPS Fix:" }
-                Label { text: "No Fix" }
-
-                Label { text: "IMU Status:" }
-                Label { text: "Not Ready" }
-
-                Label { text: "RC Status:" }
-                Label { text: "Not Connected" }
-
-                Label { text: "Flight Mode:" }
-                Label { text: "Unknown" }
-            }
-        }
-
-        // Aktionen
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 10
-
-            Button {
-                text: "Run Preflight Checks"
+        color: "#1e1e1e"
+        
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 20
+            spacing: 15
+            
+            Text {
+                text: "Preflight Check & Connection"
+                color: "white"
+                font.pixelSize: 24
+                font.bold: true
                 Layout.fillWidth: true
-                onClicked: {
-                    // TODO: Implement preflight checks
+                horizontalAlignment: Text.AlignHCenter
+            }
+            
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: "#555555"
+            }
+            
+            // Connection Status
+            GroupBox {
+                title: "Verbindungsstatus"
+                Layout.fillWidth: true
+                
+                GridLayout {
+                    anchors.fill: parent
+                    columns: 2
+                    
+                    Label {
+                        text: "Status:"
+                        color: "white"
+                    }
+                    
+                    Label {
+                        text: serialConnector && serialConnector.isConnected ? "Verbunden" : "Getrennt"
+                        color: serialConnector && serialConnector.isConnected ? "#44FF44" : "#FF4444"
+                        Layout.fillWidth: true
+                    }
+                    
+                    Label {
+                        text: "Port:"
+                        color: "white"
+                    }
+                    
+                    Label {
+                        text: serialConnector ? serialConnector.selectedPort : "Nicht ausgewählt"
+                        color: "white"
+                        Layout.fillWidth: true
+                    }
                 }
             }
-
-            Button {
-                text: "Clear Checklist"
+            
+            // Connection Controls
+            GroupBox {
+                title: "Verbindung"
                 Layout.fillWidth: true
-                onClicked: {
-                    // TODO: Clear all checkboxes
+                
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: 10
+                    
+                    RowLayout {
+                        Layout.fillWidth: true
+                        
+                        Label {
+                            text: "Port:"
+                            color: "white"
+                        }
+                        
+                        ComboBox {
+                            id: portComboBox
+                            model: serialConnector ? serialConnector.availablePorts : []
+                            Layout.fillWidth: true
+                            onCurrentTextChanged: if (serialConnector) serialConnector.setPort(currentText)
+                        }
+                        
+                        Label {
+                            text: "Baudrate:"
+                            color: "white"
+                        }
+                        
+                        ComboBox {
+                            id: baudrateComboBox
+                            model: [9600, 19200, 38400, 57600, 115200]
+                            currentIndex: 4
+                            Layout.preferredWidth: 100
+                            onCurrentTextChanged: if (serialConnector) serialConnector.setBaudRate(parseInt(currentText))
+                        }
+                    }
+                    
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+                        
+                        Button {
+                            text: serialConnector && serialConnector.isConnected ? "Trennen" : "Verbinden"
+                            Layout.fillWidth: true
+                            onClicked: {
+                                if (serialConnector) {
+                                    if (serialConnector.isConnected) {
+                                        serialConnector.disconnect()
+                                    } else {
+                                        serialConnector.connect()
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Button {
+                            text: "Ports laden"
+                            Layout.preferredWidth: 100
+                            onClicked: if (serialConnector) serialConnector.load_ports()
+                        }
+                    }
+                }
+            }
+            
+            // Preflight Checklist
+            GroupBox {
+                title: "Preflight Checklist"
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                
+                ListView {
+                    anchors.fill: parent
+                    spacing: 5
+                    model: ListModel {
+                        ListElement { name: "Batterie-Status"; checked: false }
+                        ListElement { name: "GPS-Signal"; checked: false }
+                        ListElement { name: "Kompass kalibriert"; checked: false }
+                        ListElement { name: "Gyro kalibriert"; checked: false }
+                        ListElement { name: "RC-Verbindung"; checked: false }
+                        ListElement { name: "Motoren getestet"; checked: false }
+                        ListElement { name: "Flight Mode geprüft"; checked: false }
+                        ListElement { name: "Notfall-Prozeduren überprüft"; checked: false }
+                    }
+                    
+                    delegate: RowLayout {
+                        width: parent.width
+                        height: 40
+                        spacing: 10
+                        
+                        CheckBox {
+                            checked: model.checked
+                            onCheckedChanged: model.checked = checked
+                        }
+                        
+                        Text {
+                            text: model.name
+                            color: "white"
+                            font.pixelSize: 16
+                            Layout.fillWidth: true
+                        }
+                    }
                 }
             }
         }

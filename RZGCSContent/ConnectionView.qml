@@ -35,7 +35,9 @@ Item {
                 }
                 
                 Label {
-                    text: "Verbunden: " + (viewModel && viewModel.state && viewModel.state.is_connected ? "Ja" : "Nein")
+                    text: "Verbunden: " + (connectionTypeComboBox.currentText === "MAVLink 2" ? 
+                        (protocolConnectionManager && protocolConnectionManager.isConnected ? "Ja" : "Nein") :
+                        (viewModel && viewModel.state && viewModel.state.is_connected ? "Ja" : "Nein"))
                     Layout.fillWidth: true
                     color: "white"
                 }
@@ -157,12 +159,16 @@ Item {
                 
                 ComboBox {
                     id: connectionTypeComboBox
-                    model: ["Serial", "UDP", "TCP", "Simulator"]
+                    model: ["Serial", "UDP", "TCP", "Simulator", "MAVLink 2"]
                     currentIndex: 3  // Simulator vorausgewählt
                     Layout.fillWidth: true
                     onCurrentTextChanged: {
                         if (currentText === "Simulator" && serialConnector) {
                             serialConnector.setPort("Simulator")
+                        } else if (currentText === "MAVLink 2" && protocolConnectionManager) {
+                            protocolConnectionManager.setProtocol("MAVLink v2")
+                        } else if (serialConnector) {
+                            protocolConnectionManager.setProtocol("MAVLink v1")
                         }
                     }
                     
@@ -206,15 +212,35 @@ Item {
             
             Button {
                 id: connectButton
-                text: serialConnector && serialConnector.connected ? "Trennen" : "Verbinden"
+                text: connectionTypeComboBox.currentText === "MAVLink 2" ? 
+                    (protocolConnectionManager && protocolConnectionManager.isConnected ? "Trennen" : "Verbinden") :
+                    (serialConnector && serialConnector.connected ? "Trennen" : "Verbinden")
                 Layout.fillWidth: true
                 
                 onClicked: {
-                    if (serialConnector) {
-                        if (serialConnector.connected) {
-                            serialConnector.disconnect();
-                        } else {
-                            serialConnector.connect(portComboBox.currentText);
+                    if (connectionTypeComboBox.currentText === "MAVLink 2") {
+                        // Use MAVLink 2 protocol
+                        if (protocolConnectionManager) {
+                            if (protocolConnectionManager.isConnected) {
+                                protocolConnectionManager.disconnect();
+                            } else {
+                                // Set connection string based on selected port
+                                let connectionString = portComboBox.currentText;
+                                if (connectionString === "Simulator") {
+                                    connectionString = "tcp:127.0.0.1:5760";
+                                }
+                                protocolConnectionManager.setConnectionString(connectionString);
+                                protocolConnectionManager.connect();
+                            }
+                        }
+                    } else {
+                        // Use MAVLink v1 protocol
+                        if (serialConnector) {
+                            if (serialConnector.connected) {
+                                serialConnector.disconnect();
+                            } else {
+                                serialConnector.connect(portComboBox.currentText);
+                            }
                         }
                     }
                 }

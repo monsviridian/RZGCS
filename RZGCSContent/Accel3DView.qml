@@ -5,8 +5,8 @@ import QtQuick.Layouts
 
 Item {
     id: root
-    width: 300
-    height: 300
+    width: 400
+    height: 400
     
     // Controller-Referenz, die von außen gesetzt wird
     property var controller: null
@@ -23,11 +23,20 @@ Item {
     // Anleitung zur Position basierend auf Schritt
     readonly property var positionDescriptions: [
         "Position 1: Drohne flach auf den Boden stellen (Z+)",
-        "Position 2: Drohne auf den Rücken stellen (Z-)",
+        "Position 2: Drohne auf den Rücken stellen (Z-)", 
         "Position 3: Drohne auf die linke Seite stellen (X-)",
         "Position 4: Drohne auf die rechte Seite stellen (X+)",
         "Position 5: Drohne auf die Nase stellen (Y+)",
         "Position 6: Drohne mit Nase nach unten stellen (Y-)"
+    ]
+    
+    readonly property var positionDetails: [
+        "Halten Sie die Drohne flach und waagerecht. Die Propeller sollten nach oben zeigen.",
+        "Drehen Sie die Drohne um 180° so dass die Propeller nach unten zeigen.",
+        "Drehen Sie die Drohne um 90° nach links. Die linke Seite sollte nach unten zeigen.",
+        "Drehen Sie die Drohne um 90° nach rechts. Die rechte Seite sollte nach unten zeigen.",
+        "Heben Sie die Nase der Drohne an. Die Vorderseite sollte nach oben zeigen.",
+        "Senken Sie die Nase der Drohne ab. Die Vorderseite sollte nach unten zeigen."
     ]
     
     // Funktion zum Setzen des Kalibrierungsschritts
@@ -35,48 +44,53 @@ Item {
         if (step >= 0 && step < 6) {
             currentStep = step
             updateDroneOrientation()
+            stepAnimation.start()
         }
     }
     
     // Funktion zum Aktualisieren der Drohnenausrichtung basierend auf dem aktuellen Schritt
     function updateDroneOrientation() {
+        var targetX = 0
+        var targetY = 0
+        var targetZ = 0
+        
         switch (currentStep) {
         case 0: // Z+ (flach)
-            angleX = 0
-            angleY = 0
-            angleZ = 0
+            targetX = 0
+            targetY = 0
+            targetZ = 0
             break
         case 1: // Z- (auf dem Rücken)
-            angleX = 180
-            angleY = 0
-            angleZ = 0
+            targetX = 180
+            targetY = 0
+            targetZ = 0
             break
         case 2: // X- (linke Seite)
-            angleX = 0
-            angleY = 0
-            angleZ = -90
+            targetX = 0
+            targetY = 0
+            targetZ = -90
             break
         case 3: // X+ (rechte Seite)
-            angleX = 0
-            angleY = 0
-            angleZ = 90
+            targetX = 0
+            targetY = 0
+            targetZ = 90
             break
         case 4: // Y+ (Nase nach oben)
-            angleX = -90
-            angleY = 0
-            angleZ = 0
+            targetX = -90
+            targetY = 0
+            targetZ = 0
             break
         case 5: // Y- (Nase nach unten)
-            angleX = 90
-            angleY = 0
-            angleZ = 0
+            targetX = 90
+            targetY = 0
+            targetZ = 0
             break
         }
-    }
-    
-    // Animation für Übergänge zwischen Positionen
-    function startAnimation() {
-        rotationAnimation.start()
+        
+        // Animation zu den Zielwerten
+        angleXAnimation.to = targetX
+        angleYAnimation.to = targetY
+        angleZAnimation.to = targetZ
     }
     
     // View3D für die 3D-Darstellung
@@ -86,7 +100,7 @@ Item {
         
         environment: SceneEnvironment {
             backgroundMode: SceneEnvironment.Color
-            clearColor: "#2c2c2c"
+            clearColor: "#1a1a1a"
             antialiasingMode: SceneEnvironment.MSAA
             antialiasingQuality: SceneEnvironment.High
         }
@@ -94,17 +108,17 @@ Item {
         // Kamera mit besserer Position
         PerspectiveCamera {
             id: camera
-            position: Qt.vector3d(0, 100, 350)
-            eulerRotation: Qt.vector3d(-15, 0, 0)  // Statt lookAt, da nicht alle Qt-Versionen lookAt unterstützen
+            position: Qt.vector3d(0, 150, 400)
+            eulerRotation: Qt.vector3d(-20, 0, 0)
             clipFar: 2000
             clipNear: 1
         }
         
-        // Bessere Beleuchtung
+        // Beleuchtung
         DirectionalLight {
             eulerRotation: Qt.vector3d(-30, -30, 0)
             brightness: 1.0
-            ambientColor: Qt.rgba(0.1, 0.1, 0.1, 1.0)
+            ambientColor: Qt.rgba(0.2, 0.2, 0.2, 1.0)
         }
         
         DirectionalLight {
@@ -116,67 +130,124 @@ Item {
         Model {
             id: droneModel
             source: "Assets/meshes/mk4_v2_10_mesh.mesh"
-            scale: Qt.vector3d(0.5, 0.5, 0.5)
+            scale: Qt.vector3d(0.4, 0.4, 0.4)
             eulerRotation: Qt.vector3d(root.angleX, root.angleY, root.angleZ)
+            materials: [
+                PrincipledMaterial {
+                    baseColor: currentStep < 6 ? "#50c0ff" : "#66ff66"
+                    roughness: 0.3
+                    metalness: 0.7
+                    emissiveFactor: currentStep < 6 ? Qt.rgba(0.1, 0.3, 0.8, 1.0) : Qt.rgba(0.2, 0.8, 0.2, 1.0)
+                }
+            ]
         }
         
-        // Koordinatenachsen (klein und subtil)
+        // Koordinatenachsen
         Model {
-            id: xAxis
             source: "#Cylinder"
-            position: Qt.vector3d(25, 0, 0)
+            position: Qt.vector3d(30, 0, 0)
             eulerRotation: Qt.vector3d(0, 0, 90)
-            scale: Qt.vector3d(0.2, 50, 0.2)
+            scale: Qt.vector3d(0.3, 30, 0.3)
+            materials: [PrincipledMaterial { baseColor: "#ff6666" }]
         }
         
         Model {
-            id: yAxis
             source: "#Cylinder"
-            position: Qt.vector3d(0, 25, 0)
-            scale: Qt.vector3d(0.2, 50, 0.2)
+            position: Qt.vector3d(0, 30, 0)
+            scale: Qt.vector3d(0.3, 30, 0.3)
+            materials: [PrincipledMaterial { baseColor: "#66ff66" }]
         }
         
         Model {
-            id: zAxis
             source: "#Cylinder"
-            position: Qt.vector3d(0, 0, 25)
+            position: Qt.vector3d(0, 0, 30)
             eulerRotation: Qt.vector3d(90, 0, 0)
-            scale: Qt.vector3d(0.2, 50, 0.2)
+            scale: Qt.vector3d(0.3, 30, 0.3)
+            materials: [PrincipledMaterial { baseColor: "#6666ff" }]
         }
         
-        // Hilfsebene für bessere Orientierung
+        // Hilfsebene für Orientierung
         Model {
             source: "#Rectangle"
-            scale: Qt.vector3d(150, 150, 1)
-            position: Qt.vector3d(0, -25, 0)
+            scale: Qt.vector3d(100, 100, 1)
+            position: Qt.vector3d(0, -20, 0)
             eulerRotation: Qt.vector3d(-90, 0, 0)
+            materials: [
+                PrincipledMaterial {
+                    baseColor: "#333333"
+                    opacity: 0.4
+                    alphaMode: PrincipledMaterial.Blend
+                }
+            ]
+        }
+        
+        // Pfeile für die gewünschte Ausrichtung
+        Model {
+            visible: currentStep < 6
+            source: "#Cone"
+            position: Qt.vector3d(0, 40, 0)
+            scale: Qt.vector3d(0.5, 1, 0.5)
+            eulerRotation: Qt.vector3d(0, 0, 0)
+            materials: [
+                PrincipledMaterial {
+                    baseColor: "#ffff00"
+                    emissiveFactor: Qt.rgba(0.5, 0.5, 0, 1.0)
+                }
+            ]
         }
     }
     
-    // Animation für Übergang zwischen Positionen
-    SequentialAnimation {
-        id: rotationAnimation
+    // Animationen für Übergänge
+    ParallelAnimation {
+        id: stepAnimation
         running: false
         
-        ParallelAnimation {
-            NumberAnimation { target: root; property: "angleX"; duration: 500; easing.type: Easing.InOutQuad }
-            NumberAnimation { target: root; property: "angleY"; duration: 500; easing.type: Easing.InOutQuad }
-            NumberAnimation { target: root; property: "angleZ"; duration: 500; easing.type: Easing.InOutQuad }
+        NumberAnimation {
+            id: angleXAnimation
+            target: root
+            property: "angleX"
+            duration: 800
+            easing.type: Easing.InOutQuad
+        }
+        
+        NumberAnimation {
+            id: angleYAnimation
+            target: root
+            property: "angleY"
+            duration: 800
+            easing.type: Easing.InOutQuad
+        }
+        
+        NumberAnimation {
+            id: angleZAnimation
+            target: root
+            property: "angleZ"
+            duration: 800
+            easing.type: Easing.InOutQuad
         }
     }
     
-    // Anweisungs-Overlay mit Next-Button
+    // Anweisungs-Overlay
     Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        height: 80 // Höhe erhöht für zusätzlichen Button
-        color: Qt.rgba(0, 0, 0, 0.6)
+        height: 120
+        color: Qt.rgba(0, 0, 0, 0.8)
         
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 5
-            spacing: 2
+            anchors.margins: 10
+            spacing: 5
+            
+            Text {
+                text: "Schritt " + (currentStep + 1) + " von 6"
+                color: "#66ccff"
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                font.pixelSize: 14
+                font.bold: true
+            }
             
             Text {
                 text: currentStep < positionDescriptions.length
@@ -186,73 +257,63 @@ Item {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 font.pixelSize: 12
+                wrapMode: Text.WordWrap
+            }
+            
+            Text {
+                text: currentStep < positionDetails.length ? positionDetails[currentStep] : ""
+                color: "#cccccc"
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                font.pixelSize: 10
+                wrapMode: Text.WordWrap
             }
             
             ProgressBar {
                 Layout.fillWidth: true
                 value: calibrationProgress
+                background: Rectangle {
+                    color: "#333333"
+                    radius: 2
+                }
+                contentItem: Rectangle {
+                    color: calibrationProgress > 0.8 ? "#66ff66" : "#ffff66"
+                    radius: 2
+                }
             }
             
             Text {
-                text: "Schritt " + (currentStep + 1) + " von 6 - " + Math.round(calibrationProgress * 100) + "%"
+                text: Math.round(calibrationProgress * 100) + "% abgeschlossen"
                 color: "white"
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                font.pixelSize: 12
-            }
-            
-            // Neue Zeile mit Next-Button
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.topMargin: 3
-                
-                Item { Layout.fillWidth: true } // Spacer links
-                
-                Button {
-                    id: nextButton
-                    text: "Nächster Schritt"
-                    Layout.preferredWidth: 150
-                    highlighted: true
-                    
-                    // Signal senden, um zum nächsten Schritt zu wechseln
-                    onClicked: {
-                        // Signal senden an den Python-Controller, um zum nächsten Kalibrierungsschritt zu wechseln
-                        if (root.controller) {
-                            root.controller.nextCalibrationStep()
-                        } else {
-                            console.error("Controller ist nicht verfügbar!")
-                        }
-                        
-                        // Lokal den nächsten Schritt anzeigen
-                        if (currentStep < 5) {
-                            setCalibrationStep(currentStep + 1)
-                            startAnimation()
-                        }
-                    }
-                }
-                
-                Item { Layout.fillWidth: true } // Spacer rechts
+                font.pixelSize: 11
             }
         }
     }
-
-    Item {
-        id: __materialLibrary__
-
-        PrincipledMaterial {
-            objectName: ""
-            baseColor: "#e0e0e0"
-            roughness: 0.3
-            metalness: 0.6
+    
+    // Schritt-Indikatoren
+    RowLayout {
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.margins: 10
+        spacing: 5
+        
+        Repeater {
+            model: 6
+            
+            Rectangle {
+                Layout.fillWidth: true
+                height: 4
+                radius: 2
+                color: {
+                    if (index < currentStep) return "#66ff66"  // Abgeschlossen
+                    if (index === currentStep) return "#ffff66"  // Aktuell
+                    return "#666666"  // Noch nicht erreicht
+                }
+            }
         }
-
-        PrincipledMaterial { baseColor: "#ff6666"; opacity: 0.7 ;objectName: "" }
-
-        PrincipledMaterial { baseColor: "#66ff66"; opacity: 0.7 ;objectName: "" }
-
-        PrincipledMaterial { baseColor: "#6666ff"; opacity: 0.7 ;objectName: "" }
-
-        PrincipledMaterial { baseColor: "#303030"; opacity: 0.5 ;objectName: "" }
     }
 }
 

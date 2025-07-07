@@ -98,7 +98,7 @@ class DroneKitViewModel(QObject):
         if self._connector:
             self._connector.disconnect()
             self._connector = None
-        
+            
         self._connector = DroneKitConnector(connection_string)
         
         # Signals verbinden

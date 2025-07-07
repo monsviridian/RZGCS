@@ -19,6 +19,9 @@ Rectangle {
     width: parent ? parent.width : 800
     height: parent ? parent.height : 600
     
+    // ViewModel binding
+    property var flightViewModel: flightNavigationViewModel // must be set as context property
+    
     // Signal für Kartentyp-Änderung
     signal mapTypeChanged(int mapType)
     
@@ -28,16 +31,10 @@ Rectangle {
     // Aktueller Kartentyp (0=2D-Ansicht, 1=3D-Ansicht)
     property int currentMapType: 1
     
-    // Hardcoded drone position data (Frankfurt coordinates)
-    property real droneLatitude: 50.110924
-    property real droneLongitude: 8.682127
-    property real droneAltitude: 100.0
-    property real droneHeading: 45.0
-    
     // GPS position with default values
     // Values will be updated by the FlightViewController
     Component.onCompleted: {
-        console.log("FlightView initialized with coordinates: " + droneLatitude + ", " + droneLongitude)
+        console.log("FlightView initialized with coordinates: " + flightViewModel._current_latitude + ", " + flightViewModel._current_longitude)
     }
     
     // No need for GPS update timer as we're using direct values
@@ -117,9 +114,8 @@ Rectangle {
                 Item { Layout.fillWidth: true }
                 
                 Label {
-                    id: statusLabel
-                    text: "Status: Not connected"
-                    color: "#ff6666"
+                    text: flightViewModel && flightViewModel.is_connected ? "Status: Connected" : "Status: Disconnected"
+                    color: flightViewModel && flightViewModel.is_connected ? "#80ff00" : "#ff6666"
                     font.pixelSize: 14
                 }
             }
@@ -142,19 +138,19 @@ Rectangle {
                 anchors.fill: parent
                 
                 // Binde die Drohnendaten an die Karte
-                droneLatitude: flightView.droneLatitude
-                droneLongitude: flightView.droneLongitude
-                droneAltitude: flightView.droneAltitude
-                droneHeading: flightView.droneHeading
+                droneLatitude: flightViewModel ? flightViewModel._current_latitude : 0
+                droneLongitude: flightViewModel ? flightViewModel._current_longitude : 0
+                droneAltitude: flightViewModel ? flightViewModel._current_altitude : 0
+                droneHeading: flightViewModel ? flightViewModel._current_heading : 0
                 
                 // Verbinde Signale
-                onMapClicked: {
-                    console.log("Karte angeklickt bei: " + lat + ", " + lon)
+                onMapClicked: function(lat, lon) {
+                    if (flightViewModel) flightViewModel.add_waypoint(lat, lon, flightViewModel._current_altitude)
                 }
                 
                 onAddWaypoint: {
                     console.log("Wegpunkt hinzugefügt bei: " + lat + ", " + lon)
-                    flightViewController.add_waypoint()
+                    flightViewModel.add_waypoint(lat, lon, flightViewModel._current_altitude)
                 }
             }
             
@@ -173,206 +169,108 @@ Rectangle {
             }
         }
 
-        // Control Panel
+        // Mission & Flight Controls
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 120
+            spacing: 20
+            // Mission Controls
+            ColumnLayout {
+                spacing: 8
+                Label { text: "Mission"; color: "#80ff00"; font.pixelSize: 14; font.bold: true }
+            RowLayout {
+                    spacing: 8
+                    Button { text: "Add Waypoint"; onClicked: { if (flightViewModel) flightViewModel.add_waypoint(flightViewModel._current_latitude, flightViewModel._current_longitude, flightViewModel._current_altitude) } }
+                    Button { text: "Clear Mission"; onClicked: { if (flightViewModel) flightViewModel.abort_mission() } }
+                    }
+                RowLayout {
+                        spacing: 8
+                    Button { text: "Upload Mission"; onClicked: { if (flightViewModel) flightViewModel.upload_mission(flightViewModel.current_mission) } }
+                    Button { text: "Start Mission"; onClicked: { if (flightViewModel) flightViewModel.start_mission(flightViewModel.current_mission ? flightViewModel.current_mission.id : "") } }
+                    Button { text: "Pause"; onClicked: { if (flightViewModel) flightViewModel.pause_mission() } }
+                    Button { text: "Stop"; onClicked: { if (flightViewModel) flightViewModel.abort_mission() } }
+                        }
+                    }
+            // Flight Controls
+            ColumnLayout {
+                        spacing: 8
+                Label { text: "Flight Control"; color: "#4CAF50"; font.pixelSize: 14; font.bold: true }
+                RowLayout {
+                    spacing: 8
+                    Button { text: "Arm"; onClicked: { if (flightViewModel) flightViewModel.arm() } }
+                    Button { text: "Disarm"; onClicked: { if (flightViewModel) flightViewModel.disarm() } }
+                    Button { text: "Takeoff"; onClicked: { if (flightViewModel) flightViewModel.takeoff() } }
+                    Button { text: "Land"; onClicked: { if (flightViewModel) flightViewModel.land() } }
+                    Button { text: "RTH"; onClicked: { if (flightViewModel) flightViewModel.return_to_launch() } }
+                    Button { text: "HALT"; onClicked: { if (flightViewModel) flightViewModel.hold_position() } }
+                }
+            }
+        }
+        // Mission Tab Bereich (direkt eingefügt)
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 90
-            color: "#2a2a2a"
+            color: "#232323"
             radius: 5
-            
-            RowLayout {
+            border.color: "#34495e"
+            border.width: 1
+            ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: 10
-                spacing: 15
-                
-                // Steuerung
-                ColumnLayout {
-                    Layout.preferredWidth: 160
+                spacing: 8
+                // Header
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
+                    Label {
+                        text: "Mission Control"
+                        font.pixelSize: 16
+                        font.bold: true
+                        color: "#80ff00"
+                    }
+                    Item { Layout.fillWidth: true }
+                    Label {
+                        text: missionViewModel && missionViewModel.is_connected ? "Status: Connected" : "Status: Disconnected"
+                        color: missionViewModel && missionViewModel.is_connected ? "#80ff00" : "#ff6666"
+                        font.pixelSize: 14
+                    }
+                }
+                // Mission Controls
+                RowLayout {
+                    Layout.fillWidth: true
                     spacing: 8
-                    
-                    Button {
-                        id: centerButton
-                        text: "Center"
-                        Layout.preferredWidth: 160
-                        Layout.preferredHeight: 30
-                        font.pixelSize: 12
-                        background: Rectangle {
-                            color: "#2980b9"
-                            radius: 4
-                        }
-                        contentItem: Text {
-                            text: parent.text
-                            font: parent.font
-                            color: "white"
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        onClicked: {
-                            console.log("Zentrieren Button geklickt")
-                            flightViewController.center_on_drone()
-                        }
-                    }
-                    
-                    Button {
-                        id: setWaypointButton
-                        text: "Set Waypoint"
-                        Layout.preferredWidth: 160
-                        Layout.preferredHeight: 30
-                        font.pixelSize: 12
-                        background: Rectangle {
-                            color: "#c27ba0"
-                            radius: 4
-                        }
-                        contentItem: Text {
-                            text: parent.text
-                            font: parent.font
-                            color: "white"
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        onClicked: {
-                            console.log("Wegpunkt setzen geklickt")
-                            flightViewController.add_waypoint()
-                        }
-                    }
-                    
-                    Row {
-                        spacing: 8
-                        Layout.preferredWidth: 160
-                        
-                        Button {
-                            id: startButton
-                            text: "Start"
-                            width: 76
-                            height: 30
-                            font.pixelSize: 12
-                            background: Rectangle {
-                                color: "#6aa84f"
-                                radius: 4
-                            }
-                            contentItem: Text {
-                                text: parent.text
-                                font: parent.font
-                                color: "white"
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-                            onClicked: {
-                                console.log("Start Button geklickt")
-                                flightViewController.start_mission()
-                            }
-                        }
-                        
-                        Button {
-                            id: landButton
-                            text: "Land"
-                            width: 76
-                            height: 30
-                            font.pixelSize: 12
-                            background: Rectangle {
-                                color: "#e69138"
-                                radius: 4
-                            }
-                            contentItem: Text {
-                                text: parent.text
-                                font: parent.font
-                                color: "white"
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-                            onClicked: {
-                                console.log("Landen Button geklickt")
-                                flightViewController.land()
-                            }
-                        }
-                    }
-                    
-                    Row {
-                        spacing: 8
-                        Layout.preferredWidth: 160
-                        
-                        Button {
-                            id: rthButton
-                            text: "RTH"
-                            width: 76
-                            height: 30
-                            font.pixelSize: 12
-                            background: Rectangle {
-                                color: "#cc0000"
-                                radius: 4
-                            }
-                            contentItem: Text {
-                                text: parent.text
-                                font: parent.font
-                                color: "white"
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-                            onClicked: {
-                                console.log("RTH Button geklickt")
-                                flightViewController.return_to_home()
-                            }
-                        }
-                        
-                        Button {
-                            id: haltButton
-                            text: "HALT"
-                            width: 76
-                            height: 30
-                            font.pixelSize: 12
-                            background: Rectangle {
-                                color: "#990000"
-                                radius: 4
-                            }
-                            contentItem: Text {
-                                text: parent.text
-                                font: parent.font
-                                color: "white"
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-                            onClicked: {
-                                console.log("HALT Button geklickt")
-                                flightViewController.emergency_stop()
-                            }
+                    Button { text: "Upload"; onClicked: { if (missionViewModel) missionViewModel.upload_mission() } }
+                    Button { text: "Download"; onClicked: { if (missionViewModel) missionViewModel.download_mission() } }
+                    Button { text: "Clear"; onClicked: { if (missionViewModel) missionViewModel.clear_mission() } }
+                    Button { text: "Start"; onClicked: { if (missionViewModel) missionViewModel.start_mission() } }
+                    Button { text: "Pause"; onClicked: { if (missionViewModel) missionViewModel.pause_mission() } }
+                    Button { text: "Stop"; onClicked: { if (missionViewModel) missionViewModel.stop_mission() } }
+                }
+                // Missionspunkte-Liste
+                ListView {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 100
+                    model: missionViewModel ? missionViewModel.mission_items : []
+                    delegate: Rectangle {
+                        width: parent.width
+                        height: 30
+                        color: ListView.isCurrentItem ? "#555555" : "transparent"
+                        RowLayout {
+                            anchors.fill: parent
+                            spacing: 8
+                            Text { text: "Seq: " + modelData.seq; color: "white" }
+                            Text { text: "Cmd: " + modelData.command; color: "#cccccc" }
+                            Text { text: "Lat: " + modelData.lat; color: "#cccccc" }
+                            Text { text: "Lon: " + modelData.lon; color: "#cccccc" }
+                            Text { text: "Alt: " + modelData.alt; color: "#cccccc" }
                         }
                     }
                 }
-
-                // Status
-                GridLayout {
-                    id: statusGrid
+                // Statuslabels
+                RowLayout {
                     Layout.fillWidth: true
-                    columns: 4
-                    rowSpacing: 5
-                    columnSpacing: 10
-                    
-                    // Position display - hardcoded Frankfurt coordinates
-                    Text { text: "Position:"; color: "white"; font.pixelSize: 14 }
-                    Text { 
-                        id: positionText
-                        text: "50.110924, 8.682127"
-                        color: "#80ff00"
-                        font.pixelSize: 14 
-                    }
-                    
-                    // Altitude display - hardcoded value
-                    Text { text: "Altitude:"; color: "white"; font.pixelSize: 14 }
-                    Text { 
-                        id: altitudeText
-                        text: "100.0 m"
-                        color: "#80ff00"
-                        font.pixelSize: 14 
-                    }
-                    
-                    // Heading display - hardcoded value
-                    Text { text: "Heading:"; color: "white"; font.pixelSize: 14 }
-                    Text { 
-                        id: headingText
-                        text: "45.0°"
-                        color: "#80ff00"
-                        font.pixelSize: 14 
-                    }
+                    spacing: 20
+                    Label { text: "Current WP: " + (missionViewModel ? missionViewModel.current_seq : "-"); color: "white" }
+                    Label { text: "ACK: " + (missionViewModel ? missionViewModel.last_ack : "-"); color: "white" }
                 }
             }
         }
@@ -382,20 +280,19 @@ Rectangle {
     Connections {
         target: serialConnector
         function onConnectedChanged(connected) {
-            statusLabel.text = connected ? "Status: Connected" : "Status: Disconnected"
-            statusLabel.color = connected ? "#80ff00" : "#ff6666"
+            console.log("Received connection status from FC: " + connected)
+            flightViewModel.is_connected = connected
         }
         
         // Listen for GPS position updates from the flight controller
         function onGpsChanged(lat, lon, alt) {
             console.log("Received GPS data from FC: " + lat + ", " + lon + ", " + alt)
-            flightView.droneLatitude = lat
-            flightView.droneLongitude = lon
-            flightView.droneAltitude = alt
+            flightViewModel._current_latitude = lat
+            flightViewModel._current_longitude = lon
+            flightViewModel._current_altitude = alt
             
             // Update position display
-            positionText.text = lat.toFixed(6) + ", " + lon.toFixed(6)
-            altitudeText.text = alt.toFixed(1) + " m"
+            console.log("Position updated: " + lat + ", " + lon + ", " + alt)
         }
     }
     
@@ -407,22 +304,21 @@ Rectangle {
         // Handler for drone position updates
         function onDronePositionChanged(lat, lon, alt) {
             console.log("Position update received: " + lat + ", " + lon + ", " + alt)
-            flightView.droneLatitude = lat
-            flightView.droneLongitude = lon
-            flightView.droneAltitude = alt
+            flightViewModel._current_latitude = lat
+            flightViewModel._current_longitude = lon
+            flightViewModel._current_altitude = alt
             
             // Force update of position display
-            positionText.text = lat.toFixed(6) + ", " + lon.toFixed(6)
-            altitudeText.text = alt.toFixed(1) + " m"
+            console.log("Position updated: " + lat + ", " + lon + ", " + alt)
         }
         
         // Handler for drone heading updates
         function onDroneHeadingChanged(heading) {
             console.log("Heading update received: " + heading)
-            flightView.droneHeading = heading
+            flightViewModel._current_heading = heading
             
             // Force update of heading display
-            headingText.text = heading.toFixed(1) + "°"
+            console.log("Heading updated: " + heading)
         }
     }
 }

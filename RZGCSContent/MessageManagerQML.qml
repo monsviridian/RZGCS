@@ -39,11 +39,11 @@ QtObject {
             id: Date.now() + Math.random()
         }
         
-        messages.unshift(messageObj)
+        messages.push(messageObj)
         
         // Keep only maxMessages
         if (messages.length > maxMessages) {
-            messages.pop()
+            messages.shift()
         }
         
         messageAdded(message, type)
@@ -54,6 +54,9 @@ QtObject {
         }
         
         console.log("[" + timestamp + "] " + getTypeString(type) + ": " + message)
+        console.log("Message array length: " + messages.length)
+        console.log("First message (should be oldest): " + (messages[0] ? messages[0].text : "none"))
+        console.log("Last message (should be newest): " + (messages[messages.length-1] ? messages[messages.length-1].text : "none"))
     }
     
     // Remove message by index
@@ -143,6 +146,19 @@ QtObject {
                     break
                 }
             }
+        }
+    }
+    
+    // Test function to verify message order
+    function testMessageOrder() {
+        console.log("=== Testing Message Order ===")
+        addMessage("Test Message 1 (oldest)", MessageManager.MessageType.Info)
+        addMessage("Test Message 2 (newer)", MessageManager.MessageType.Success)
+        addMessage("Test Message 3 (newest)", MessageManager.MessageType.Warning)
+        
+        console.log("Final message order:")
+        for (var i = 0; i < messages.length; i++) {
+            console.log("[" + i + "] " + messages[i].text + " - " + messages[i].timestamp)
         }
     }
 } 

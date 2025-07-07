@@ -4,394 +4,331 @@ It is supposed to be strictly declarative and only uses a subset of QML. If you 
 this file manually, you might introduce QML code that is not supported by Qt Design Studio.
 Check out https://doc.qt.io/qtcreator/creator-quick-ui-forms.html for details on .ui.qml files.
 */
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQml.Models 2.2
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
+import QtQuick.Window 2.15
 
-Item {
-    id: root
-    anchors.fill: parent
+Window {
+    id: parameterWindow
+    width: 800
+    height: 600
+    title: "Parameter Manager"
+    visible: true
+    
+    // Context Properties
+    property var parameterViewModel: parameterViewModel
+    property var messageManager: messageManager
 
     Rectangle {
         anchors.fill: parent
-        color: "black"
-        z: -1
-    }
-    
-    // Debug-Funktion
-    function logMessage(message) {
-        console.log("[ParameterView] " + message)
-    }
+        color: "#f0f0f0"
     
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 10
         spacing: 10
+            
+            // Header
+            Rectangle {
+                Layout.fillWidth: true
+                height: 60
+                color: "#2c3e50"
+                radius: 5
 
         RowLayout {
-            spacing: 10
-            Layout.fillWidth: true
-
-            TextField {
-                id: searchField
-                placeholderText: "Search..."
-                Layout.preferredWidth: 200
+                    anchors.fill: parent
+                    anchors.margins: 10
+                    
+                    Text {
+                        text: "Parameter Manager"
                 color: "white"
-                background: Rectangle {
-                    color: "#333333"
-                    border.color: "#777777"
-                    radius: 2
-                }
-                onTextChanged: {
-                    logMessage("Such-Text geändert: " + text)
-                    if (text.length > 0) {
-                        // Beim Tippen filtern
-                        root.filterParameters(text)
-                    } else {
-                        // Wenn leer, alle anzeigen
-                        paramTable.model = parameterModel
+                        font.pixelSize: 18
+                        font.bold: true
                     }
-                }
-            }
-
-            Button {
-                id: clearButton
-                text: "Clear"
-                Layout.preferredWidth: 80
-                background: Rectangle {
-                    color: "black"
-                    border.color: "gray"
-                    border.width: 1
-                    radius: 4
-                }
-                contentItem: Text {
-                    text: parent.text
+                    
+                    Item { Layout.fillWidth: true }
+                    
+                    // Status
+                    Text {
+                        text: parameterViewModel ? parameterViewModel.status : "Nicht verbunden"
                     color: "white"
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-                onClicked: searchField.text = ""
-            }
-
-            Item { Layout.fillWidth: true } // Spacer
-
-            Button {
-                id: toolsButton
-                text: "Tools"
-                Layout.preferredWidth: 80
-                background: Rectangle {
-                    color: "black"
-                    border.color: "gray"
-                    border.width: 1
-                    radius: 4
-                }
-                contentItem: Text {
-                    text: parent.text
-                    color: "white"
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-            }
+                        font.pixelSize: 12
         }
 
-        // Funktion zum Filtern der Parameter
-        function filterParameters(searchString) {
-            logMessage("Filtere nach: " + searchString)
-            if (parameterModel) {
-                try {
-                    var filtered = parameterModel.filter_parameters(searchString)
-                    if (filtered && filtered.length !== undefined) {
-                        logMessage("Gefiltert: " + filtered.length + " Ergebnisse")
-                        // Modell direkt aktualisieren
-                        paramTable.model = filtered
-                    } else {
-                        logMessage("Filter-Ergebnis ungültig")
-                    }
-                } catch (e) {
-                    logMessage("Fehler beim Filtern: " + e)
+                    // Loading Indicator
+                    BusyIndicator {
+                        running: parameterViewModel ? parameterViewModel.isLoading : false
+                        visible: parameterViewModel ? parameterViewModel.isLoading : false
                 }
-            } else {
-                logMessage("Parameter-Modell nicht verfügbar")
+                }
             }
-        }
-        
-        ListView {
-            id: paramTable
+            
+            // Toolbar
+            Rectangle {
             Layout.fillWidth: true
-            Layout.fillHeight: true
-            clip: true
-            model: parameterModel
-            
-            // Header für die Tabelle
-            header: Rectangle {
-                width: paramTable.width
-                height: 30
-                color: "#444444"
+                height: 50
+                color: "#ecf0f1"
+                radius: 5
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 10
-                    anchors.rightMargin: 10
-                    spacing: 10
+                    anchors.margins: 10
 
+                    // Filter
                     Text {
-                        text: "Parameter"
-                        color: "white"
-                        font.bold: true
-                        Layout.preferredWidth: 120
+                        text: "Filter:"
+                        font.pixelSize: 12
                     }
                     
-                    Text {
-                        text: "Option"
-                        color: "white"
-                        font.bold: true
-                        Layout.preferredWidth: 120
-                    }
-                    
-                    Text {
-                        text: "Wert"
-                        color: "white"
-                        font.bold: true
-                        Layout.preferredWidth: 120
-                    }
-                    
-                    Text {
-                        text: "Beschreibung"
-                        color: "white"
-                        font.bold: true
-                        Layout.fillWidth: true
-                    }
-                }
-            }
-            
-            // Modell aktualisieren, wenn neue Parameter geladen wurden
-            function resetModel() {
-                logMessage("Parameter-Liste zurücksetzen")
-                // Aktuelles Model festlegen
-                if (searchField.text === "") {
-                    // Alle Parameter anzeigen wenn kein Suchtext
-                    paramTable.model = parameterModel
-                } else {
-                    // Suche erneut ausführen
-                    root.filterParameters(searchField.text)  
-                }
-            }
-            
-            // Element Template
-            delegate: Rectangle {
-                width: paramTable.width
-                height: 40
-                color: index === paramTable.currentIndex ? "#ffd700" : (model.name === "RC" ? "#ffd700" : (index % 2 === 0 ? "#333333" : "#444444")) 
-
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 10
-                    anchors.rightMargin: 10
-                    spacing: 10
-
-                    Text {
-                        text: model.name
-                        color: index === paramTable.currentIndex ? "black" : "white"
-                        Layout.preferredWidth: 120
-                    }
-                    
-                    Text {
-                        text: model.option || ""
-                        color: index === paramTable.currentIndex ? "black" : "white"
-                        Layout.preferredWidth: 120
-                    }
-                    
-                    // Parameter-Wert (klickbar zum Bearbeiten)
-                    Item {
-                        Layout.preferredWidth: 120
-                        Layout.preferredHeight: parent.height
-                        
-                        Text {
-                            id: valueText
-                            anchors.fill: parent
-                            anchors.leftMargin: 5
-                            text: model.value || "Do Nothing"
-                            color: index === paramTable.currentIndex ? "black" : "white"
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        
-                        // Hintergrund zum Anklicken
-                        Rectangle {
-                            anchors.fill: parent
-                            color: "transparent"
-                            border.width: 1
-                            border.color: "#555555"
-                            opacity: paramMouseArea.containsMouse ? 0.3 : 0
-                        }
-                        
-                        MouseArea {
-                            id: paramMouseArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            
-                            // Zum Bearbeiten klicken
-                            onClicked: {
-                                logMessage("Parameter bearbeiten: " + model.name + " = " + model.value)
-                                editDialog.paramName = model.name
-                                editDialog.currentValue = model.value
-                                editDialog.open()
+                    TextField {
+                        id: filterField
+                        Layout.preferredWidth: 200
+                        placeholderText: "Parameter-Name eingeben..."
+                        text: parameterViewModel ? parameterViewModel.filterText : ""
+                        onTextChanged: {
+                            if (parameterViewModel) {
+                                parameterViewModel.filterParameters(text)
                             }
                         }
                     }
                     
-                    Text {
-                        text: model.desc || "RC input option"
-                        color: index === paramTable.currentIndex ? "black" : "white"
-                        Layout.fillWidth: true
-                    }
-                }
-                
-                // Für Auswahl eines Parameters
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: paramTable.currentIndex = index
-                }
-            }
-            
-            ScrollBar.vertical: ScrollBar {}
-        }
-
-        // Automatisches Laden der Parameter nach Verbindung
-        Connections {
-            target: serialConnector
-            function onParameterManagerReady() {
-                console.log("ParameterManager bereit, lade Parameter...")
-                serialConnector.load_parameters()
-            }
-        }
-
-        // Feedback beim Laden der Parameter
-        Connections {
-            target: parameterModel
-            function onParametersLoaded() {
-                console.log("Parameter wurden geladen, Anzahl:", parameterModel.rowCount())
-                paramTable.resetModel()
-            }
-        }
-        
-        // Dialog zum Bearbeiten von Parametern
-        Dialog {
-            id: editDialog
-            title: "Parameter bearbeiten"
-            width: 300
-            height: 200
-            anchors.centerIn: parent
-            modal: true
-            
-            // Parameter-Eigenschaften
-            property string paramName: ""
-            property string currentValue: ""
-            
-            // Hintergrund
-            background: Rectangle {
-                color: "#333333"
-                border.color: "gray"
-                border.width: 1
-            }
-            
-            // Dialog-Inhalt
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 10
-                spacing: 15
-                
-                // Parameter-Name
-                Text {
-                    text: "Parameter: " + editDialog.paramName
-                    color: "white"
-                    font.bold: true
-                }
-                
-                // Aktueller Wert
-                Text {
-                    text: "Aktueller Wert: " + editDialog.currentValue
-                    color: "white"
-                }
-                
-                // Neuer Wert
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 10
+                    Item { Layout.fillWidth: true }
                     
-                    Text {
-                        text: "Neuer Wert:"
-                        color: "white"
-                    }
-                    
-                    TextField {
-                        id: newValueField
-                        Layout.fillWidth: true
-                        text: editDialog.currentValue
-                        color: "white"
-                        background: Rectangle {
-                            color: "#222222"
-                            border.color: "gray"
-                            border.width: 1
-                        }
-                    }
-                }
-                
-                // Buttons
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 10
-                    Layout.alignment: Qt.AlignRight
-                    
+                    // Buttons
                     Button {
-                        text: "Abbrechen"
-                        onClicked: editDialog.close()
-                        background: Rectangle {
-                            color: "#444444"
-                            border.color: "gray"
-                            border.width: 1
-                            radius: 4
-                        }
-                        contentItem: Text {
-                            text: parent.text
-                            color: "white"
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
+                        text: "Laden"
+                        enabled: parameterViewModel && !parameterViewModel.isLoading
+                        onClicked: {
+                            if (parameterViewModel) {
+                                parameterViewModel.loadParameters()
+                                if (messageManager) {
+                                    messageManager.addMessage("Parameter werden geladen...", 1)
+                                }
+                            }
                         }
                     }
                     
                     Button {
                         text: "Speichern"
+                        enabled: parameterViewModel && parameterViewModel.parameterModel.count > 0
                         onClicked: {
-                            logMessage("Speichere Parameter: " + editDialog.paramName + " = " + newValueField.text)
-                            // Parameter-Wert aktualisieren
-                            if (parameterModel.set_parameter_value(editDialog.paramName, newValueField.text)) {
-                                logMessage("Parameter im Modell aktualisiert")
-                                // Senden an FC, falls verbunden
-                                if (serialConnector && serialConnector.connected) {
-                                    serialConnector.set_parameter(editDialog.paramName, newValueField.text)
-                                    logMessage("Parameter an FC gesendet")
+                            if (parameterViewModel) {
+                                parameterViewModel.saveToFile("parameters.txt")
+                                if (messageManager) {
+                                    messageManager.addMessage("Parameter gespeichert", 4)
                                 }
-                                editDialog.close()
-                            } else {
-                                logMessage("Fehler beim Aktualisieren des Parameters")
                             }
                         }
-                        background: Rectangle {
-                            color: "#444444"
-                            border.color: "gray"
-                            border.width: 1
-                            radius: 4
-                        }
-                        contentItem: Text {
-                            text: parent.text
-                            color: "white"
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
+                    }
+                    
+                    Button {
+                        text: "Löschen"
+                        enabled: parameterViewModel && parameterViewModel.parameterModel.count > 0
+                        onClicked: {
+                            if (parameterViewModel) {
+                                parameterViewModel.clearParameters()
+                                if (messageManager) {
+                                    messageManager.addMessage("Parameter gelöscht", 2)
+                                }
+                            }
                         }
                     }
                 }
             }
+            
+            // Parameter Table
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                color: "white"
+                radius: 5
+                border.color: "#bdc3c7"
+                border.width: 1
+                
+                ListView {
+                    id: parameterListView
+                    anchors.fill: parent
+                    anchors.margins: 5
+                    clip: true
+                    
+                    model: parameterViewModel ? parameterViewModel.parameterModel : null
+                    
+                    header: Rectangle {
+                        width: parameterListView.width
+                height: 40
+                        color: "#34495e"
+
+                RowLayout {
+                    anchors.fill: parent
+                            anchors.margins: 10
+                            
+                            Text {
+                                text: "Name"
+                                color: "white"
+                                font.pixelSize: 12
+                                font.bold: true
+                                Layout.preferredWidth: 200
+                            }
+                            
+                            Text {
+                                text: "Wert"
+                                color: "white"
+                                font.pixelSize: 12
+                                font.bold: true
+                                Layout.preferredWidth: 100
+                            }
+
+                    Text {
+                                text: "Typ"
+                                color: "white"
+                                font.pixelSize: 12
+                                font.bold: true
+                                Layout.preferredWidth: 80
+                    }
+                    
+                    Text {
+                                text: "Index"
+                                color: "white"
+                                font.pixelSize: 12
+                                font.bold: true
+                                Layout.preferredWidth: 60
+                            }
+                            
+                            Item { Layout.fillWidth: true }
+                        }
+                    }
+                    
+                    delegate: Rectangle {
+                        width: parameterListView.width
+                        height: 40
+                        color: index % 2 === 0 ? "#f8f9fa" : "white"
+                        
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            
+                            // Parameter Name
+                            Text {
+                                text: model.name
+                                font.pixelSize: 11
+                                font.family: "Courier"
+                                Layout.preferredWidth: 200
+                                elide: Text.ElideRight
+                            }
+                            
+                            // Parameter Value (editable)
+                            TextField {
+                                text: model.value
+                                font.pixelSize: 11
+                                font.family: "Courier"
+                                Layout.preferredWidth: 100
+                                horizontalAlignment: TextInput.AlignRight
+                                
+                                onEditingFinished: {
+                                    if (parameterViewModel) {
+                                        var newValue = parseFloat(text)
+                                        if (!isNaN(newValue)) {
+                                            parameterViewModel.setParameter(model.name, newValue)
+                                            if (messageManager) {
+                                                messageManager.addMessage(`Parameter ${model.name} auf ${newValue} gesetzt`, 4)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // Parameter Type
+                            Text {
+                                text: model.type
+                                font.pixelSize: 10
+                                color: "#7f8c8d"
+                                Layout.preferredWidth: 80
+                            }
+                            
+                            // Parameter Index
+                            Text {
+                                text: model.index
+                                font.pixelSize: 10
+                                color: "#7f8c8d"
+                                Layout.preferredWidth: 60
+                                horizontalAlignment: Text.AlignRight
+                            }
+                            
+                            Item { Layout.fillWidth: true }
+                        }
+                        
+                        // Hover effect
+                        Rectangle {
+                            anchors.fill: parent
+                            color: "transparent"
+                            border.color: "#3498db"
+                            border.width: 1
+                            visible: mouseArea.containsMouse
+                        }
+                        
+                        MouseArea {
+                            id: mouseArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: {
+                                // Focus on the value field for editing
+                                parent.children[1].forceActiveFocus()
+                            }
+                }
+            }
+            
+                    ScrollBar.vertical: ScrollBar {
+                        active: true
+                    }
+            }
+        }
+
+            // Footer
+            Rectangle {
+                Layout.fillWidth: true
+                height: 30
+                color: "#ecf0f1"
+                radius: 5
+                
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 10
+                    
+                    Text {
+                        text: parameterViewModel ? `${parameterViewModel.parameterModel.count} Parameter` : "0 Parameter"
+                        font.pixelSize: 11
+                        color: "#7f8c8d"
+                    }
+                    
+                    Item { Layout.fillWidth: true }
+                    
+                    Text {
+                        text: "DroneKit/PyMAVLink Parameter Manager"
+                        font.pixelSize: 10
+                        color: "#7f8c8d"
+                    }
+                }
+            }
+        }
+    }
+    
+    // Error handling
+    Connections {
+        target: parameterViewModel
+        
+        function onErrorOccurred(error) {
+            if (messageManager) {
+                messageManager.addMessage(`Parameter-Fehler: ${error}`, 3)
+            }
+        }
+    }
+    
+    // Auto-load parameters when connected
+    Component.onCompleted: {
+        if (parameterViewModel) {
+            // Try to load parameters if already connected
+            parameterViewModel.loadParameters()
         }
     }
 }

@@ -1,0 +1,2282 @@
+"""
+MAVLink v2 Integration Module for RZGCS
+
+This module integrates the official MAVLink v2 library features into the RZGCS project,
+providing enhanced message handling, protocol support, and advanced MAVLink capabilities.
+"""
+
+import os
+import sys
+import logging
+from typing import Dict, List, Optional, Any, Union
+from dataclasses import dataclass
+from enum import Enum
+import asyncio
+from pathlib import Path
+import serial
+import serial.tools.list_ports
+from PySide6.QtCore import Property, Signal, QObject, Slot, QTimer, QThread
+from PySide6.QtCore import QThread
+import time
+
+# Import existing MAVLink dependencies
+from pymavlink import mavutil
+from pymavlink.dialects.v20 import ardupilotmega as mavlink
+
+logger = logging.getLogger(__name__)
+
+class MAVLinkV2MessageType(Enum):
+    """Enhanced MAVLink v2 message types - Complete basic system messages"""
+    
+    # ===== GRUNDLEGENDE SYSTEM-NACHRICHTEN =====
+    HEARTBEAT = "HEARTBEAT"                    # 0 - System heartbeat
+    SYS_STATUS = "SYS_STATUS"                  # 1 - System status
+    SYSTEM_TIME = "SYSTEM_TIME"                # 2 - System time
+    PING = "PING"                              # 4 - Ping
+    CHANGE_OPERATOR_CONTROL = "CHANGE_OPERATOR_CONTROL"  # 5
+    CHANGE_OPERATOR_CONTROL_ACK = "CHANGE_OPERATOR_CONTROL_ACK"  # 6
+    AUTH_KEY = "AUTH_KEY"                      # 7
+    LINK_NODE_STATUS = "LINK_NODE_STATUS"      # 8
+    
+    # ===== PARAMETER-MANAGEMENT =====
+    PARAM_REQUEST_READ = "PARAM_REQUEST_READ"  # 20
+    PARAM_REQUEST_LIST = "PARAM_REQUEST_LIST"  # 21
+    PARAM_VALUE = "PARAM_VALUE"                # 22
+    PARAM_SET = "PARAM_SET"                    # 23
+    PARAM_EXT_REQUEST_READ = "PARAM_EXT_REQUEST_READ"  # 320
+    PARAM_EXT_VALUE = "PARAM_EXT_VALUE"        # 322
+    
+    # ===== GPS UND NAVIGATION =====
+    GPS_RAW_INT = "GPS_RAW_INT"               # 24 - Rohe GPS-Daten
+    GPS_STATUS = "GPS_STATUS"                  # 25 - GPS-Satellitenstatus
+    GPS_GLOBAL_ORIGIN = "GPS_GLOBAL_ORIGIN"    # 49 - GPS-Ursprung
+    GLOBAL_POSITION_INT = "GLOBAL_POSITION_INT" # 33 - Gefilterte Position
+    LOCAL_POSITION_NED = "LOCAL_POSITION_NED"  # 32 - Lokale Position
+    GPS2_RAW = "GPS2_RAW"                     # 124 - Zweiter GPS
+    GPS_RTK = "GPS_RTK"                       # 127 - RTK GPS
+    
+    # ===== SENSORDATEN UND IMU =====
+    SCALED_IMU = "SCALED_IMU"                 # 26 - Skalierte IMU
+    RAW_IMU = "RAW_IMU"                       # 27 - Rohe IMU
+    SCALED_PRESSURE = "SCALED_PRESSURE"       # 29 - Skalierter Druck
+    RAW_PRESSURE = "RAW_PRESSURE"             # 28 - Roher Druck
+    ATTITUDE = "ATTITUDE"                      # 30 - Lage (Euler)
+    ATTITUDE_QUATERNION = "ATTITUDE_QUATERNION" # 31 - Lage (Quaternion)
+    SCALED_IMU2 = "SCALED_IMU2"               # 116 - Zweite IMU
+    HIGHRES_IMU = "HIGHRES_IMU"               # 105 - Hochauflösende IMU
+    
+    # ===== RC/FERNSTEUERUNG =====
+    RC_CHANNELS_RAW = "RC_CHANNELS_RAW"       # 35 - Rohe RC-Kanäle
+    RC_CHANNELS_SCALED = "RC_CHANNELS_SCALED" # 34 - Skalierte RC-Kanäle
+    RC_CHANNELS = "RC_CHANNELS"               # 65 - RC-Kanalwerte
+    RC_CHANNELS_OVERRIDE = "RC_CHANNELS_OVERRIDE" # 70 - RC-Überschreibung
+    SERVO_OUTPUT_RAW = "SERVO_OUTPUT_RAW"     # 36 - Servo-Ausgaben
+    MANUAL_CONTROL = "MANUAL_CONTROL"         # 69 - Manuelle Steuerung
+    
+    # ===== MISSIONS-MANAGEMENT =====
+    MISSION_REQUEST_LIST = "MISSION_REQUEST_LIST" # 43
+    MISSION_COUNT = "MISSION_COUNT"           # 44
+    MISSION_ITEM = "MISSION_ITEM"             # 39
+    MISSION_ITEM_INT = "MISSION_ITEM_INT"     # 73
+    MISSION_REQUEST = "MISSION_REQUEST"       # 40
+    MISSION_REQUEST_INT = "MISSION_REQUEST_INT" # 51
+    MISSION_CURRENT = "MISSION_CURRENT"       # 42
+    MISSION_ACK = "MISSION_ACK"               # 47
+    MISSION_CLEAR_ALL = "MISSION_CLEAR_ALL"   # 45
+    MISSION_SET_CURRENT = "MISSION_SET_CURRENT" # 41
+    
+    # ===== KOMMANDOS UND STEUERUNG =====
+    COMMAND_LONG = "COMMAND_LONG"             # 76 - Langes Kommando
+    COMMAND_INT = "COMMAND_INT"               # 75 - Integer-Kommando
+    COMMAND_ACK = "COMMAND_ACK"               # 77 - Kommando-Bestätigung
+    MANUAL_SETPOINT = "MANUAL_SETPOINT"       # 81 - Manuelle Sollwerte
+    SET_ATTITUDE_TARGET = "SET_ATTITUDE_TARGET" # 82 - Ziel-Lage
+    SET_POSITION_TARGET_LOCAL_NED = "SET_POSITION_TARGET_LOCAL_NED" # 84
+    
+    # ===== TELEMETRIE UND STATUS =====
+    VFR_HUD = "VFR_HUD"                       # 74 - HUD-Anzeige
+    BATTERY_STATUS = "BATTERY_STATUS"         # 147 - Batteriestatus
+    POWER_STATUS = "POWER_STATUS"             # 125 - Stromversorgung
+    VIBRATION = "VIBRATION"                   # 241 - Vibrationsdaten
+    ESTIMATOR_STATUS = "ESTIMATOR_STATUS"     # 230 - Schätzungsstatus
+    EXTENDED_SYS_STATE = "EXTENDED_SYS_STATE" # 245 - Erweiterter Systemstatus
+    
+    # ===== KAMERA UND GIMBAL =====
+    CAMERA_TRIGGER = "CAMERA_TRIGGER"         # 112 - Kamera auslösen
+    CAMERA_INFORMATION = "CAMERA_INFORMATION"  # 259 - Kamerainfo
+    CAMERA_SETTINGS = "CAMERA_SETTINGS"       # 260 - Kameraeinstellungen
+    CAMERA_CAPTURE_STATUS = "CAMERA_CAPTURE_STATUS" # 262
+    CAMERA_IMAGE_CAPTURED = "CAMERA_IMAGE_CAPTURED" # 263
+    GIMBAL_DEVICE_INFORMATION = "GIMBAL_DEVICE_INFORMATION" # 283
+    GIMBAL_DEVICE_SET_ATTITUDE = "GIMBAL_DEVICE_SET_ATTITUDE" # 284
+    
+    # ===== HARDWARE-IN-THE-LOOP =====
+    HIL_SENSOR = "HIL_SENSOR"                 # 107 - Simulierte Sensoren
+    HIL_GPS = "HIL_GPS"                       # 113 - Simuliertes GPS
+    HIL_STATE_QUATERNION = "HIL_STATE_QUATERNION" # 115 - HIL-Zustand
+    HIL_CONTROLS = "HIL_CONTROLS"             # 91 - HIL-Steuerung
+    HIL_RC_INPUTS_RAW = "HIL_RC_INPUTS_RAW"   # 92 - Simulierte RC-Eingänge
+    
+    # ===== ERWEITERTE FUNKTIONEN =====
+    OPTICAL_FLOW = "OPTICAL_FLOW"             # 100 - Optischer Fluss
+    DISTANCE_SENSOR = "DISTANCE_SENSOR"       # 132 - Abstandssensor
+    LANDING_TARGET = "LANDING_TARGET"         # 149 - Landeziel
+    FOLLOW_TARGET = "FOLLOW_TARGET"           # 144 - Ziel verfolgen
+    ODOMETRY = "ODOMETRY"                     # 331 - Odometrie
+    OBSTACLE_DISTANCE = "OBSTACLE_DISTANCE"   # 330 - Hindernisabstand
+    
+    # ===== STATUS UND DIAGNOSE =====
+    STATUSTEXT = "STATUSTEXT"                 # 253 - Statusnachrichten
+    DEBUG = "DEBUG"                           # 254 - Debug-Nachrichten
+    DEBUG_VECT = "DEBUG_VECT"                 # 250 - Debug-Vektoren
+    NAMED_VALUE_FLOAT = "NAMED_VALUE_FLOAT"   # 251 - Benannte Float-Werte
+    NAMED_VALUE_INT = "NAMED_VALUE_INT"       # 252 - Benannte Int-Werte
+    
+    # ===== ZEIT UND SYNCHRONISATION =====
+    TIME_ESTIMATE_TO_TARGET = "TIME_ESTIMATE_TO_TARGET" # 243
+    TIMESYNC = "TIMESYNC"                     # 111 - Zeitsynchronisation
+    
+    # ===== SICHERHEIT UND FEHLER =====
+    SAFETY_ALLOWED_AREA = "SAFETY_ALLOWED_AREA" # 55
+    SAFETY_SET_ALLOWED_AREA = "SAFETY_SET_ALLOWED_AREA" # 54
+    SAFETY_CLEAR_ALLOWED_AREA = "SAFETY_CLEAR_ALLOWED_AREA" # 56
+
+@dataclass
+class MAVLinkV2Message:
+    """Enhanced MAVLink v2 message structure"""
+    message_type: MAVLinkV2MessageType
+    system_id: int
+    component_id: int
+    sequence: int
+    payload: Dict[str, Any]
+    timestamp: float
+    source_system: int
+    source_component: int
+
+class MAVLinkV2Protocol:
+    """Enhanced MAVLink v2 protocol handler"""
+    
+    def __init__(self, connection_string: str):
+        self.connection_string = connection_string
+        self.connection = None
+        self.message_handlers: Dict[str, callable] = {}
+        self.message_counters: Dict[str, int] = {}
+        self.is_connected = False
+        
+    def _check_port_availability(self, port_name: str) -> bool:
+        """Check if a serial port is available and accessible"""
+        try:
+            # List all available ports
+            available_ports = [port.device for port in serial.tools.list_ports.comports()]
+            
+            if port_name not in available_ports:
+                logger.error(f"Port {port_name} not found in available ports: {available_ports}")
+                return False
+            
+            # Try to open the port briefly to check if it's accessible
+            try:
+                with serial.Serial(port_name, 115200, timeout=1) as test_connection:
+                    logger.info(f"Port {port_name} is accessible")
+                    return True
+            except serial.SerialException as e:
+                if "Permission denied" in str(e):
+                    logger.error(f"Port {port_name} is in use by another application")
+                    return False
+                elif "Access denied" in str(e):
+                    logger.error(f"Access denied to port {port_name}. Try running as administrator")
+                    return False
+                else:
+                    logger.error(f"Serial port error for {port_name}: {e}")
+                    return False
+                    
+        except Exception as e:
+            logger.error(f"Error checking port availability for {port_name}: {e}")
+            return False
+    
+    def connect(self) -> bool:
+        """Establish MAVLink v2 connection (synchronous for Qt compatibility)"""
+        try:
+            logger.info(f"[MAVLINK] Connecting to {self.connection_string} using MAVLink v2...")
+            
+            # Check if it's a serial port and verify availability
+            if self.connection_string.startswith('COM') or self.connection_string.startswith('/dev/'):
+                if not self._check_port_availability(self.connection_string):
+                    logger.error(f"[MAVLINK] Port {self.connection_string} is not available or accessible")
+                    return False
+                
+                # Serial connection with multiple baud rate attempts
+                baud_rates = [115200, 57600, 38400, 19200, 9600]
+                
+                for baud_rate in baud_rates:
+                    try:
+                        logger.info(f"[MAVLINK] Trying {self.connection_string} @ {baud_rate} baud")
+                        self.connection = mavutil.mavlink_connection(self.connection_string, baud=baud_rate)
+                        
+                        # Wait for heartbeat with shorter timeout for each attempt
+                        try:
+                            logger.info(f"[MAVLINK] Waiting for heartbeat at {baud_rate} baud...")
+                            self.connection.wait_heartbeat(timeout=10)
+                            self.is_connected = True
+                            logger.info(f"[MAVLINK] MAVLink v2 connection established: {self.connection_string} @ {baud_rate} baud")
+                            return True
+                        except Exception as e:
+                            logger.warning(f"[MAVLINK] No heartbeat at {baud_rate} baud: {e}")
+                            self.connection.close()
+                            continue
+                            
+                    except Exception as e:
+                        logger.warning(f"[MAVLINK] Failed to connect at {baud_rate} baud: {e}")
+                        continue
+                
+                logger.error(f"[MAVLINK] Failed to connect at any baud rate")
+                return False
+            else:
+                # TCP/UDP connection
+                logger.info(f"[MAVLINK] Opening network connection: {self.connection_string}")
+                self.connection = mavutil.mavlink_connection(self.connection_string)
+                
+                # Wait for heartbeat with timeout
+                try:
+                    logger.info("[MAVLINK] Waiting for heartbeat...")
+                    self.connection.wait_heartbeat(timeout=30)  # Increased timeout
+                    self.is_connected = True
+                    logger.info(f"[MAVLINK] MAVLink v2 connection established: {self.connection_string}")
+                    return True
+                except Exception as e:
+                    logger.error(f"[MAVLINK] Timeout waiting for heartbeat: {e}")
+                    return False
+    
+        except Exception as e:
+            logger.error(f"[MAVLINK] MAVLink v2 connection failed: {e}")
+            return False
+    
+    def disconnect(self) -> None:
+        """Close MAVLink v2 connection"""
+        if self.connection:
+            try:
+                self.connection.close()
+            except:
+                pass
+            self.is_connected = False
+            logger.info("MAVLink v2 connection closed")
+    
+    def register_message_handler(self, message_type: str, handler: callable) -> None:
+        """Register a message handler for specific message type"""
+        self.message_handlers[message_type] = handler
+        logger.debug(f"Registered handler for message type: {message_type}")
+    
+    def send_message(self, message_type: str, **kwargs) -> bool:
+        """Send a MAVLink v2 message"""
+        if not self.is_connected:
+            logger.error("Cannot send message: not connected")
+            return False
+        
+        try:
+            # Get message class from mavlink module
+            message_class = getattr(mavlink, f"MAVLink_{message_type.lower()}_message", None)
+            if not message_class:
+                logger.error(f"Unknown message type: {message_type}")
+                return False
+            
+            # Create and send message
+            message = message_class(**kwargs)
+            self.connection.mav.send(message)
+            
+            self.message_counters[message_type] = self.message_counters.get(message_type, 0) + 1
+            logger.debug(f"Sent {message_type} message")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to send {message_type} message: {e}")
+            return False
+    
+    def receive_messages(self) -> None:
+        """Receive and process MAVLink messages (non-blocking)"""
+        if not self.is_connected:
+            return
+        
+        try:
+            # Non-blocking message reception
+            message = self.connection.recv_match(blocking=False)
+            if message:
+                self._process_message(message)
+        except Exception as e:
+            logger.error(f"Error receiving messages: {e}")
+    
+    def _process_message(self, message) -> None:
+        """Process received MAVLink message"""
+        try:
+            message_type = message.get_type()
+            # Gracefully skip unknown message types
+            try:
+                message_type_enum = MAVLinkV2MessageType(message_type)
+            except ValueError:
+                logger.debug(f"Unknown MAVLink message type received: {message_type}")
+                return  # Skip unknown types
+
+            mavlink_message = MAVLinkV2Message(
+                message_type=message_type_enum,
+                system_id=message.get_srcSystem(),
+                component_id=message.get_srcComponent(),
+                sequence=message.get_seq(),
+                payload=message.to_dict(),
+                timestamp=message._timestamp,
+                source_system=message.get_srcSystem(),
+                source_component=message.get_srcComponent()
+            )
+
+            # Call registered handler if exists
+            if message_type in self.message_handlers:
+                handler = self.message_handlers[message_type]
+                try:
+                    if asyncio.iscoroutinefunction(handler):
+                        pass
+                    else:
+                        handler(mavlink_message)
+                except Exception as e:
+                    logger.error(f"Error in message handler for {message_type}: {e}")
+
+            logger.debug(f"[MAVLINK] {message_type} von System {message.get_srcSystem()}")
+        except Exception as e:
+            logger.error(f"Error processing message: {e}")
+
+class MAVLinkV2MissionManager:
+    """Mission manager for MAVLink v2"""
+    
+    def __init__(self, protocol: MAVLinkV2Protocol):
+        self._protocol = protocol
+        self.mission_items = []
+    
+    def request_mission_list(self) -> bool:
+        """Request mission list from vehicle"""
+        return self._protocol.send_message("MISSION_REQUEST_LIST")
+    
+    def upload_mission(self, mission_items: List[Dict[str, Any]]) -> bool:
+        """Upload mission to vehicle"""
+        try:
+            for item in mission_items:
+                success = self._protocol.send_message("MISSION_ITEM", **item)
+                if not success:
+                    return False
+            return True
+        except Exception as e:
+            logger.error(f"Failed to upload mission: {e}")
+            return False
+    
+    def download_mission(self) -> List[Dict[str, Any]]:
+        """Download mission from vehicle"""
+        # This would need to be implemented with proper message handling
+        # For now, return the cached mission items
+        return self.mission_items
+    
+    def add_waypoint(self, waypoint: Dict[str, Any]) -> bool:
+        """Add a waypoint to the mission"""
+        try:
+            # Validate waypoint data
+            required_fields = ['seq', 'frame', 'command', 'current', 'autocontinue',
+                             'param1', 'param2', 'param3', 'param4', 'x', 'y', 'z']
+            
+            for field in required_fields:
+                if field not in waypoint:
+                    waypoint[field] = 0
+            
+            # Add to local list
+            self.mission_items.append(waypoint)
+            
+            # Send to vehicle
+            return self._protocol.send_message("MISSION_ITEM", **waypoint)
+        except Exception as e:
+            logger.error(f"Failed to add waypoint: {e}")
+            return False
+    
+    def clear_mission(self) -> bool:
+        """Clear the mission"""
+        try:
+            # Clear local list
+            self.mission_items.clear()
+            
+            # Send clear command to vehicle
+            return self._protocol.send_message("MISSION_CLEAR_ALL")
+        except Exception as e:
+            logger.error(f"Failed to clear mission: {e}")
+            return False
+    
+    def get_mission_items(self) -> List[Dict[str, Any]]:
+        """Get all mission items"""
+        return self.mission_items
+    
+    def get_current_mission_index(self) -> int:
+        """Get current mission index"""
+        # This would need to be implemented with proper message handling
+        return 0
+    
+    def set_current_mission_index(self, index: int) -> bool:
+        """Set current mission index"""
+        try:
+            return self._protocol.send_message("MISSION_SET_CURRENT", seq=index)
+        except Exception as e:
+            logger.error(f"Failed to set mission index: {e}")
+        return False
+
+class MAVLinkV2ParameterManager:
+    """Parameter manager for MAVLink v2"""
+    
+    def __init__(self, protocol: MAVLinkV2Protocol):
+        self._protocol = protocol
+    
+    def request_parameter_list(self) -> bool:
+        """Request parameter list from vehicle"""
+        return self._protocol.send_message("PARAM_REQUEST_LIST")
+    
+    def set_parameter(self, param_id: str, param_value: float, param_type: int = 9) -> bool:
+        """Set a parameter on the vehicle"""
+        try:
+            return self._protocol.send_message("PARAM_SET", 
+                                             param_id=param_id,
+                                               param_value=param_value,
+                                               param_type=param_type)
+        except Exception as e:
+            logger.error(f"Failed to set parameter: {e}")
+            return False
+    
+    def request_parameter(self, param_id: str, param_index: int = -1) -> bool:
+        """Request a parameter from the vehicle"""
+        try:
+            return self._protocol.send_message("PARAM_REQUEST_READ",
+                                             param_id=param_id,
+                                               param_index=param_index)
+        except Exception as e:
+            logger.error(f"Failed to request parameter: {e}")
+            return False
+
+class MAVLinkV2CommandManager:
+    """Command manager for MAVLink v2"""
+    
+    def __init__(self, protocol: MAVLinkV2Protocol):
+        self._protocol = protocol
+        
+    def send_command_long(self, command: int, confirmation: int = 0, 
+                               param1: float = 0, param2: float = 0, param3: float = 0,
+                               param4: float = 0, param5: float = 0, param6: float = 0,
+                               param7: float = 0) -> bool:
+        """Send a long command to the vehicle"""
+        try:
+            return self._protocol.send_message("COMMAND_LONG",
+                                               command=command,
+                                               confirmation=confirmation,
+                                               param1=param1, param2=param2, param3=param3,
+                                               param4=param4, param5=param5, param6=param6,
+                                               param7=param7)
+        except Exception as e:
+            logger.error(f"Failed to send command: {e}")
+            return False
+    
+    def arm_disarm(self, arm: bool) -> bool:
+        """Arm or disarm the vehicle"""
+        command = 400 if arm else 400  # MAV_CMD_COMPONENT_ARM_DISARM
+        param1 = 1 if arm else 0
+        return self.send_command_long(command, param1=param1)
+    
+    def set_flight_mode(self, mode: str) -> bool:
+        """Set flight mode"""
+        # Map mode string to MAVLink mode
+        mode_mapping = {
+            "MANUAL": 0,
+            "STABILIZED": 2,
+            "AUTO": 3,
+            "GUIDED": 4,
+            "RTL": 6,
+            "LAND": 9
+        }
+        mode_id = mode_mapping.get(mode.upper(), 0)
+        return self.send_command_long(176, param1=mode_id)  # MAV_CMD_DO_SET_MODE
+
+class MAVLinkV2Integration(QObject):
+    """Main integration class for MAVLink v2 features"""
+    
+    # Telemetry signals
+    rollChanged = Signal(float)
+    pitchChanged = Signal(float)
+    headingChanged = Signal(float)
+    yawChanged = Signal(float)
+    airspeedChanged = Signal(float)
+    groundspeedChanged = Signal(float)
+    climbRateChanged = Signal(float)
+    armedChanged = Signal(bool)
+    
+    # GPS signals
+    gpsLatitudeChanged = Signal(float)
+    gpsLongitudeChanged = Signal(float)
+    gpsAltitudeChanged = Signal(float)
+    gpsSatellitesChanged = Signal(int)
+    gpsHdopChanged = Signal(float)
+    gpsVdopChanged = Signal(float)
+    gpsFixChanged = Signal(int)
+    
+    # Battery signals
+    batteryVoltageChanged = Signal(float)
+    batteryCurrentChanged = Signal(float)
+    batteryRemainingChanged = Signal(float)
+    batteryTemperatureChanged = Signal(float)
+    
+    # Flight mode signals
+    flightModeChanged = Signal(str)
+    systemStatusChanged = Signal(str)
+    
+    # Additional telemetry signals
+    altitudeChanged = Signal(float)
+    throttleChanged = Signal(float)
+    
+    # Connection signals
+    connectedChanged = Signal(bool)
+    connectionStatusChanged = Signal(bool, str)  # isConnected, statusText
+    
+    # Mission signals
+    missionUpdated = Signal()
+    missionItemReceived = Signal(dict)
+    
+    # Parameter signals
+    parameterUpdated = Signal(str, float)
+    parameterListReceived = Signal(dict)
+    
+    # Status reporting signal
+    statusMessage = Signal(str, int)  # message, type (for message panel)
+    
+    errorOccurred = Signal(str)
+    
+    # Signals
+    gpsPositionChanged = Signal(float, float, float)
+    attitudeChanged = Signal(float, float, float)
+    batteryChanged = Signal(float, float, float)
+    armedChanged = Signal(bool)
+    modeChanged = Signal(str)
+    airspeedChanged = Signal(float)
+    groundspeedChanged = Signal(float)
+    climbChanged = Signal(float)
+    altitudeChanged = Signal(float)
+    throttleChanged = Signal(float)
+    gpsSatellitesChanged = Signal(int)
+    gpsFixChanged = Signal(bool)
+    
+    # --- SENSOR SIGNALS AND UI UPDATE ---
+    # Add signals for IMU and pressure if not present
+    imuChanged = Signal(float, float, float, float, float, float, float, float, float)  # acc, gyro, mag
+    pressureChanged = Signal(float, float, float)  # abs, diff, temp
+    
+    prearmStatusChanged = Signal(str)
+    sensorsToCalibrateChanged = Signal(list)
+    prearmCheckStatusChanged = Signal(bool)
+    
+    def __init__(self, connection_string=None):
+        super().__init__()
+        self._latitude = 0.0
+        self._longitude = 0.0
+        self._altitude = 0.0
+        self._roll = 0.0
+        self._pitch = 0.0
+        self._yaw = 0.0
+        self._heading = 0.0
+        self._battery_voltage = 0.0
+        self._battery_current = 0.0
+        self._battery_remaining = 0.0
+        self._gps_satellites = 0
+        self._gps_hdop = 0.0
+        self._gps_vdop = 0.0
+        self._gps_fix = False
+        self._airspeed = 0.0
+        self._groundspeed = 0.0
+        self._climb_rate = 0.0
+        self._armed = False
+        self._mode = ""
+        self._throttle = 0.0
+        
+        # Connection state
+        self._connection_string = connection_string or "tcp:127.0.0.1:5760"
+        self._is_connected = False
+        self._connection_status = "Disconnected"
+        
+        # Protocol and managers
+        self._protocol = None
+        self._mission_manager = None
+        self._parameter_manager = None
+        self._command_manager = None
+        
+        # Telemetry data
+        self._altitude = 0.0
+        self._throttle = 0.0
+        
+        # GPS data
+        self._gps_latitude = 0.0
+        self._gps_longitude = 0.0
+        self._gps_altitude = 0.0
+        self._gps_satellites = 0
+        self._gps_hdop = 0.0
+        self._gps_vdop = 0.0
+        self._gps_fix = 0
+        
+        # Battery data
+        self._battery_voltage = 0.0
+        self._battery_current = 0.0
+        self._battery_remaining = 0.0
+        self._battery_temperature = 0.0
+        
+        # Flight mode and status
+        self._flight_mode = "Unknown"
+        self._system_status = "Unknown"
+        
+        # Message manager for status reporting
+        self._message_manager = None
+        
+        # Message processing timer
+        self._message_timer = QTimer()
+        self._message_timer.timeout.connect(self._process_messages)
+        self._message_timer.start(100)  # 10 Hz message processing
+        
+        logger.info("MAVLink v2 integration ready")
+        self._last_gps_message_time = 0  # Zeitstempel für GPS-Statusnachricht
+        self._gps_status_interval = 30   # Sekunden
+    
+    def set_connection_string(self, connection_string: str) -> None:
+        """Set connection string for MAVLink v2 connection"""
+        self._connection_string = connection_string
+        logger.info(f"Connection string set to: {connection_string}")
+    
+    @Slot(result='QVariantList')
+    def get_available_ports(self) -> list:
+        """Get list of available serial ports"""
+        try:
+            ports = []
+            for port in serial.tools.list_ports.comports():
+                port_info = {
+                    'device': port.device,
+                    'description': port.description,
+                    'manufacturer': port.manufacturer,
+                    'product': port.product,
+                    'vid': port.vid,
+                    'pid': port.pid
+                }
+                ports.append(port_info)
+            
+            # Add network connections
+            network_ports = [
+                {'device': 'tcp:127.0.0.1:5760', 'description': 'TCP Localhost', 'manufacturer': 'Network', 'product': 'TCP'},
+                {'device': 'udp:127.0.0.1:14550', 'description': 'UDP Localhost', 'manufacturer': 'Network', 'product': 'UDP'},
+                {'device': 'udp:192.168.4.1:14550', 'description': 'UDP ArduPilot', 'manufacturer': 'Network', 'product': 'UDP'}
+            ]
+            ports.extend(network_ports)
+            
+            logger.info(f"Found {len(ports)} available ports")
+            return ports
+        except Exception as e:
+            logger.error(f"Error getting available ports: {e}")
+            return []
+    
+    @Slot(str, result=bool)
+    def test_port_connection(self, port_name: str) -> bool:
+        """Test if a port can be opened (for serial ports only)"""
+        try:
+            if port_name.startswith('COM') or port_name.startswith('/dev/'):
+                with serial.Serial(port_name, 115200, timeout=1) as test_conn:
+                    return True
+            else:
+                # Network ports are always considered available
+                return True
+        except Exception as e:
+            logger.warning(f"Port {port_name} test failed: {e}")
+            return False
+        
+    def _register_default_handlers(self) -> None:
+        """Register default message handlers"""
+        if not self._protocol:
+            return
+            
+        # Register handlers for all message types
+        handlers = {
+            'HEARTBEAT': self._handle_heartbeat,
+            'SYS_STATUS': self._handle_sys_status,
+            'GPS_RAW_INT': self._handle_gps_raw_int,
+            'GPS_STATUS': self._handle_gps_status,
+            'ATTITUDE': self._handle_attitude,
+            'VFR_HUD': self._handle_vfr_hud,
+            'GLOBAL_POSITION_INT': self._handle_global_position_int,
+            'SYSTEM_TIME': self._handle_system_time,
+            'PING': self._handle_ping,
+            'STATUSTEXT': self._handle_statustext,
+            'DEBUG': self._handle_debug,
+            'PARAM_VALUE': self._handle_parameter_value,
+            'PARAM_EXT_VALUE': self._handle_parameter_ext_value,
+            'LOCAL_POSITION_NED': self._handle_local_position_ned,
+            'GPS2_RAW': self._handle_gps2_raw,
+            'GPS_RTK': self._handle_gps_rtk,
+            'SCALED_IMU': self._handle_scaled_imu,
+            'RAW_IMU': self._handle_raw_imu,
+            'SCALED_PRESSURE': self._handle_scaled_pressure,
+            'RAW_PRESSURE': self._handle_raw_pressure,
+            'ATTITUDE_QUATERNION': self._handle_attitude_quaternion,
+            'SCALED_IMU2': self._handle_scaled_imu2,
+            'HIGHRES_IMU': self._handle_highres_imu,
+            'RC_CHANNELS_RAW': self._handle_rc_channels_raw,
+            'RC_CHANNELS_SCALED': self._handle_rc_channels_scaled,
+            'RC_CHANNELS': self._handle_rc_channels,
+            'SERVO_OUTPUT_RAW': self._handle_servo_output_raw,
+            'MANUAL_CONTROL': self._handle_manual_control,
+            'MISSION_CURRENT': self._handle_mission_current,
+            'MISSION_COUNT': self._handle_mission_count,
+            'MISSION_ACK': self._handle_mission_ack,
+            'MANUAL_SETPOINT': self._handle_manual_setpoint,
+            'BATTERY_STATUS': self._handle_battery_status,
+            'POWER_STATUS': self._handle_power_status,
+            'VIBRATION': self._handle_vibration,
+            'ESTIMATOR_STATUS': self._handle_estimator_status,
+            'EXTENDED_SYS_STATE': self._handle_extended_sys_state,
+            'CAMERA_TRIGGER': self._handle_camera_trigger,
+            'CAMERA_INFORMATION': self._handle_camera_information,
+            'CAMERA_SETTINGS': self._handle_camera_settings,
+            'CAMERA_CAPTURE_STATUS': self._handle_camera_capture_status,
+            'CAMERA_IMAGE_CAPTURED': self._handle_camera_image_captured,
+            'GIMBAL_DEVICE_INFORMATION': self._handle_gimbal_device_information,
+            'GIMBAL_DEVICE_SET_ATTITUDE': self._handle_gimbal_device_set_attitude,
+            'HIL_SENSOR': self._handle_hil_sensor,
+            'HIL_GPS': self._handle_hil_gps,
+            'HIL_STATE_QUATERNION': self._handle_hil_state_quaternion,
+            'HIL_CONTROLS': self._handle_hil_controls,
+            'HIL_RC_INPUTS_RAW': self._handle_hil_rc_inputs_raw,
+            'OPTICAL_FLOW': self._handle_optical_flow,
+            'DISTANCE_SENSOR': self._handle_distance_sensor,
+            'LANDING_TARGET': self._handle_landing_target,
+            'FOLLOW_TARGET': self._handle_follow_target,
+            'ODOMETRY': self._handle_odometry,
+            'OBSTACLE_DISTANCE': self._handle_obstacle_distance,
+            'DEBUG_VECT': self._handle_debug_vect,
+            'NAMED_VALUE_FLOAT': self._handle_named_value_float,
+            'NAMED_VALUE_INT': self._handle_named_value_int,
+            'TIME_ESTIMATE_TO_TARGET': self._handle_time_estimate_to_target,
+            'TIMESYNC': self._handle_timesync,
+            'SAFETY_ALLOWED_AREA': self._handle_safety_allowed_area,
+            'COMMAND_ACK': self._handle_command_ack,
+            'MISSION_ITEM': self._handle_mission_item,
+        }
+        
+        for message_type, handler in handlers.items():
+            self._protocol.register_message_handler(message_type, handler)
+        
+        logger.info("Default message handlers registered")
+    
+    def _process_messages(self):
+        """Process messages from the protocol (called by timer)"""
+        if self._protocol and self._is_connected:
+            self._protocol.receive_messages()
+    
+    def _handle_heartbeat(self, message: MAVLinkV2Message) -> None:
+        """Handle heartbeat message"""
+        try:
+            system_id = message.system_id
+            autopilot = message.payload.get('autopilot', 0)
+            base_mode = message.payload.get('base_mode', 0)
+            custom_mode = message.payload.get('custom_mode', 0)
+            system_status = message.payload.get('system_status', 0)
+            
+            # Update armed status
+            armed = (base_mode & 0x80) != 0
+            if self._armed != armed:
+                self._armed = armed
+                self.armedChanged.emit(armed)
+                # Only log when armed status changes
+                self._send_status_message(f"[MAVLINK] System {system_id} {'armed' if armed else 'disarmed'}", 1)
+            
+            # Update system status
+            status_names = {
+                0: "UNINIT", 1: "BOOT", 2: "CALIBRATING", 3: "STANDBY",
+                4: "ACTIVE", 5: "CRITICAL", 6: "EMERGENCY", 7: "POWEROFF"
+            }
+            status = status_names.get(system_status, f"UNKNOWN({system_status})")
+            if self._system_status != status:
+                self._system_status = status
+                self.systemStatusChanged.emit(status)
+                # Only log when system status changes
+                self._send_status_message(f"[MAVLINK] System {system_id} status: {status}", 1)
+            
+        except Exception as e:
+            logger.error(f"Error handling heartbeat: {e}")
+    
+    def _handle_mission_item(self, message: MAVLinkV2Message) -> None:
+        """Handle mission item message"""
+        try:
+            mission_item = {
+                'seq': message.payload.get('seq', 0),
+                'frame': message.payload.get('frame', 0),
+                'command': message.payload.get('command', 0),
+                'current': message.payload.get('current', 0),
+                'autocontinue': message.payload.get('autocontinue', 0),
+                'param1': message.payload.get('param1', 0),
+                'param2': message.payload.get('param2', 0),
+                'param3': message.payload.get('param3', 0),
+                'param4': message.payload.get('param4', 0),
+                'x': message.payload.get('x', 0),
+                'y': message.payload.get('y', 0),
+                'z': message.payload.get('z', 0)
+            }
+            if self._mission_manager:
+                self._mission_manager.mission_items.append(mission_item)
+                self.missionItemReceived.emit(mission_item)
+        except Exception as e:
+            logger.error(f"Error handling mission item: {e}")
+    
+    def _handle_parameter_value(self, message: MAVLinkV2Message) -> None:
+        """Handle parameter value message"""
+        try:
+            param_id = message.payload.get('param_id', '').rstrip('\x00')
+            param_value = message.payload.get('param_value', 0)
+            param_count = message.payload.get('param_count', None)
+            param_index = message.payload.get('param_index', None)
+            self.parameterUpdated.emit(param_id, param_value)
+            # --- Parameter-Sammellogik ---
+            if not hasattr(self, '_received_parameters'):
+                self._received_parameters = {}
+            self._received_parameters[param_id] = param_value
+            if param_count is not None:
+                self._expected_parameters = param_count
+            # Wenn alle Parameter empfangen, sende Liste an UI
+            if self._expected_parameters is not None and len(self._received_parameters) >= self._expected_parameters:
+                self.parameterListReceived.emit(self._received_parameters)
+        except Exception as e:
+            logger.error(f"Error handling parameter value: {e}")
+    
+    def _handle_command_ack(self, message: MAVLinkV2Message) -> None:
+        """Handle command acknowledgment message"""
+        try:
+            command = message.payload.get('command', 0)
+            result = message.payload.get('result', 0)
+            logger.info(f"Command {command} result: {result}")
+        except Exception as e:
+            logger.error(f"Error handling command ack: {e}")
+    
+    def _handle_gps_raw_int(self, message: MAVLinkV2Message) -> None:
+        """Handle GPS raw integer message"""
+        import time
+        try:
+            old_satellites = self._gps_satellites
+            old_fix = self._gps_fix
+
+            lat = message.payload.get('lat', 0) / 1e7  # Convert from degrees*1e7
+            lon = message.payload.get('lon', 0) / 1e7  # Convert from degrees*1e7
+            alt = message.payload.get('alt', 0) / 1000.0  # Convert from mm to meters
+            self._gps_latitude = lat
+            self._gps_longitude = lon
+            self._gps_altitude = alt
+            self._latitude = lat
+            self._longitude = lon
+            self._altitude = alt
+            self._gps_satellites = message.payload.get('satellites_visible', 0)
+            self._gps_hdop = message.payload.get('hdop', 0) / 100.0  # Convert from cm to meters
+            self._gps_vdop = message.payload.get('vdop', 0) / 100.0  # Convert from cm to meters
+            self._gps_fix = message.payload.get('fix_type', 0)
+
+            # Emit signals
+            self.gpsLatitudeChanged.emit(self._gps_latitude)
+            self.gpsLongitudeChanged.emit(self._gps_longitude)
+            self.gpsAltitudeChanged.emit(self._gps_altitude)
+            self.gpsSatellitesChanged.emit(self._gps_satellites)
+            self.gpsHdopChanged.emit(self._gps_hdop)
+            self.gpsVdopChanged.emit(self._gps_vdop)
+            self.gpsFixChanged.emit(self._gps_fix)
+            self.altitudeChanged.emit(self._altitude)
+
+            # Alle 30 Sekunden GPS-Position als Statusnachricht
+            now = time.time()
+            if now - self._last_gps_message_time > self._gps_status_interval:
+                self._send_status_message(f"GPS-Position: {lat:.7f}, {lon:.7f}, {alt:.2f}", 1)
+                self._last_gps_message_time = now
+
+        except Exception as e:
+            logger.error(f"Error handling GPS raw int: {e}")
+    
+    def _handle_gps_status(self, message: MAVLinkV2Message) -> None:
+        """Handle GPS status message"""
+        try:
+            satellites_visible = message.payload.get('satellites_visible', 0)
+            self._gps_satellites = satellites_visible
+            self.gpsSatellitesChanged.emit(self._gps_satellites)
+        except Exception as e:
+            logger.error(f"Error handling GPS status: {e}")
+    
+    def _handle_sys_status(self, message: MAVLinkV2Message) -> None:
+        """Handle system status message (battery info + sensor health + prearm check)"""
+        try:
+            # Battery information
+            voltage = message.payload.get('voltage_battery', 0) / 1000.0  # Convert from mV to V
+            current = message.payload.get('current_battery', 0) / 100.0   # Convert from 10*mA to A
+            remaining = message.payload.get('battery_remaining', 0)       # Percentage
+
+            old_voltage = self._battery_voltage
+            old_remaining = self._battery_remaining
+
+            self._battery_voltage = voltage
+            self._battery_current = current
+            self._battery_remaining = remaining
+
+            # Emit signals
+            self.batteryVoltageChanged.emit(self._battery_voltage)
+            self.batteryCurrentChanged.emit(self._battery_current)
+            self.batteryRemainingChanged.emit(self._battery_remaining)
+
+            # Send status messages for significant battery changes
+            if abs(old_voltage - voltage) > 0.1:  # 100mV change
+                self._send_status_message(f"Battery voltage: {voltage:.2f}V", 1)
+
+            if abs(old_remaining - remaining) > 5:  # 5% change
+                self._send_status_message(f"Battery remaining: {remaining}%", 1)
+
+            # --- SENSOR HEALTH CHECK ---
+            present = message.payload.get('onboard_control_sensors_present', 0)
+            health = message.payload.get('onboard_control_sensors_health', 0)
+            sensors_to_calibrate = []
+            try:
+                from pymavlink import mavutil
+                if present & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_3D_ACCEL and not (health & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_3D_ACCEL):
+                    sensors_to_calibrate.append('accelerometer')
+                if present & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_3D_MAG and not (health & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_3D_MAG):
+                    sensors_to_calibrate.append('magnetometer')
+                if present & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_3D_GYRO and not (health & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_3D_GYRO):
+                    sensors_to_calibrate.append('gyro')
+                if present & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE and not (health & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE):
+                    sensors_to_calibrate.append('barometer')
+                if present & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_GPS and not (health & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_GPS):
+                    sensors_to_calibrate.append('gps')
+                if present & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_RC_RECEIVER and not (health & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_RC_RECEIVER):
+                    sensors_to_calibrate.append('rc_receiver')
+                if present & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_BATTERY and not (health & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_BATTERY):
+                    sensors_to_calibrate.append('battery')
+            except ImportError:
+                pass
+            self.sensorsToCalibrateChanged.emit(sensors_to_calibrate)
+
+            PREARM_CHECK = 0x10000000
+            prearm_ok = bool(health & PREARM_CHECK)
+            self.prearmCheckStatusChanged.emit(prearm_ok)
+
+        except Exception as e:
+            logger.error(f"Error handling sys status: {e}")
+    
+    def _handle_attitude(self, message: MAVLinkV2Message) -> None:
+        """Handle attitude message"""
+        try:
+            roll = message.payload.get('roll', 0)
+            pitch = message.payload.get('pitch', 0)
+            yaw = message.payload.get('yaw', 0)
+            
+            # Convert to degrees
+            roll_deg = roll * 180.0 / 3.14159
+            pitch_deg = pitch * 180.0 / 3.14159
+            yaw_deg = yaw * 180.0 / 3.14159
+            
+            # Update values
+            self._roll = roll_deg
+            self._pitch = pitch_deg
+            self._heading = yaw_deg
+            self._yaw = yaw_deg
+            
+            # Emit signals
+            self.rollChanged.emit(self._roll)
+            self.pitchChanged.emit(self._pitch)
+            self.headingChanged.emit(self._heading)
+            self.yawChanged.emit(self._yaw)
+            
+        except Exception as e:
+            logger.error(f"Error handling attitude: {e}")
+    
+    def _handle_vfr_hud(self, message: MAVLinkV2Message) -> None:
+        """Handle VFR HUD message"""
+        try:
+            airspeed = message.payload.get('airspeed', 0)
+            groundspeed = message.payload.get('groundspeed', 0)
+            heading = message.payload.get('heading', 0)
+            throttle = message.payload.get('throttle', 0)
+            alt = message.payload.get('alt', 0)
+            climb = message.payload.get('climb', 0)
+            
+            # Update values
+            self._airspeed = airspeed
+            self._groundspeed = groundspeed
+            self._heading = heading
+            self._throttle = throttle
+            self._altitude = alt
+            self._climb_rate = climb
+            
+            # Emit signals
+            self.airspeedChanged.emit(self._airspeed)
+            self.groundspeedChanged.emit(self._groundspeed)
+            self.headingChanged.emit(self._heading)
+            self.throttleChanged.emit(self._throttle)
+            self.altitudeChanged.emit(self._altitude)
+            self.climbRateChanged.emit(self._climb_rate)
+        
+        except Exception as e:
+            logger.error(f"Error handling VFR HUD: {e}")
+    
+    def _handle_global_position_int(self, message: MAVLinkV2Message) -> None:
+        """Handle global position integer message"""
+        try:
+            lat = message.payload.get('lat', 0) / 1e7  # Convert from degrees*1e7
+            lon = message.payload.get('lon', 0) / 1e7  # Convert from degrees*1e7
+            alt = message.payload.get('alt', 0) / 1000.0  # Convert from mm to meters
+            relative_alt = message.payload.get('relative_alt', 0) / 1000.0  # Convert from mm to meters
+            
+            # Update GPS position
+            self._gps_latitude = lat
+            self._gps_longitude = lon
+            self._gps_altitude = alt
+            
+            # Emit signals
+            self.gpsLatitudeChanged.emit(self._gps_latitude)
+            self.gpsLongitudeChanged.emit(self._gps_longitude)
+            self.gpsAltitudeChanged.emit(self._gps_altitude)
+            
+        except Exception as e:
+            logger.error(f"Error handling global position int: {e}")
+    
+    def _handle_system_time(self, message: MAVLinkV2Message) -> None:
+        """Handle system time message"""
+        try:
+            time_unix_usec = message.payload.get('time_unix_usec', 0)
+            time_boot_ms = message.payload.get('time_boot_ms', 0)
+            logger.debug(f"System time: unix={time_unix_usec}, boot={time_boot_ms}")
+        except Exception as e:
+            logger.error(f"Error handling system time: {e}")
+    
+    def _handle_ping(self, message: MAVLinkV2Message) -> None:
+        """Handle ping message"""
+        try:
+            ping_id = message.payload.get('ping_id', 0)
+            target_system = message.payload.get('target_system', 0)
+            target_component = message.payload.get('target_component', 0)
+            logger.debug(f"Ping received: id={ping_id}, target={target_system}.{target_component}")
+        except Exception as e:
+            logger.error(f"Error handling ping: {e}")
+    
+    def _handle_statustext(self, message: MAVLinkV2Message) -> None:
+        """Handle status text message"""
+        try:
+            severity = message.payload.get('severity', 0)
+            text = message.payload.get('text', '').rstrip('\x00')
+            if "PreArm" in text or "prearm" in text:
+                self.prearmStatusChanged.emit(text)
+                self._send_status_message(f"PreArm-Status: {text}", severity)
+            else:
+                self._send_status_message(f"Status: {text}", severity)
+        except Exception as e:
+            logger.error(f"Error handling status text: {e}")
+    
+    def _handle_debug(self, message: MAVLinkV2Message) -> None:
+        """Handle debug message"""
+        try:
+            ind = message.payload.get('ind', 0)
+            value = message.payload.get('value', 0)
+            logger.debug(f"Debug: ind={ind}, value={value}")
+        except Exception as e:
+            logger.error(f"Error handling debug: {e}")
+    
+    def _handle_parameter_ext_value(self, message: MAVLinkV2Message) -> None:
+        """Handle extended parameter value message"""
+        try:
+            param_id = message.payload.get('param_id', '').rstrip('\x00')
+            param_value = message.payload.get('param_value', 0)
+            param_type = message.payload.get('param_type', 0)
+            param_count = message.payload.get('param_count', 0)
+            param_index = message.payload.get('param_index', 0)
+            self.parameterUpdated.emit(param_id, param_value)
+        except Exception as e:
+            logger.error(f"Error handling parameter ext value: {e}")
+    
+    def _handle_local_position_ned(self, message: MAVLinkV2Message) -> None:
+        """Handle local position NED message"""
+        try:
+            x = message.payload.get('x', 0)
+            y = message.payload.get('y', 0)
+            z = message.payload.get('z', 0)
+            vx = message.payload.get('vx', 0)
+            vy = message.payload.get('vy', 0)
+            vz = message.payload.get('vz', 0)
+            logger.debug(f"Local position: x={x}, y={y}, z={z}, vx={vx}, vy={vy}, vz={vz}")
+        except Exception as e:
+            logger.error(f"Error handling local position NED: {e}")
+    
+    def _handle_gps2_raw(self, message: MAVLinkV2Message) -> None:
+        """Handle GPS2 raw message"""
+        try:
+            lat = message.payload.get('lat', 0) / 1e7
+            lon = message.payload.get('lon', 0) / 1e7
+            alt = message.payload.get('alt', 0) / 1000.0
+            logger.debug(f"GPS2 position: lat={lat}, lon={lon}, alt={alt}")
+        except Exception as e:
+            logger.error(f"Error handling GPS2 raw: {e}")
+    
+    def _handle_gps_rtk(self, message: MAVLinkV2Message) -> None:
+        """Handle GPS RTK message"""
+        try:
+            rtk_receiver_id = message.payload.get('rtk_receiver_id', 0)
+            accuracy = message.payload.get('accuracy', 0)
+            baseline_length = message.payload.get('baseline_length', 0)
+            logger.debug(f"GPS RTK: receiver={rtk_receiver_id}, accuracy={accuracy}, baseline={baseline_length}")
+        except Exception as e:
+            logger.error(f"Error handling GPS RTK: {e}")
+    
+    def _handle_scaled_imu(self, message: MAVLinkV2Message) -> None:
+        """Handle scaled IMU message"""
+        try:
+            xacc = message.payload.get('xacc', 0)
+            yacc = message.payload.get('yacc', 0)
+            zacc = message.payload.get('zacc', 0)
+            xgyro = message.payload.get('xgyro', 0)
+            ygyro = message.payload.get('ygyro', 0)
+            zgyro = message.payload.get('zgyro', 0)
+            xmag = message.payload.get('xmag', 0)
+            ymag = message.payload.get('ymag', 0)
+            zmag = message.payload.get('zmag', 0)
+            logger.debug(f"Scaled IMU: acc=({xacc},{yacc},{zacc}), gyro=({xgyro},{ygyro},{zgyro}), mag=({xmag},{ymag},{zmag})")
+            # Emit signal for UI
+            self.imuChanged.emit(xacc, yacc, zacc, xgyro, ygyro, zgyro, xmag, ymag, zmag)
+        except Exception as e:
+            logger.error(f"Error handling scaled IMU: {e}")
+    
+    def _handle_raw_imu(self, message: MAVLinkV2Message) -> None:
+        """Handle raw IMU message"""
+        try:
+            xacc = message.payload.get('xacc', 0)
+            yacc = message.payload.get('yacc', 0)
+            zacc = message.payload.get('zacc', 0)
+            xgyro = message.payload.get('xgyro', 0)
+            ygyro = message.payload.get('ygyro', 0)
+            zgyro = message.payload.get('zgyro', 0)
+            xmag = message.payload.get('xmag', 0)
+            ymag = message.payload.get('ymag', 0)
+            zmag = message.payload.get('zmag', 0)
+            logger.debug(f"Raw IMU: acc=({xacc},{yacc},{zacc}), gyro=({xgyro},{ygyro},{zgyro}), mag=({xmag},{ymag},{zmag})")
+            self.imuChanged.emit(xacc, yacc, zacc, xgyro, ygyro, zgyro, xmag, ymag, zmag)
+        except Exception as e:
+            logger.error(f"Error handling raw IMU: {e}")
+    
+    def _handle_scaled_pressure(self, message: MAVLinkV2Message) -> None:
+        """Handle scaled pressure message"""
+        try:
+            press_abs = message.payload.get('press_abs', 0)
+            press_diff = message.payload.get('press_diff', 0)
+            temperature = message.payload.get('temperature', 0)
+            logger.debug(f"Scaled pressure: abs={press_abs}, diff={press_diff}, temp={temperature}")
+            self.pressureChanged.emit(press_abs, press_diff, temperature)
+        except Exception as e:
+            logger.error(f"Error handling scaled pressure: {e}")
+    
+    def _handle_raw_pressure(self, message: MAVLinkV2Message) -> None:
+        """Handle raw pressure message"""
+        try:
+            press_abs = message.payload.get('press_abs', 0)
+            press_diff1 = message.payload.get('press_diff1', 0)
+            temperature = message.payload.get('temperature', 0)
+            logger.debug(f"Raw pressure: abs={press_abs}, diff1={press_diff1}, temp={temperature}")
+            self.pressureChanged.emit(press_abs, press_diff1, temperature)
+        except Exception as e:
+            logger.error(f"Error handling raw pressure: {e}")
+    
+    def _handle_attitude_quaternion(self, message: MAVLinkV2Message) -> None:
+        """Handle attitude quaternion message"""
+        try:
+            time_boot_ms = message.payload.get('time_boot_ms', 0)
+            q1 = message.payload.get('q1', 0)
+            q2 = message.payload.get('q2', 0)
+            q3 = message.payload.get('q3', 0)
+            q4 = message.payload.get('q4', 0)
+            rollspeed = message.payload.get('rollspeed', 0)
+            pitchspeed = message.payload.get('pitchspeed', 0)
+            yawspeed = message.payload.get('yawspeed', 0)
+            logger.debug(f"Attitude quaternion: time={time_boot_ms}, q=({q1},{q2},{q3},{q4}), speed=({rollspeed},{pitchspeed},{yawspeed})")
+        except Exception as e:
+            logger.error(f"Error handling attitude quaternion: {e}")
+    
+    def _handle_scaled_imu2(self, message: MAVLinkV2Message) -> None:
+        """Handle scaled IMU2 message"""
+        try:
+            time_boot_ms = message.payload.get('time_boot_ms', 0)
+            xacc = message.payload.get('xacc', 0)
+            yacc = message.payload.get('yacc', 0)
+            zacc = message.payload.get('zacc', 0)
+            xgyro = message.payload.get('xgyro', 0)
+            ygyro = message.payload.get('ygyro', 0)
+            zgyro = message.payload.get('zgyro', 0)
+            xmag = message.payload.get('xmag', 0)
+            ymag = message.payload.get('ymag', 0)
+            zmag = message.payload.get('zmag', 0)
+            logger.debug(f"Scaled IMU2: time={time_boot_ms}, acc=({xacc},{yacc},{zacc}), gyro=({xgyro},{ygyro},{zgyro}), mag=({xmag},{ymag},{zmag})")
+        except Exception as e:
+            logger.error(f"Error handling scaled IMU2: {e}")
+    
+    def _handle_highres_imu(self, message: MAVLinkV2Message) -> None:
+        """Handle high resolution IMU message"""
+        try:
+            time_usec = message.payload.get('time_usec', 0)
+            xacc = message.payload.get('xacc', 0)
+            yacc = message.payload.get('yacc', 0)
+            zacc = message.payload.get('zacc', 0)
+            xgyro = message.payload.get('xgyro', 0)
+            ygyro = message.payload.get('ygyro', 0)
+            zgyro = message.payload.get('zgyro', 0)
+            xmag = message.payload.get('xmag', 0)
+            ymag = message.payload.get('ymag', 0)
+            zmag = message.payload.get('zmag', 0)
+            abs_pressure = message.payload.get('abs_pressure', 0)
+            diff_pressure = message.payload.get('diff_pressure', 0)
+            pressure_alt = message.payload.get('pressure_alt', 0)
+            temperature = message.payload.get('temperature', 0)
+            logger.debug(f"HighRes IMU: time={time_usec}, acc=({xacc},{yacc},{zacc}), gyro=({xgyro},{ygyro},{zgyro}), mag=({xmag},{ymag},{zmag})")
+        except Exception as e:
+            logger.error(f"Error handling highres IMU: {e}")
+    
+    def _handle_rc_channels_raw(self, message: MAVLinkV2Message) -> None:
+        """Handle RC channels raw message"""
+        try:
+            time_boot_ms = message.payload.get('time_boot_ms', 0)
+            port = message.payload.get('port', 0)
+            chan1_raw = message.payload.get('chan1_raw', 0)
+            chan2_raw = message.payload.get('chan2_raw', 0)
+            chan3_raw = message.payload.get('chan3_raw', 0)
+            chan4_raw = message.payload.get('chan4_raw', 0)
+            chan5_raw = message.payload.get('chan5_raw', 0)
+            chan6_raw = message.payload.get('chan6_raw', 0)
+            chan7_raw = message.payload.get('chan7_raw', 0)
+            chan8_raw = message.payload.get('chan8_raw', 0)
+            rssi = message.payload.get('rssi', 0)
+            logger.debug(f"RC channels raw: time={time_boot_ms}, port={port}, ch=({chan1_raw},{chan2_raw},{chan3_raw},{chan4_raw},{chan5_raw},{chan6_raw},{chan7_raw},{chan8_raw}), rssi={rssi}")
+        except Exception as e:
+            logger.error(f"Error handling RC channels raw: {e}")
+    
+    def _handle_rc_channels_scaled(self, message: MAVLinkV2Message) -> None:
+        """Handle RC channels scaled message"""
+        try:
+            time_boot_ms = message.payload.get('time_boot_ms', 0)
+            port = message.payload.get('port', 0)
+            chan1_scaled = message.payload.get('chan1_scaled', 0)
+            chan2_scaled = message.payload.get('chan2_scaled', 0)
+            chan3_scaled = message.payload.get('chan3_scaled', 0)
+            chan4_scaled = message.payload.get('chan4_scaled', 0)
+            chan5_scaled = message.payload.get('chan5_scaled', 0)
+            chan6_scaled = message.payload.get('chan6_scaled', 0)
+            chan7_scaled = message.payload.get('chan7_scaled', 0)
+            chan8_scaled = message.payload.get('chan8_scaled', 0)
+            rssi = message.payload.get('rssi', 0)
+            logger.debug(f"RC channels scaled: time={time_boot_ms}, port={port}, ch=({chan1_scaled},{chan2_scaled},{chan3_scaled},{chan4_scaled},{chan5_scaled},{chan6_scaled},{chan7_scaled},{chan8_scaled}), rssi={rssi}")
+        except Exception as e:
+            logger.error(f"Error handling RC channels scaled: {e}")
+    
+    def _handle_rc_channels(self, message: MAVLinkV2Message) -> None:
+        """Handle RC channels message"""
+        try:
+            time_boot_ms = message.payload.get('time_boot_ms', 0)
+            chancount = message.payload.get('chancount', 0)
+            chan1_raw = message.payload.get('chan1_raw', 0)
+            chan2_raw = message.payload.get('chan2_raw', 0)
+            chan3_raw = message.payload.get('chan3_raw', 0)
+            chan4_raw = message.payload.get('chan4_raw', 0)
+            chan5_raw = message.payload.get('chan5_raw', 0)
+            chan6_raw = message.payload.get('chan6_raw', 0)
+            chan7_raw = message.payload.get('chan7_raw', 0)
+            chan8_raw = message.payload.get('chan8_raw', 0)
+            chan9_raw = message.payload.get('chan9_raw', 0)
+            chan10_raw = message.payload.get('chan10_raw', 0)
+            chan11_raw = message.payload.get('chan11_raw', 0)
+            chan12_raw = message.payload.get('chan12_raw', 0)
+            chan13_raw = message.payload.get('chan13_raw', 0)
+            chan14_raw = message.payload.get('chan14_raw', 0)
+            chan15_raw = message.payload.get('chan15_raw', 0)
+            chan16_raw = message.payload.get('chan16_raw', 0)
+            chan17_raw = message.payload.get('chan17_raw', 0)
+            chan18_raw = message.payload.get('chan18_raw', 0)
+            rssi = message.payload.get('rssi', 0)
+            logger.debug(f"RC channels: time={time_boot_ms}, count={chancount}, rssi={rssi}")
+        except Exception as e:
+            logger.error(f"Error handling RC channels: {e}")
+    
+    def _handle_servo_output_raw(self, message: MAVLinkV2Message) -> None:
+        """Handle servo output raw message"""
+        try:
+            time_usec = message.payload.get('time_usec', 0)
+            port = message.payload.get('port', 0)
+            servo1_raw = message.payload.get('servo1_raw', 0)
+            servo2_raw = message.payload.get('servo2_raw', 0)
+            servo3_raw = message.payload.get('servo3_raw', 0)
+            servo4_raw = message.payload.get('servo4_raw', 0)
+            servo5_raw = message.payload.get('servo5_raw', 0)
+            servo6_raw = message.payload.get('servo6_raw', 0)
+            servo7_raw = message.payload.get('servo7_raw', 0)
+            servo8_raw = message.payload.get('servo8_raw', 0)
+            logger.debug(f"Servo output raw: time={time_usec}, port={port}, servo=({servo1_raw},{servo2_raw},{servo3_raw},{servo4_raw},{servo5_raw},{servo6_raw},{servo7_raw},{servo8_raw})")
+        except Exception as e:
+            logger.error(f"Error handling servo output raw: {e}")
+    
+    def _handle_manual_control(self, message: MAVLinkV2Message) -> None:
+        """Handle manual control message"""
+        try:
+            time_boot_ms = message.payload.get('time_boot_ms', 0)
+            x = message.payload.get('x', 0)
+            y = message.payload.get('y', 0)
+            z = message.payload.get('z', 0)
+            r = message.payload.get('r', 0)
+            buttons = message.payload.get('buttons', 0)
+            logger.debug(f"Manual control: time={time_boot_ms}, x={x}, y={y}, z={z}, r={r}, buttons={buttons}")
+        except Exception as e:
+            logger.error(f"Error handling manual control: {e}")
+    
+    def _handle_mission_current(self, message: MAVLinkV2Message) -> None:
+        """Handle mission current message"""
+        try:
+            seq = message.payload.get('seq', 0)
+            logger.debug(f"Mission current: seq={seq}")
+        except Exception as e:
+            logger.error(f"Error handling mission current: {e}")
+    
+    def _handle_mission_count(self, message: MAVLinkV2Message) -> None:
+        """Handle mission count message"""
+        try:
+            count = message.payload.get('count', 0)
+            target_system = message.payload.get('target_system', 0)
+            target_component = message.payload.get('target_component', 0)
+            logger.debug(f"Mission count: count={count}, target={target_system}.{target_component}")
+        except Exception as e:
+            logger.error(f"Error handling mission count: {e}")
+    
+    def _handle_mission_ack(self, message: MAVLinkV2Message) -> None:
+        """Handle mission ack message"""
+        try:
+            target_system = message.payload.get('target_system', 0)
+            target_component = message.payload.get('target_component', 0)
+            type_ack = message.payload.get('type', 0)
+            logger.debug(f"Mission ack: target={target_system}.{target_component}, type={type_ack}")
+        except Exception as e:
+            logger.error(f"Error handling mission ack: {e}")
+    
+    def _handle_manual_setpoint(self, message: MAVLinkV2Message) -> None:
+        """Handle manual setpoint message"""
+        try:
+            time_boot_ms = message.payload.get('time_boot_ms', 0)
+            roll = message.payload.get('roll', 0)
+            pitch = message.payload.get('pitch', 0)
+            yaw = message.payload.get('yaw', 0)
+            thrust = message.payload.get('thrust', 0)
+            mode_switch = message.payload.get('mode_switch', 0)
+            manual_override_switch = message.payload.get('manual_override_switch', 0)
+            logger.debug(f"Manual setpoint: time={time_boot_ms}, roll={roll}, pitch={pitch}, yaw={yaw}, thrust={thrust}")
+        except Exception as e:
+            logger.error(f"Error handling manual setpoint: {e}")
+    
+    def _handle_battery_status(self, message: MAVLinkV2Message) -> None:
+        """Handle battery status message"""
+        try:
+            current_consumed = message.payload.get('current_consumed', 0)
+            energy_consumed = message.payload.get('energy_consumed', 0)
+            temperature = message.payload.get('temperature', 0)
+            voltages = message.payload.get('voltages', [0] * 10)
+            current_battery = message.payload.get('current_battery', 0)
+            battery_id = message.payload.get('battery_id', 0)
+            battery_function = message.payload.get('battery_function', 0)
+            type_battery = message.payload.get('type', 0)
+            battery_remaining = message.payload.get('battery_remaining', 0)
+            logger.debug(f"Battery status: consumed={current_consumed}, energy={energy_consumed}, temp={temperature}, current={current_battery}, remaining={battery_remaining}")
+        except Exception as e:
+            logger.error(f"Error handling battery status: {e}")
+    
+    def _handle_power_status(self, message: MAVLinkV2Message) -> None:
+        """Handle power status message"""
+        try:
+            Vcc = message.payload.get('Vcc', 0)
+            Vservo = message.payload.get('Vservo', 0)
+            flags = message.payload.get('flags', 0)
+            logger.debug(f"Power status: Vcc={Vcc}, Vservo={Vservo}, flags={flags}")
+        except Exception as e:
+            logger.error(f"Error handling power status: {e}")
+    
+    def _handle_vibration(self, message: MAVLinkV2Message) -> None:
+        """Handle vibration message"""
+        try:
+            time_usec = message.payload.get('time_usec', 0)
+            vibration_x = message.payload.get('vibration_x', 0)
+            vibration_y = message.payload.get('vibration_y', 0)
+            vibration_z = message.payload.get('vibration_z', 0)
+            clipping_0 = message.payload.get('clipping_0', 0)
+            clipping_1 = message.payload.get('clipping_1', 0)
+            clipping_2 = message.payload.get('clipping_2', 0)
+            logger.debug(f"Vibration: time={time_usec}, x={vibration_x}, y={vibration_y}, z={vibration_z}")
+        except Exception as e:
+            logger.error(f"Error handling vibration: {e}")
+    
+    def _handle_estimator_status(self, message: MAVLinkV2Message) -> None:
+        """Handle estimator status message"""
+        try:
+            time_usec = message.payload.get('time_usec', 0)
+            flags = message.payload.get('flags', 0)
+            vel_ratio = message.payload.get('vel_ratio', 0)
+            pos_horiz_ratio = message.payload.get('pos_horiz_ratio', 0)
+            pos_vert_ratio = message.payload.get('pos_vert_ratio', 0)
+            mag_ratio = message.payload.get('mag_ratio', 0)
+            hagl_ratio = message.payload.get('hagl_ratio', 0)
+            tas_ratio = message.payload.get('tas_ratio', 0)
+            pos_horiz_accuracy = message.payload.get('pos_horiz_accuracy', 0)
+            pos_vert_accuracy = message.payload.get('pos_vert_accuracy', 0)
+            logger.debug(f"Estimator status: time={time_usec}, flags={flags}")
+        except Exception as e:
+            logger.error(f"Error handling estimator status: {e}")
+    
+    def _handle_extended_sys_state(self, message: MAVLinkV2Message) -> None:
+        """Handle extended system state message"""
+        try:
+            vtol_state = message.payload.get('vtol_state', 0)
+            landed_state = message.payload.get('landed_state', 0)
+            logger.debug(f"Extended sys state: vtol={vtol_state}, landed={landed_state}")
+        except Exception as e:
+            logger.error(f"Error handling extended sys state: {e}")
+    
+    # Camera and gimbal handlers (placeholder implementations)
+    def _handle_camera_trigger(self, message: MAVLinkV2Message) -> None:
+        """Handle camera trigger message"""
+        try:
+            time_usec = message.payload.get('time_usec', 0)
+            seq = message.payload.get('seq', 0)
+            logger.debug(f"Camera trigger: time={time_usec}, seq={seq}")
+        except Exception as e:
+            logger.error(f"Error handling camera trigger: {e}")
+    
+    def _handle_camera_information(self, message: MAVLinkV2Message) -> None:
+        """Handle camera information message"""
+        try:
+            time_boot_ms = message.payload.get('time_boot_ms', 0)
+            vendor_name = message.payload.get('vendor_name', '').rstrip('\x00')
+            model_name = message.payload.get('model_name', '').rstrip('\x00')
+            logger.debug(f"Camera info: time={time_boot_ms}, vendor={vendor_name}, model={model_name}")
+        except Exception as e:
+            logger.error(f"Error handling camera information: {e}")
+    
+    def _handle_camera_settings(self, message: MAVLinkV2Message) -> None:
+        """Handle camera settings message"""
+        try:
+            time_boot_ms = message.payload.get('time_boot_ms', 0)
+            mode_id = message.payload.get('mode_id', 0)
+            zoomLevel = message.payload.get('zoomLevel', 0)
+            focusLevel = message.payload.get('focusLevel', 0)
+            logger.debug(f"Camera settings: time={time_boot_ms}, mode={mode_id}, zoom={zoomLevel}, focus={focusLevel}")
+        except Exception as e:
+            logger.error(f"Error handling camera settings: {e}")
+    
+    def _handle_camera_capture_status(self, message: MAVLinkV2Message) -> None:
+        """Handle camera capture status message"""
+        try:
+            time_boot_ms = message.payload.get('time_boot_ms', 0)
+            image_status = message.payload.get('image_status', 0)
+            video_status = message.payload.get('video_status', 0)
+            image_interval = message.payload.get('image_interval', 0)
+            recording_time_ms = message.payload.get('recording_time_ms', 0)
+            available_capacity = message.payload.get('available_capacity', 0)
+            logger.debug(f"Camera capture status: time={time_boot_ms}, image={image_status}, video={video_status}")
+        except Exception as e:
+            logger.error(f"Error handling camera capture status: {e}")
+    
+    def _handle_camera_image_captured(self, message: MAVLinkV2Message) -> None:
+        """Handle camera image captured message"""
+        try:
+            time_boot_ms = message.payload.get('time_boot_ms', 0)
+            time_utc = message.payload.get('time_utc', 0)
+            camera_id = message.payload.get('camera_id', 0)
+            lat = message.payload.get('lat', 0)
+            lon = message.payload.get('lon', 0)
+            alt = message.payload.get('alt', 0)
+            relative_alt = message.payload.get('relative_alt', 0)
+            q = message.payload.get('q', [0] * 4)
+            image_index = message.payload.get('image_index', 0)
+            capture_result = message.payload.get('capture_result', 0)
+            file_url = message.payload.get('file_url', '').rstrip('\x00')
+            logger.debug(f"Camera image captured: time={time_boot_ms}, camera={camera_id}, index={image_index}")
+        except Exception as e:
+            logger.error(f"Error handling camera image captured: {e}")
+    
+    def _handle_gimbal_device_information(self, message: MAVLinkV2Message) -> None:
+        """Handle gimbal device information message"""
+        try:
+            time_boot_ms = message.payload.get('time_boot_ms', 0)
+            vendor_name = message.payload.get('vendor_name', '').rstrip('\x00')
+            model_name = message.payload.get('model_name', '').rstrip('\x00')
+            custom_name = message.payload.get('custom_name', '').rstrip('\x00')
+            firmware_version = message.payload.get('firmware_version', 0)
+            hardware_version = message.payload.get('hardware_version', 0)
+            uid = message.payload.get('uid', 0)
+            logger.debug(f"Gimbal device info: time={time_boot_ms}, vendor={vendor_name}, model={model_name}")
+        except Exception as e:
+            logger.error(f"Error handling gimbal device information: {e}")
+    
+    def _handle_gimbal_device_set_attitude(self, message: MAVLinkV2Message) -> None:
+        """Handle gimbal device set attitude message"""
+        try:
+            target_system = message.payload.get('target_system', 0)
+            target_component = message.payload.get('target_component', 0)
+            flags = message.payload.get('flags', 0)
+            q = message.payload.get('q', [0] * 4)
+            angular_velocity_x = message.payload.get('angular_velocity_x', 0)
+            angular_velocity_y = message.payload.get('angular_velocity_y', 0)
+            angular_velocity_z = message.payload.get('angular_velocity_z', 0)
+            logger.debug(f"Gimbal device set attitude: target={target_system}.{target_component}, flags={flags}")
+        except Exception as e:
+            logger.error(f"Error handling gimbal device set attitude: {e}")
+    
+    # HIL (Hardware-in-the-Loop) handlers
+    def _handle_hil_sensor(self, message: MAVLinkV2Message) -> None:
+        """Handle HIL sensor message"""
+        try:
+            time_usec = message.payload.get('time_usec', 0)
+            xacc = message.payload.get('xacc', 0)
+            yacc = message.payload.get('yacc', 0)
+            zacc = message.payload.get('zacc', 0)
+            xgyro = message.payload.get('xgyro', 0)
+            ygyro = message.payload.get('ygyro', 0)
+            zgyro = message.payload.get('zgyro', 0)
+            xmag = message.payload.get('xmag', 0)
+            ymag = message.payload.get('ymag', 0)
+            zmag = message.payload.get('zmag', 0)
+            abs_pressure = message.payload.get('abs_pressure', 0)
+            diff_pressure = message.payload.get('diff_pressure', 0)
+            pressure_alt = message.payload.get('pressure_alt', 0)
+            temperature = message.payload.get('temperature', 0)
+            fields_updated = message.payload.get('fields_updated', 0)
+            logger.debug(f"HIL sensor: time={time_usec}, acc=({xacc},{yacc},{zacc}), gyro=({xgyro},{ygyro},{zgyro})")
+        except Exception as e:
+            logger.error(f"Error handling HIL sensor: {e}")
+    
+    def _handle_hil_gps(self, message: MAVLinkV2Message) -> None:
+        """Handle HIL GPS message"""
+        try:
+            time_usec = message.payload.get('time_usec', 0)
+            lat = message.payload.get('lat', 0)
+            lon = message.payload.get('lon', 0)
+            alt = message.payload.get('alt', 0)
+            eph = message.payload.get('eph', 0)
+            epv = message.payload.get('epv', 0)
+            vel = message.payload.get('vel', 0)
+            vn = message.payload.get('vn', 0)
+            ve = message.payload.get('ve', 0)
+            vd = message.payload.get('vd', 0)
+            cog = message.payload.get('cog', 0)
+            satellites_visible = message.payload.get('satellites_visible', 0)
+            logger.debug(f"HIL GPS: time={time_usec}, lat={lat}, lon={lon}, alt={alt}, satellites={satellites_visible}")
+        except Exception as e:
+            logger.error(f"Error handling HIL GPS: {e}")
+    
+    def _handle_hil_state_quaternion(self, message: MAVLinkV2Message) -> None:
+        """Handle HIL state quaternion message"""
+        try:
+            time_usec = message.payload.get('time_usec', 0)
+            attitude_quaternion = message.payload.get('attitude_quaternion', [0] * 4)
+            rollspeed = message.payload.get('rollspeed', 0)
+            pitchspeed = message.payload.get('pitchspeed', 0)
+            yawspeed = message.payload.get('yawspeed', 0)
+            lat = message.payload.get('lat', 0)
+            lon = message.payload.get('lon', 0)
+            alt = message.payload.get('alt', 0)
+            vx = message.payload.get('vx', 0)
+            vy = message.payload.get('vy', 0)
+            vz = message.payload.get('vz', 0)
+            ind_airspeed = message.payload.get('ind_airspeed', 0)
+            true_airspeed = message.payload.get('true_airspeed', 0)
+            xacc = message.payload.get('xacc', 0)
+            yacc = message.payload.get('yacc', 0)
+            zacc = message.payload.get('zacc', 0)
+            logger.debug(f"HIL state quaternion: time={time_usec}, lat={lat}, lon={lon}, alt={alt}")
+        except Exception as e:
+            logger.error(f"Error handling HIL state quaternion: {e}")
+    
+    def _handle_hil_controls(self, message: MAVLinkV2Message) -> None:
+        """Handle HIL controls message"""
+        try:
+            time_usec = message.payload.get('time_usec', 0)
+            roll_ailerons = message.payload.get('roll_ailerons', 0)
+            pitch_elevator = message.payload.get('pitch_elevator', 0)
+            yaw_rudder = message.payload.get('yaw_rudder', 0)
+            throttle = message.payload.get('throttle', 0)
+            aux1 = message.payload.get('aux1', 0)
+            aux2 = message.payload.get('aux2', 0)
+            aux3 = message.payload.get('aux3', 0)
+            aux4 = message.payload.get('aux4', 0)
+            mode = message.payload.get('mode', 0)
+            nav_mode = message.payload.get('nav_mode', 0)
+            logger.debug(f"HIL controls: time={time_usec}, roll={roll_ailerons}, pitch={pitch_elevator}, yaw={yaw_rudder}, throttle={throttle}")
+        except Exception as e:
+            logger.error(f"Error handling HIL controls: {e}")
+    
+    def _handle_hil_rc_inputs_raw(self, message: MAVLinkV2Message) -> None:
+        """Handle HIL RC inputs raw message"""
+        try:
+            time_usec = message.payload.get('time_usec', 0)
+            chan1_raw = message.payload.get('chan1_raw', 0)
+            chan2_raw = message.payload.get('chan2_raw', 0)
+            chan3_raw = message.payload.get('chan3_raw', 0)
+            chan4_raw = message.payload.get('chan4_raw', 0)
+            chan5_raw = message.payload.get('chan5_raw', 0)
+            chan6_raw = message.payload.get('chan6_raw', 0)
+            chan7_raw = message.payload.get('chan7_raw', 0)
+            chan8_raw = message.payload.get('chan8_raw', 0)
+            rssi = message.payload.get('rssi', 0)
+            logger.debug(f"HIL RC inputs raw: time={time_usec}, ch=({chan1_raw},{chan2_raw},{chan3_raw},{chan4_raw},{chan5_raw},{chan6_raw},{chan7_raw},{chan8_raw}), rssi={rssi}")
+        except Exception as e:
+            logger.error(f"Error handling HIL RC inputs raw: {e}")
+    
+    # Advanced function handlers
+    def _handle_optical_flow(self, message: MAVLinkV2Message) -> None:
+        """Handle optical flow message"""
+        try:
+            time_usec = message.payload.get('time_usec', 0)
+            sensor_id = message.payload.get('sensor_id', 0)
+            flow_x = message.payload.get('flow_x', 0)
+            flow_y = message.payload.get('flow_y', 0)
+            flow_comp_m_x = message.payload.get('flow_comp_m_x', 0)
+            flow_comp_m_y = message.payload.get('flow_comp_m_y', 0)
+            quality = message.payload.get('quality', 0)
+            ground_distance = message.payload.get('ground_distance', 0)
+            logger.debug(f"Optical flow: time={time_usec}, sensor={sensor_id}, flow=({flow_x},{flow_y}), quality={quality}")
+        except Exception as e:
+            logger.error(f"Error handling optical flow: {e}")
+    
+    def _handle_distance_sensor(self, message: MAVLinkV2Message) -> None:
+        """Handle distance sensor message"""
+        try:
+            time_boot_ms = message.payload.get('time_boot_ms', 0)
+            min_distance = message.payload.get('min_distance', 0)
+            max_distance = message.payload.get('max_distance', 0)
+            current_distance = message.payload.get('current_distance', 0)
+            type_sensor = message.payload.get('type', 0)
+            id_sensor = message.payload.get('id', 0)
+            orientation = message.payload.get('orientation', 0)
+            covariance = message.payload.get('covariance', 0)
+            logger.debug(f"Distance sensor: time={time_boot_ms}, min={min_distance}, max={max_distance}, current={current_distance}")
+        except Exception as e:
+            logger.error(f"Error handling distance sensor: {e}")
+    
+    def _handle_landing_target(self, message: MAVLinkV2Message) -> None:
+        """Handle landing target message"""
+        try:
+            time_usec = message.payload.get('time_usec', 0)
+            target_num = message.payload.get('target_num', 0)
+            frame = message.payload.get('frame', 0)
+            angle_x = message.payload.get('angle_x', 0)
+            angle_y = message.payload.get('angle_y', 0)
+            distance = message.payload.get('distance', 0)
+            size_x = message.payload.get('size_x', 0)
+            size_y = message.payload.get('size_y', 0)
+            logger.debug(f"Landing target: time={time_usec}, target={target_num}, angle=({angle_x},{angle_y}), distance={distance}")
+        except Exception as e:
+            logger.error(f"Error handling landing target: {e}")
+    
+    def _handle_follow_target(self, message: MAVLinkV2Message) -> None:
+        """Handle follow target message"""
+        try:
+            timestamp = message.payload.get('timestamp', 0)
+            est_capabilities = message.payload.get('est_capabilities', 0)
+            lat = message.payload.get('lat', 0)
+            lon = message.payload.get('lon', 0)
+            alt = message.payload.get('alt', 0)
+            vel = message.payload.get('vel', [0] * 3)
+            acc = message.payload.get('acc', [0] * 3)
+            attitude = message.payload.get('attitude', [0] * 4)
+            rates = message.payload.get('rates', [0] * 3)
+            pos_cov = message.payload.get('pos_cov', [0] * 3)
+            vel_cov = message.payload.get('vel_cov', [0] * 3)
+            logger.debug(f"Follow target: timestamp={timestamp}, lat={lat}, lon={lon}, alt={alt}")
+        except Exception as e:
+            logger.error(f"Error handling follow target: {e}")
+    
+    def _handle_odometry(self, message: MAVLinkV2Message) -> None:
+        """Handle odometry message"""
+        try:
+            time_usec = message.payload.get('time_usec', 0)
+            frame_id = message.payload.get('frame_id', 0)
+            child_frame_id = message.payload.get('child_frame_id', 0)
+            x = message.payload.get('x', 0)
+            y = message.payload.get('y', 0)
+            z = message.payload.get('z', 0)
+            q = message.payload.get('q', [0] * 4)
+            vx = message.payload.get('vx', 0)
+            vy = message.payload.get('vy', 0)
+            vz = message.payload.get('vz', 0)
+            rollspeed = message.payload.get('rollspeed', 0)
+            pitchspeed = message.payload.get('pitchspeed', 0)
+            yawspeed = message.payload.get('yawspeed', 0)
+            pose_covariance = message.payload.get('pose_covariance', [0] * 21)
+            velocity_covariance = message.payload.get('velocity_covariance', [0] * 21)
+            logger.debug(f"Odometry: time={time_usec}, pos=({x},{y},{z}), vel=({vx},{vy},{vz})")
+        except Exception as e:
+            logger.error(f"Error handling odometry: {e}")
+    
+    def _handle_obstacle_distance(self, message: MAVLinkV2Message) -> None:
+        """Handle obstacle distance message"""
+        try:
+            time_usec = message.payload.get('time_usec', 0)
+            sensor_type = message.payload.get('sensor_type', 0)
+            distances = message.payload.get('distances', [0] * 72)
+            increment = message.payload.get('increment', 0)
+            min_distance = message.payload.get('min_distance', 0)
+            max_distance = message.payload.get('max_distance', 0)
+            logger.debug(f"Obstacle distance: time={time_usec}, sensor={sensor_type}, min={min_distance}, max={max_distance}")
+        except Exception as e:
+            logger.error(f"Error handling obstacle distance: {e}")
+    
+    # Status and diagnostic handlers
+    def _handle_debug_vect(self, message: MAVLinkV2Message) -> None:
+        """Handle debug vector message"""
+        try:
+            time_usec = message.payload.get('time_usec', 0)
+            name = message.payload.get('name', '').rstrip('\x00')
+            x = message.payload.get('x', 0)
+            y = message.payload.get('y', 0)
+            z = message.payload.get('z', 0)
+            logger.debug(f"Debug vector: time={time_usec}, name={name}, x={x}, y={y}, z={z}")
+        except Exception as e:
+            logger.error(f"Error handling debug vector: {e}")
+    
+    def _handle_named_value_float(self, message: MAVLinkV2Message) -> None:
+        """Handle named value float message"""
+        try:
+            time_boot_ms = message.payload.get('time_boot_ms', 0)
+            name = message.payload.get('name', '').rstrip('\x00')
+            value = message.payload.get('value', 0)
+            logger.debug(f"Named value float: time={time_boot_ms}, name={name}, value={value}")
+        except Exception as e:
+            logger.error(f"Error handling named value float: {e}")
+    
+    def _handle_named_value_int(self, message: MAVLinkV2Message) -> None:
+        """Handle named value int message"""
+        try:
+            time_boot_ms = message.payload.get('time_boot_ms', 0)
+            name = message.payload.get('name', '').rstrip('\x00')
+            value = message.payload.get('value', 0)
+            logger.debug(f"Named value int: time={time_boot_ms}, name={name}, value={value}")
+        except Exception as e:
+            logger.error(f"Error handling named value int: {e}")
+    
+    # Time and synchronization handlers
+    def _handle_time_estimate_to_target(self, message: MAVLinkV2Message) -> None:
+        """Handle time estimate to target message"""
+        try:
+            nav_mode = message.payload.get('nav_mode', 0)
+            time_estimate = message.payload.get('time_estimate', 0)
+            safe_return = message.payload.get('safe_return', 0)
+            logger.debug(f"Time estimate to target: nav_mode={nav_mode}, time_estimate={time_estimate}, safe_return={safe_return}")
+        except Exception as e:
+            logger.error(f"Error handling time estimate to target: {e}")
+    
+    def _handle_timesync(self, message: MAVLinkV2Message) -> None:
+        """Handle timesync message"""
+        try:
+            tc1 = message.payload.get('tc1', 0)
+            ts1 = message.payload.get('ts1', 0)
+            logger.debug(f"Timesync: tc1={tc1}, ts1={ts1}")
+        except Exception as e:
+            logger.error(f"Error handling timesync: {e}")
+    
+    # Safety and error handlers
+    def _handle_safety_allowed_area(self, message: MAVLinkV2Message) -> None:
+        """Handle safety allowed area message"""
+        try:
+            frame = message.payload.get('frame', 0)
+            p1x = message.payload.get('p1x', 0)
+            p1y = message.payload.get('p1y', 0)
+            p1z = message.payload.get('p1z', 0)
+            p2x = message.payload.get('p2x', 0)
+            p2y = message.payload.get('p2y', 0)
+            p2z = message.payload.get('p2z', 0)
+            logger.debug(f"Safety allowed area: frame={frame}, p1=({p1x},{p1y},{p1z}), p2=({p2x},{p2y},{p2z})")
+        except Exception as e:
+            logger.error(f"Error handling safety allowed area: {e}")
+
+    def set_message_manager(self, message_manager) -> None:
+        """Set message manager for status reporting"""
+        self._message_manager = message_manager
+
+    def setMessageManager(self, message_manager):
+        """Alias für QML-Kompatibilität"""
+        self.set_message_manager(message_manager)
+    
+    @Slot()
+    def connect_mavlink(self) -> bool:
+        """Connect using MAVLink v2 protocol (synchronous for QML compatibility)"""
+        try:
+            if not self._connection_string:
+                error_msg = "No connection string set"
+                self._send_status_message(error_msg, 3)
+                logger.error(f"[MAVLINK] {error_msg}")
+                return False
+            
+            # Check if it's a serial port and provide better error messages
+            if self._connection_string.startswith('COM') or self._connection_string.startswith('/dev/'):
+                # Check port availability first
+                available_ports = [port.device for port in serial.tools.list_ports.comports()]
+                if self._connection_string not in available_ports:
+                    error_msg = f"Port {self._connection_string} not found. Available ports: {available_ports}"
+                    self._send_status_message(error_msg, 3)
+                    logger.error(f"[MAVLINK] {error_msg}")
+                    return False
+                
+                # Try to check if port is accessible
+                try:
+                    with serial.Serial(self._connection_string, 115200, timeout=1) as test_conn:
+                        pass
+                except serial.SerialException as e:
+                    if "Permission denied" in str(e):
+                        error_msg = f"Port {self._connection_string} is in use by another application. Close other applications using this port."
+                        self._send_status_message(error_msg, 3)
+                        logger.error(f"[MAVLINK] {error_msg}")
+                        return False
+                    elif "Access denied" in str(e):
+                        error_msg = f"Access denied to {self._connection_string}. Try running RZGCS as administrator."
+                        self._send_status_message(error_msg, 3)
+                        logger.error(f"[MAVLINK] {error_msg}")
+                        return False
+                    else:
+                        error_msg = f"Serial port error: {e}"
+                        self._send_status_message(error_msg, 3)
+                        logger.error(f"[MAVLINK] {error_msg}")
+                        return False
+            
+            self._send_status_message(f"Connecting to {self._connection_string} using MAVLink v2...", 1)
+            self._connection_status = "Connecting..."
+            self.connectionStatusChanged.emit(False, self._connection_status)
+            
+            # Create protocol instance with the current connection string
+            self._protocol = MAVLinkV2Protocol(self._connection_string)
+            success = self._protocol.connect()
+            
+            if success:
+                self._is_connected = True
+                self._connection_status = "Connected"
+                self.connectionStatusChanged.emit(True, self._connection_status)
+                self._send_status_message("MAVLink v2 connection established successfully", 4)
+                self._register_default_handlers()
+                self._start_telemetry_loop()
+                return True
+            else:
+                self._is_connected = False
+                self._connection_status = "Connection failed"
+                self.connectionStatusChanged.emit(False, self._connection_status)
+                self._send_status_message("MAVLink v2 connection failed - no heartbeat received", 3)
+                self._stop_telemetry_loop()
+                return False
+                
+        except Exception as e:
+            self._is_connected = False
+            self._connection_status = "Connection failed"
+            self.connectionStatusChanged.emit(False, self._connection_status)
+            self._send_status_message(f"MAVLink v2 connection failed: {e}", 3)
+            self._stop_telemetry_loop()
+            logger.error(f"[MAVLINK] MAVLink v2 connection failed: {e}")
+            return False
+    
+    @Slot()
+    def disconnect_mavlink(self) -> None:
+        """Disconnect MAVLink v2 connection"""
+        try:
+            self._send_status_message("Trenne Verbindung...", 2)
+
+            # Stop telemetry loop
+            self._stop_telemetry_loop()
+
+            # Disconnect protocol
+            if self._protocol:
+                self._protocol.disconnect()
+                self._protocol = None
+
+            # Reset state
+            self._is_connected = False
+            self._connection_status = "Disconnected"
+            self.connectionStatusChanged.emit(False, self._connection_status)
+
+            # Clear managers
+            self._mission_manager = None
+            self._parameter_manager = None
+            self._command_manager = None
+
+            self._send_status_message("MAVLink-Verbindung getrennt", 2)
+            logger.info("[MAVLINK] Verbindung getrennt")
+
+        except Exception as e:
+            error_msg = f"Error during disconnect: {e}"
+            self._send_status_message(error_msg, 3)
+            logger.error(f"[MAVLINK] {error_msg}")
+    
+    @Slot(str, result=str)
+    def get_port_troubleshooting_help(self, port_name: str) -> str:
+        """Get troubleshooting help for a specific port"""
+        try:
+            if port_name.startswith('COM') or port_name.startswith('/dev/'):
+                # Check if port exists
+                available_ports = [port.device for port in serial.tools.list_ports.comports()]
+                if port_name not in available_ports:
+                    return f"Port {port_name} not found. Available ports: {', '.join(available_ports)}"
+                
+                # Try to open port to check for issues
+                try:
+                    with serial.Serial(port_name, 115200, timeout=1) as test_conn:
+                        return f"Port {port_name} is accessible and ready for connection."
+                except serial.SerialException as e:
+                    if "Permission denied" in str(e):
+                        return f"Port {port_name} is in use by another application. Close other applications (Mission Planner, QGroundControl, etc.) that might be using this port."
+                    elif "Access denied" in str(e):
+                        return f"Access denied to {port_name}. Try running RZGCS as administrator or check Windows Device Manager for port status."
+                    else:
+                        return f"Serial port error: {e}. Check if the device is properly connected and drivers are installed."
+            else:
+                return f"Network port {port_name} should be available for connection."
+        except Exception as e:
+            return f"Error checking port {port_name}: {e}"
+    
+    def _send_status_message(self, message: str, message_type: int = 1) -> None:
+        """Send status message to message manager"""
+        if self._message_manager:
+            self._message_manager.addMessage(message, message_type)
+        else:
+            logger.info(f"[MAVLINK] {message}")
+    
+    def set_message_manager(self, message_manager) -> None:
+        """Set message manager for status reporting"""
+        self._message_manager = message_manager
+    
+    def setMessageManager(self, message_manager) -> None:
+        """Set message manager for status reporting (alias for compatibility)"""
+        self._message_manager = message_manager
+
+    def _start_telemetry_loop(self) -> None:
+        """Start telemetry processing loop"""
+        try:
+            logger.info("[MAVLINK] Starting telemetry loop")
+            # Telemetry processing is handled by the message timer
+            # which is already started in __init__
+        except Exception as e:
+            logger.error(f"[MAVLINK] Error starting telemetry loop: {e}")
+
+    def _stop_telemetry_loop(self) -> None:
+        """Stop telemetry processing loop"""
+        try:
+            logger.info("[MAVLINK] Stopping telemetry loop")
+            if hasattr(self, '_message_timer') and self._message_timer:
+                self._message_timer.stop()
+        except Exception as e:
+            logger.error(f"[MAVLINK] Error stopping telemetry loop: {e}")
+    
+    # Properties for QML binding
+    @Property(float, notify=rollChanged)
+    def roll(self) -> float:
+        return self._roll
+    
+    @Property(float, notify=pitchChanged)
+    def pitch(self) -> float:
+        return self._pitch
+    
+    @Property(float, notify=headingChanged)
+    def heading(self) -> float:
+        return self._heading
+    
+    @Property(float, notify=yawChanged)
+    def yaw(self) -> float:
+        return self._yaw
+    
+    @Property(float, notify=airspeedChanged)
+    def airspeed(self) -> float:
+        return self._airspeed
+    
+    @Property(float, notify=groundspeedChanged)
+    def groundspeed(self) -> float:
+        return self._groundspeed
+    
+    @Property(float, notify=climbRateChanged)
+    def climb_rate(self) -> float:
+        return self._climb_rate
+    
+    @Property(bool, notify=armedChanged)
+    def armed(self) -> bool:
+        return self._armed
+    
+    @Property(float, notify=gpsLatitudeChanged)
+    def gps_latitude(self) -> float:
+        return self._latitude
+    
+    @Property(float, notify=gpsLongitudeChanged)
+    def gps_longitude(self) -> float:
+        return self._longitude
+    
+    @Property(float, notify=gpsAltitudeChanged)
+    def gps_altitude(self) -> float:
+        return self._altitude
+    
+    @Property(int, notify=gpsSatellitesChanged)
+    def gps_satellites(self) -> int:
+        return self._gps_satellites
+    
+    @Property(float, notify=gpsHdopChanged)
+    def gps_hdop(self) -> float:
+        return self._gps_hdop
+    
+    @Property(float, notify=gpsVdopChanged)
+    def gps_vdop(self) -> float:
+        return self._gps_vdop
+    
+    @Property(bool, notify=gpsFixChanged)
+    def gps_fix(self) -> bool:
+        return self._gps_fix
+    
+    @Property(float, notify=batteryVoltageChanged)
+    def battery_voltage(self) -> float:
+        return self._battery_voltage
+    
+    @Property(float, notify=batteryCurrentChanged)
+    def battery_current(self) -> float:
+        return self._battery_current
+    
+    @Property(float, notify=batteryRemainingChanged)
+    def battery_remaining(self) -> float:
+        return self._battery_remaining
+    
+    @Property(float, notify=batteryTemperatureChanged)
+    def battery_temperature(self) -> float:
+        return self._battery_temperature
+    
+    @Property(str, notify=flightModeChanged)
+    def mode(self) -> str:
+        return self._flight_mode
+    
+    @Property(str, notify=systemStatusChanged)
+    def system_status(self) -> str:
+        return self._system_status
+    
+    @Property(float, notify=altitudeChanged)
+    def altitude(self) -> float:
+        return self._altitude
+    
+    @Property(float, notify=throttleChanged)
+    def throttle(self) -> float:
+        return self._throttle
+    
+    @Property(bool, notify=connectedChanged)
+    def is_connected(self) -> bool:
+        return self._is_connected
+    
+    @Property(str, notify=connectionStatusChanged)
+    def connection_status(self) -> str:
+        return self._connection_status
+    
+    # Mission management slots
+    @Slot()
+    def request_mission_list(self) -> bool:
+        """Request mission list from vehicle"""
+        if self._mission_manager:
+            return self._mission_manager.request_mission_list()
+        return False
+    
+    @Slot('QVariantList')
+    def upload_mission(self, mission_items) -> bool:
+        """Upload mission to vehicle"""
+        if self._mission_manager:
+            return self._mission_manager.upload_mission(mission_items)
+        return False
+    
+    @Slot()
+    def download_mission(self) -> 'QVariantList':
+        """Download mission from vehicle"""
+        if self._mission_manager:
+            return self._mission_manager.download_mission()
+        return []
+    
+    @Slot('QVariantMap')
+    def add_waypoint(self, waypoint) -> bool:
+        """Add a waypoint to the mission"""
+        if self._mission_manager:
+            return self._mission_manager.add_waypoint(waypoint)
+        return False
+    
+    @Slot()
+    def clear_mission(self) -> bool:
+        """Clear the mission"""
+        if self._mission_manager:
+            return self._mission_manager.clear_mission()
+        return False
+    
+    @Slot()
+    def get_mission_items(self) -> 'QVariantList':
+        """Get all mission items"""
+        if self._mission_manager:
+            return self._mission_manager.get_mission_items()
+        return []
+    
+    @Slot()
+    def get_current_mission_index(self) -> int:
+        """Get current mission index"""
+        if self._mission_manager:
+            return self._mission_manager.get_current_mission_index()
+        return 0
+    
+    @Slot(int)
+    def set_current_mission_index(self, index: int) -> bool:
+        """Set current mission index"""
+        if self._mission_manager:
+            return self._mission_manager.set_current_mission_index(index)
+        return False
+    
+    # Parameter management slots
+    @Slot()
+    def request_parameter_list(self) -> bool:
+        """Request parameter list from vehicle"""
+        self._received_parameters = {}
+        self._expected_parameters = None
+        self._last_param_time = time.time()
+        return self._parameter_manager.request_parameter_list()
+    
+    @Slot(str, float)
+    def set_parameter(self, param_id: str, param_value: float) -> bool:
+        """Set a parameter on the vehicle"""
+        if self._parameter_manager:
+            return self._parameter_manager.set_parameter(param_id, param_value)
+        return False
+    
+    @Slot(str)
+    def request_parameter(self, param_id: str) -> bool:
+        """Request a parameter from the vehicle"""
+        if self._parameter_manager:
+            return self._parameter_manager.request_parameter(param_id)
+        return False
+    
+    # Command management slots
+    @Slot(bool)
+    def arm_disarm(self, arm: bool) -> bool:
+        """Arm or disarm the vehicle"""
+        if self._command_manager:
+            return self._command_manager.arm_disarm(arm)
+        return False
+    
+    @Slot(str)
+    def set_flight_mode(self, mode: str) -> bool:
+        """Set flight mode"""
+        if self._command_manager:
+            return self._command_manager.set_flight_mode(mode)
+        return False
+    
+    @Slot(int, int, float, float, float, float, float, float, float)
+    def send_command_long(self, command: int, confirmation: int = 0,
+                         param1: float = 0, param2: float = 0, param3: float = 0,
+                         param4: float = 0, param5: float = 0, param6: float = 0,
+                         param7: float = 0) -> bool:
+        """Send a long command to the vehicle"""
+        if self._command_manager:
+            return self._command_manager.send_command_long(command, confirmation,
+                                                        param1, param2, param3, param4,
+                                                        param5, param6, param7)
+        return False
+
+    def update_gps_position(self, lat, lon, alt):
+        self._latitude = lat
+        self._longitude = lon
+        self._altitude = alt
+        self.gpsLatitudeChanged.emit(lat)
+        self.gpsLongitudeChanged.emit(lon)
+        self.gpsAltitudeChanged.emit(alt)
+    
+    def update_attitude(self, roll, pitch, yaw):
+        self._roll = roll
+        self._pitch = pitch
+        self._yaw = yaw
+        self._heading = yaw
+        self.rollChanged.emit(roll)
+        self.pitchChanged.emit(pitch)
+        self.yawChanged.emit(yaw)
+        self.headingChanged.emit(yaw)
+
+    def update_battery(self, voltage, current, remaining):
+        self._battery_voltage = voltage
+        self._battery_current = current
+        self._battery_remaining = remaining
+        self.batteryVoltageChanged.emit(voltage)
+        self.batteryCurrentChanged.emit(current)
+        self.batteryRemainingChanged.emit(remaining)
+    
+    @Property(float, notify=gpsLatitudeChanged)
+    def latitude(self):
+        return self._latitude
+
+    @Property(float, notify=gpsLongitudeChanged)
+    def longitude(self):
+        return self._longitude
+
+    @Property(float, notify=gpsAltitudeChanged)
+    def altitude(self):
+        return self._altitude
+
+    @Property(float, notify=rollChanged)
+    def roll(self):
+        return self._roll
+
+    @Property(float, notify=pitchChanged)
+    def pitch(self):
+        return self._pitch
+
+    @Property(float, notify=yawChanged)
+    def yaw(self):
+        return self._yaw
+
+    @Property(float, notify=headingChanged)
+    def heading(self):
+        return self._heading
+
+    @Property(float, notify=batteryVoltageChanged)
+    def battery_voltage(self):
+        return self._battery_voltage
+
+    @Property(float, notify=batteryCurrentChanged)
+    def battery_current(self):
+        return self._battery_current
+
+    @Property(float, notify=batteryRemainingChanged)
+    def battery_remaining(self):
+        return self._battery_remaining
+
+    @Property(int, notify=gpsSatellitesChanged)
+    def gps_satellites(self):
+        return self._gps_satellites
+
+    @Property(float, notify=gpsHdopChanged)
+    def gps_hdop(self):
+        return self._gps_hdop
+
+    @Property(float, notify=gpsVdopChanged)
+    def gps_vdop(self):
+        return self._gps_vdop
+
+    @Property(bool, notify=gpsFixChanged)
+    def gps_fix(self):
+        return self._gps_fix
+
+    @Property(float, notify=airspeedChanged)
+    def airspeed(self):
+        return self._airspeed
+
+    @Property(float, notify=groundspeedChanged)
+    def groundspeed(self):
+        return self._groundspeed
+
+    @Property(float, notify=climbRateChanged)
+    def climb_rate(self):
+        return self._climb_rate
+
+    @Property(bool, notify=armedChanged)
+    def armed(self):
+        return self._armed
+
+    @Property(str, notify=modeChanged)
+    def mode(self):
+        return self._mode
+
+    @Property(float, notify=throttleChanged)
+    def throttle(self):
+        return self._throttle
+
+    @Property(object, constant=True)
+    def mission_manager(self):
+        return self._mission_manager
