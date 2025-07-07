@@ -52,9 +52,9 @@ class DroneKitSerialConnector(QObject):
     mission_completed = Signal()  # mission completed
     mission_upload_complete = Signal(bool, str)  # success, message
     mission_download_complete = Signal(bool, str)  # success, message
-    parameters_received = Signal(object)  # parameters dict
-    parameter_updated = Signal(str, object)  # parameter name, value
-    parameter_write_complete = Signal(bool, str)  # success, message
+    parameters_received = Signal(list)
+    parameter_updated = Signal(str, float)
+    parameter_write_complete = Signal(str, bool)
 
     # Enums für Connection-Status
     CONNECTION_STATUS_DISCONNECTED = 0
@@ -88,7 +88,7 @@ class DroneKitSerialConnector(QObject):
         # Automatisch nach verfügbaren Ports suchen beim Start
         # Verwende QTimer.singleShot nur im Hauptthread
         if parent:
-            QTimer.singleShot(500, self.load_ports)  # Nach 500ms, um UI nicht zu blockieren
+        QTimer.singleShot(500, self.load_ports)  # Nach 500ms, um UI nicht zu blockieren
         
         print("DroneKitSerialConnector initialisiert")
 
@@ -251,7 +251,7 @@ class DroneKitSerialConnector(QObject):
         self._stop_event.clear()
         
         return True
-
+                
     def _set_connection_status(self, status):
         """Setzt den Verbindungsstatus und emittiert Signale"""
         if self._connection_status != status:
@@ -361,3 +361,62 @@ class DroneKitSerialConnector(QObject):
     def port(self):
         """Gibt den aktuellen Port zurück"""
         return self._port
+
+    def fetch_parameters(self):
+        """Lädt alle Parameter vom FC und emittiert parameters_received"""
+        if not self._drone_connector or not self._is_connected:
+            print("[MAVLINK] Nicht verbunden, kann keine Parameter laden.")
+            self.parameters_received.emit([])
+            return
+        params = []
+        try:
+            self._drone_connector.connection.param_list_send()
+            start_time = time.time()
+            timeout = 30
+            while time.time() - start_time < timeout:
+                msg = self._drone_connector.connection.recv_match(type='PARAM_VALUE', blocking=False)
+                if msg is None:
+                    time.sleep(0.1)
+                    continue
+                param_id = msg.param_id.decode('utf-8').rstrip('\x00')
+                param_value = msg.param_value
+                param_type = msg.param_type
+                params.append({
+                    'name': param_id,
+                    'value': param_value,
+                    'type': param_type,
+                    'index': msg.param_index,
+                    'count': msg.param_count
+                })
+                if msg.param_index + 1 >= msg.param_count:
+                    break
+            print(f"[MAVLINK] {len(params)} Parameter geladen.")
+            self.parameters_received.emit(params)
+        except Exception as e:
+            print(f"[MAVLINK] Fehler beim Laden der Parameter: {e}")
+            self.parameters_received.emit([])
+
+    def write_parameter(self, name, value):
+        """Setzt einen Parameter am FC und emittiert parameter_write_complete"""
+        if not self._drone_connector or not self._is_connected:
+            print("[MAVLINK] Nicht verbunden, kann Parameter nicht setzen.")
+            self.parameter_write_complete.emit(name, False)
+            return
+        try:
+            self._drone_connector.connection.param_set_send(name, float(value))
+            # Warte auf Bestätigung
+            tstart = time.time()
+            acked = False
+            while time.time() - tstart < 2:
+                ack = self._drone_connector.connection.recv_match(type='PARAM_VALUE', blocking=False)
+                if ack and ack.param_id.decode('utf-8').rstrip('\x00') == name:
+                    acked = True
+                    break
+                time.sleep(0.1)
+            self.parameter_write_complete.emit(name, acked)
+        except Exception as e:
+            print(f"[MAVLINK] Fehler beim Setzen von {name}: {e}")
+            self.parameter_write_complete.emit(name, False)
+
+    def is_connected(self):
+        return self._is_connected

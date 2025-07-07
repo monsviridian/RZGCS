@@ -48,10 +48,10 @@ class TelemetryLogger:
             self.vehicle = connect(self.port, wait_ready=True, baud=self.baudrate)
             print("Connected!")
             print("Mode:", self.vehicle.mode.name)
-            self.connected = True
-            self.log_system_info(f"[SYSTEM INFO] Verbunden mit {self.port} bei {self.baudrate} Baud")
+                self.connected = True
+                self.log_system_info(f"[SYSTEM INFO] Verbunden mit {self.port} bei {self.baudrate} Baud")
             self.log_system_info(f"[SYSTEM INFO] Fahrzeugtyp: {self.vehicle.type}, Autopilot: {self.vehicle.autopilot}")
-            return True
+                return True
         except Exception as e:
             print(f"Fehler beim Verbinden: {e}")
             return False

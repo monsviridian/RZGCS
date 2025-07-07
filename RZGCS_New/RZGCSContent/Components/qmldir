@@ -1,3 +1,0 @@
-module Components
-singleton BusyIndicatorManager 1.0 BusyIndicatorManager.qml
-BusyIndicator 1.0 BusyIndicator.qml

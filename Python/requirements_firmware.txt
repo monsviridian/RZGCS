@@ -1,0 +1,5 @@
+# Firmware flashing dependencies
+stm32loader>=0.5.0
+pyserial>=3.5
+requests>=2.25.0
+intelhex>=2.3.0 

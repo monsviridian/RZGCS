@@ -342,7 +342,7 @@ Qt6OpenGL_DIR:PATH=C:/Qt/6.8.3/mingw_64/lib/cmake/Qt6OpenGL
 Qt6QmlAssetDownloader_DIR:PATH=C:/Qt/6.8.3/mingw_64/lib/cmake/Qt6QmlAssetDownloader
 
 //The directory containing a CMake configuration file for Qt6QmlCompilerPlusPrivateTools.
-Qt6QmlCompilerPlusPrivateTools_DIR:PATH=Qt6QmlCompilerPlusPrivateTools_DIR-NOTFOUND
+Qt6QmlCompilerPlusPrivateTools_DIR:PATH=C:/Qt/6.9.1/mingw_64/lib/cmake/Qt6QmlCompilerPlusPrivateTools
 
 //The directory containing a CMake configuration file for Qt6QmlIntegration.
 Qt6QmlIntegration_DIR:PATH=C:/Qt/6.8.3/mingw_64/lib/cmake/Qt6QmlIntegration
@@ -547,7 +547,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=10
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=9
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
