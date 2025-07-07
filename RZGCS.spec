@@ -2,10 +2,10 @@
 
 
 a = Analysis(
-    ['Python\\main.py'],
+    ['Python\\dronekit_main.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('RZGCSContent', 'RZGCSContent'), ('Python', 'Python')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -32,7 +32,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['Assets\\icon.svg'],
+    icon=['RZGCSContent\\Assets\\logo_base.png'],
 )
 coll = COLLECT(
     exe,

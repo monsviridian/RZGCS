@@ -528,6 +528,15 @@ class MavlinkSerialConnector(QObject):
     def is_connected(self):
         return self.connected
 
+def get_qml_base_path():
+    """Ermittelt den Basis-Pfad für QML-Dateien, kompatibel mit PyInstaller und Entwicklung"""
+    if hasattr(sys, '_MEIPASS'):
+        # PyInstaller: _MEIPASS ist das temp-Verzeichnis mit allen Ressourcen
+        return Path(sys._MEIPASS) / "RZGCSContent"
+    else:
+        # Entwicklung: Relativ zum Projektverzeichnis
+        return Path(__file__).parent.parent / "RZGCSContent"
+
 def main():
     # Qt-Anwendung initialisieren
     QCoreApplication.setApplicationName("RZGCS")
@@ -736,25 +745,29 @@ def main():
         print("[OK] messageManager konnte nicht als Context Property gesetzt werden")
         message_manager.addMessage("Context Property Test fehlgeschlagen", 3)
     
-    # Pfad für QML-Dateien konfigurieren
-    qml_path = Path(__file__).parent.parent
-    engine.addImportPath(str(qml_path))
+    # QML-Dateipfad korrekt bestimmen
+    qml_base_path = get_qml_base_path()
+    qml_file = qml_base_path / "App.qml"
+    qml_file_path = str(qml_file)
+    print(f"Lade Hauptanwendungs-QML-Datei: {qml_file_path}")
+    message_manager.addMessage(f"Lade Hauptanwendungs-QML-Datei: {qml_file_path}", 1)
     
     # QML-Import-Pfade konfigurieren
-    QDir.addSearchPath("icon", str(qml_path / "icon"))
-    QDir.addSearchPath("qmlimport", str(qml_path / "qmlimport"))
-    QDir.addSearchPath("assets", str(qml_path / "assets"))
-    QDir.addSearchPath("components", str(qml_path / "RZGCSContent" / "Components"))
-    QDir.addSearchPath("images", str(qml_path / "RZGCSContent" / "images"))
-    QDir.addSearchPath("Connection", str(qml_path / "RZGCSContent" / "Connection"))
+    engine.addImportPath(str(qml_base_path))
+    QDir.addSearchPath("icon", str(qml_base_path / "icon"))
+    QDir.addSearchPath("qmlimport", str(qml_base_path / "qmlimport"))
+    QDir.addSearchPath("assets", str(qml_base_path / "assets"))
+    QDir.addSearchPath("components", str(qml_base_path / "Components"))
+    QDir.addSearchPath("images", str(qml_base_path / "images"))
+    QDir.addSearchPath("Connection", str(qml_base_path / "Connection"))
     
     # Test-Messages für QML-Pfad-Konfiguration
     message_manager.addMessage("QML-Pfade konfiguriert", 1)
     
     # Dummy-Module-Pfad hinzufügen
-    dummy_qml_path = qml_path / "RZGCSContent" / "Dummy"
+    dummy_qml_path = qml_base_path / "Dummy"
     os.makedirs(str(dummy_qml_path), exist_ok=True)
-    engine.addImportPath(str(qml_path / "RZGCSContent"))
+    engine.addImportPath(str(qml_base_path))
     
     # Test-Messages für Dummy-Module-Pfad
     message_manager.addMessage("Dummy-Module-Pfad hinzugefügt", 1)
@@ -773,14 +786,8 @@ def main():
     message_manager.addMessage("MessageManager als QML-Typ registriert", 1)
     
     # Debug-Ausgabe für QML-Pfad
-    print(f"QML-Pfad: {qml_path}")
-    message_manager.addMessage(f"QML-Pfad: {qml_path}", 1)
-    
-    # Hauptanwendungs-QML laden
-    qml_file = Path(__file__).parent.parent / "RZGCSContent" / "App.qml"
-    qml_file_path = str(qml_file)
-    print(f"Lade Hauptanwendungs-QML-Datei: {qml_file_path}")
-    message_manager.addMessage(f"Lade Hauptanwendungs-QML-Datei: {qml_file_path}", 1)
+    print(f"QML-Pfad: {qml_base_path}")
+    message_manager.addMessage(f"QML-Pfad: {qml_base_path}", 1)
     
     # Prüfen, ob die Datei existiert
     if not qml_file.exists():
