@@ -1,5 +1,0 @@
-digraph frontend_imports {
-    rankdir=TB;
-    node [shape=box, style=filled, fillcolor="#99ff99", fontname=Arial, fontsize=10];
-    edge [fontname=Arial, fontsize=8];
-}
