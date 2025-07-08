@@ -14,6 +14,7 @@ Item {
     property bool showCompass: true        // Show compass directions
     property string mapStyle: "satellite"  // Options: "satellite", "terrain", "night"
     property real zoomLevel: 1.0           // Zoom level 1.0 = normal
+    property bool showPath: false // Wird von außen gesetzt
     
     signal mapClicked(real latitude, real longitude)
     
@@ -77,37 +78,196 @@ Item {
             model: waypointList
             delegate: Rectangle {
                 id: waypoint
-                width: 10
-                height: 10
-                radius: 5
-                color: "yellow"
+                width: modelData.type === 'home' ? 16 : (modelData.type === 'target' ? 20 : 12)
+                height: modelData.type === 'home' ? 16 : (modelData.type === 'target' ? 20 : 12)
+                radius: width / 2
+                
+                // Farben basierend auf Typ
+                color: {
+                    if (modelData.type === 'home') return "#00ff00"      // Grün für Home
+                    else if (modelData.type === 'target') return "#ff0000" // Rot für Ziel
+                    else return "#ffff00"                                // Gelb für Waypoints
+                }
+                
                 border.color: "white"
-                border.width: 1
+                border.width: 2
                 x: mapBackground.width / 2 + (modelData.longitude - droneLongitude) * 50000 * zoomLevel
                 y: mapBackground.height / 2 - (modelData.latitude - droneLatitude) * 50000 * zoomLevel
                 
-                // Pulse animation like in CoD
+                // Label für Nummerierung
+                Text {
+                    anchors.centerIn: parent
+                    text: modelData.label || (modelData.index >= 0 ? (modelData.index + 1).toString() : "")
+                    color: "black"
+                    font.bold: true
+                    font.pixelSize: modelData.type === 'home' ? 8 : (modelData.type === 'target' ? 10 : 6)
+                    visible: modelData.type !== 'waypoint' || modelData.index >= 0
+                }
+                
+                // Tooltip
+                ToolTip.visible: codMinimap.containsMouse
+                ToolTip.text: {
+                    var typeText = modelData.type === 'home' ? 'HOME' : 
+                                  modelData.type === 'target' ? 'ZIEL' : 'WEGPUNKT'
+                    return typeText + ": " + modelData.latitude.toFixed(5) + ", " + modelData.longitude.toFixed(5) + 
+                           "\nHöhe: " + modelData.altitude.toFixed(0) + "m"
+                }
+                
+                // Pulse animation für Home und Ziel
                 Rectangle {
                     id: pulse
                     anchors.centerIn: parent
                     color: "transparent"
-                    border.color: "yellow"
+                    border.color: parent.color
                     border.width: 2
                     opacity: 0.7
+                    visible: modelData.type === 'home' || modelData.type === 'target'
                     
                     SequentialAnimation {
-                        running: true
+                        running: visible
                         loops: Animation.Infinite
                         
                         ParallelAnimation {
-                            NumberAnimation { target: pulse; property: "width"; from: 10; to: 30; duration: 1000 }
-                            NumberAnimation { target: pulse; property: "height"; from: 10; to: 30; duration: 1000 }
-                            NumberAnimation { target: pulse; property: "opacity"; from: 0.7; to: 0; duration: 1000 }
+                            NumberAnimation { target: pulse; property: "width"; from: parent.width; to: parent.width * 3; duration: 2000 }
+                            NumberAnimation { target: pulse; property: "height"; from: parent.height; to: parent.height * 3; duration: 2000 }
+                            NumberAnimation { target: pulse; property: "opacity"; from: 0.7; to: 0; duration: 2000 }
                         }
                         
-                        PropertyAction { target: pulse; property: "width"; value: 10 }
-                        PropertyAction { target: pulse; property: "height"; value: 10 }
+                        PropertyAction { target: pulse; property: "width"; value: parent.width }
+                        PropertyAction { target: pulse; property: "height"; value: parent.height }
                         PropertyAction { target: pulse; property: "opacity"; value: 0.7 }
+                    }
+                }
+                
+                // Kontext-Menü für Waypoints
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    
+                    onClicked: function(mouse) {
+                        if (mouse.button === Qt.RightButton && modelData.type === 'waypoint') {
+                            // Kontext-Menü für Waypoint-Aktionen
+                            waypointContextMenu.x = mouse.x
+                            waypointContextMenu.y = mouse.y
+                            waypointContextMenu.index = modelData.index
+                            waypointContextMenu.type = 'waypoint'
+                            waypointContextMenu.open()
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Marker-Logik: Home/Ziel nur anzeigen, wenn gesetzt
+        Repeater {
+            model: waypointList.filter(function(wp) {
+                if (wp.type === 'home') return wp.latitude !== 0 || wp.longitude !== 0
+                if (wp.type === 'target') return wp.latitude !== 0 || wp.longitude !== 0
+                return true
+            })
+            delegate: Rectangle {
+                id: homeMarker
+                width: 16
+                height: 16
+                radius: width / 2
+                color: "#00ff00" // Grün für Home
+                border.color: "white"
+                border.width: 2
+                x: mapBackground.width / 2 + (modelData.longitude - droneLongitude) * 50000 * zoomLevel
+                y: mapBackground.height / 2 - (modelData.latitude - droneLatitude) * 50000 * zoomLevel
+                
+                // Label für Nummerierung
+                Text {
+                    anchors.centerIn: parent
+                    text: modelData.label || (modelData.index >= 0 ? (modelData.index + 1).toString() : "")
+                    color: "black"
+                    font.bold: true
+                    font.pixelSize: 8
+                    visible: modelData.type !== 'waypoint' || modelData.index >= 0
+                }
+                
+                // Tooltip
+                ToolTip.visible: codMinimap.containsMouse
+                ToolTip.text: {
+                    var typeText = modelData.type === 'home' ? 'HOME' : 'ZIEL'
+                    return typeText + ": " + modelData.latitude.toFixed(5) + ", " + modelData.longitude.toFixed(5) + 
+                           "\nHöhe: " + modelData.altitude.toFixed(0) + "m"
+                }
+                
+                // Pulse animation für Home und Ziel
+                Rectangle {
+                    id: pulse
+                    anchors.centerIn: parent
+                    color: "transparent"
+                    border.color: parent.color
+                    border.width: 2
+                    opacity: 0.7
+                    visible: modelData.type === 'home' || modelData.type === 'target'
+                    
+                    SequentialAnimation {
+                        running: visible
+                        loops: Animation.Infinite
+                        
+                        ParallelAnimation {
+                            NumberAnimation { target: pulse; property: "width"; from: parent.width; to: parent.width * 3; duration: 2000 }
+                            NumberAnimation { target: pulse; property: "height"; from: parent.height; to: parent.height * 3; duration: 2000 }
+                            NumberAnimation { target: pulse; property: "opacity"; from: 0.7; to: 0; duration: 2000 }
+                        }
+                        
+                        PropertyAction { target: pulse; property: "width"; value: parent.width }
+                        PropertyAction { target: pulse; property: "height"; value: parent.height }
+                        PropertyAction { target: pulse; property: "opacity"; value: 0.7 }
+                    }
+                }
+                
+                // Kontext-Menü für Home/Ziel entfernen
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.RightButton
+                    
+                    onClicked: function(mouse) {
+                        if (mouse.button === Qt.RightButton) {
+                            waypointContextMenu.x = mouse.x
+                            waypointContextMenu.y = mouse.y
+                            waypointContextMenu.index = modelData.index
+                            waypointContextMenu.type = modelData.type
+                            waypointContextMenu.open()
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Kontext-Menü für Home/Ziel entfernen
+        Menu {
+            id: waypointContextMenu
+            property int index: -1
+            property string type: ""
+            
+            MenuItem {
+                text: "Wegpunkt entfernen"
+                visible: waypointContextMenu.type === 'waypoint'
+                onTriggered: {
+                    if (typeof missionViewModel !== 'undefined' && missionViewModel) {
+                        missionViewModel.removeWaypoint(waypointContextMenu.index)
+                    }
+                }
+            }
+            MenuItem {
+                text: "Home entfernen"
+                visible: waypointContextMenu.type === 'home'
+                onTriggered: {
+                    if (typeof missionViewModel !== 'undefined' && missionViewModel) {
+                        missionViewModel.setHomePosition(0, 0, 0)
+                    }
+                }
+            }
+            MenuItem {
+                text: "Ziel entfernen"
+                visible: waypointContextMenu.type === 'target'
+                onTriggered: {
+                    if (typeof missionViewModel !== 'undefined' && missionViewModel) {
+                        missionViewModel.setTargetPosition(0, 0, 0)
                     }
                 }
             }
@@ -115,13 +275,29 @@ Item {
         
         MouseArea {
             anchors.fill: parent
-            onClicked: {
-                // Beispiel-Umrechnung: Passe ggf. an deine Projektion an!
+            onClicked: function(mouse) {
+                // Einfachklick: Waypoint hinzufügen
                 var dx = mouse.x - mapBackground.width/2
                 var dy = mapBackground.height/2 - mouse.y
                 var lon = root.droneLongitude + dx / (50000 * root.zoomLevel)
                 var lat = root.droneLatitude + dy / (50000 * root.zoomLevel)
                 root.mapClicked(lat, lon)
+            }
+            onDoubleClicked: function(mouse) {
+                var dx = mouse.x - mapBackground.width/2
+                var dy = mapBackground.height/2 - mouse.y
+                var lon = root.droneLongitude + dx / (50000 * root.zoomLevel)
+                var lat = root.droneLatitude + dy / (50000 * root.zoomLevel)
+                // Home/Ziel setzen je nach Status
+                if (typeof missionViewModel !== 'undefined' && missionViewModel) {
+                    var homeSet = missionViewModel.homeLatitude !== 0 || missionViewModel.homeLongitude !== 0
+                    var targetSet = missionViewModel.targetLatitude !== 0 || missionViewModel.targetLongitude !== 0
+                    if (!homeSet) {
+                        missionViewModel.setHomePosition(lat, lon, 0)
+                    } else if (!targetSet) {
+                        missionViewModel.setTargetPosition(lat, lon, 0)
+                    }
+                }
             }
         }
     }
@@ -224,4 +400,7 @@ Item {
             }
         }
     }
+    
+    // Flugweg zeichnen
+    // Entferne den alten Path-Canvas außerhalb von mapBackground
 }

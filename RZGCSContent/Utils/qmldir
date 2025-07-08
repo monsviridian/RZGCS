@@ -1,0 +1,2 @@
+module Utils
+singleton DroneTheme 1.0 DroneTheme.qml 

@@ -51,7 +51,7 @@ Rectangle {
             }
 
             Text {
-                text: "Last Update: " + (sensorViewModel ? sensorViewModel.last_update_seconds.toFixed(1) : "0.0") + "s ago"
+                text: "Last Update: " + (sensorViewModel && sensorViewModel.last_update_seconds ? sensorViewModel.last_update_seconds.toFixed(1) : "0.0") + "s ago"
                 color: "#aaa"
                 font.pixelSize: 14
             }
@@ -89,7 +89,7 @@ Rectangle {
                         }
 
                         Text {
-                            text: typeof sensorViewModel.alt === "number"
+                            text: (typeof sensorViewModel.alt === "number" && sensorViewModel.alt !== null)
                                 ? sensorViewModel.alt.toFixed(1)
                                 : "—" + " m"
                             color: "#3498db"
@@ -136,7 +136,7 @@ Rectangle {
                         }
 
                         Text {
-                            text: typeof sensorViewModel.groundspeed === "number"
+                            text: (typeof sensorViewModel.groundspeed === "number" && sensorViewModel.groundspeed !== null)
                                 ? sensorViewModel.groundspeed.toFixed(1)
                                 : "—" + " m/s"
                             color: "#e74c3c"
@@ -183,7 +183,7 @@ Rectangle {
                         }
 
                         Text {
-                            text: typeof sensorViewModel.voltage === "number"
+                            text: (typeof sensorViewModel.voltage === "number" && sensorViewModel.voltage !== null)
                                 ? sensorViewModel.voltage.toFixed(2)
                                 : "—" + " V"
                             color: "#f39c12"

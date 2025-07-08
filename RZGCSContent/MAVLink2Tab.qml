@@ -5,6 +5,20 @@ import QtQuick.Layouts 1.15
 Rectangle {
     property var protocolConnectionManager
     property var mavlinkV2Backend
+    property var waypointList: []
+
+    function updateWaypointList() {
+        if (mavlinkV2Backend && mavlinkV2Backend.mission_manager && mavlinkV2Backend.mission_manager.mission_items) {
+            waypointList = mavlinkV2Backend.mission_manager.mission_items.map(function(item) {
+                return { lat: item.x, lon: item.y, alt: item.z }
+            })
+        } else {
+            waypointList = []
+        }
+        console.log("D: WaypointList updated:", JSON.stringify(waypointList))
+        markerCanvas.requestPaint();
+    }
+
     id: root
     color: "#181c1f"
     anchors.fill: parent
@@ -20,6 +34,13 @@ Rectangle {
             messageManager.addMessage("MAVLink 2 Tab loaded - Ready for advanced mission planning and telemetry", 1)
             messageManager.addMessage("To connect: Start SITL simulator or connect real flight controller to tcp:127.0.0.1:5760", 1)
         }
+        updateWaypointList()
+    }
+
+    Connections {
+        target: mavlinkV2Backend && mavlinkV2Backend.mission_manager ? mavlinkV2Backend.mission_manager : null
+        onMissionItemsChanged: updateWaypointList()
+        onMissionItemAdded: updateWaypointList()
     }
 
     ColumnLayout {
@@ -310,73 +331,129 @@ Rectangle {
                     id: codMinimap
                     anchors.fill: parent
                     anchors.margins: 8
+                    // Drohnenposition und Heading
+                    droneLatitude: missionViewModel ? missionViewModel.droneLatitude : 51.505600
+                    droneLongitude: missionViewModel ? missionViewModel.droneLongitude : 7.452400
+                    droneAltitude: missionViewModel ? missionViewModel.droneAltitude : 100.0
+                    droneHeading: missionViewModel ? missionViewModel.droneHeading : 0.0
+                    // Waypoints direkt übergeben
+                    waypointList: missionViewModel ? missionViewModel.waypointList : []
                     
-                    // Drone position from MAVLink backend
-                    droneLatitude: {
-                        if ((protocolConnectionManager && protocolConnectionManager.isConnected) || (mavlinkV2Backend && mavlinkV2Backend.connected)) {
-                            let backend = protocolConnectionManager.mavlinkV2Backend;
-                            return backend && backend.latitude ? backend.latitude : 51.505600;
+                    // Map-Klick Handler für Waypoints
+                    onMapClicked: {
+                        console.log("D: Map clicked at:", latitude, longitude);
+                        
+                        // Debug: Prüfe verfügbare Backends
+                        console.log("D: missionViewModel available:", typeof missionViewModel !== "undefined");
+                        
+                        var alt = 50.0; // Default altitude
+                        
+                        // Versuche Altitude aus Backend zu bekommen
+                        if (missionViewModel && typeof missionViewModel.droneAltitude === "number") {
+                            alt = missionViewModel.droneAltitude;
                         }
-                        return 51.505600;
-                    }
-                    
-                    droneLongitude: {
-                        if ((protocolConnectionManager && protocolConnectionManager.isConnected) || (mavlinkV2Backend && mavlinkV2Backend.connected)) {
-                            let backend = protocolConnectionManager.mavlinkV2Backend;
-                            return backend && backend.longitude ? backend.longitude : 7.452400;
-                        }
-                        return 7.452400;
-                    }
-                    
-                    droneAltitude: {
-                        if ((protocolConnectionManager && protocolConnectionManager.isConnected) || (mavlinkV2Backend && mavlinkV2Backend.connected)) {
-                            let backend = protocolConnectionManager.mavlinkV2Backend;
-                            return backend && backend.altitude ? backend.altitude : 100.0;
-                        }
-                        return 100.0;
-                    }
-                    
-                    droneHeading: {
-                        if ((protocolConnectionManager && protocolConnectionManager.isConnected) || (mavlinkV2Backend && mavlinkV2Backend.connected)) {
-                            let backend = protocolConnectionManager.mavlinkV2Backend;
-                            return backend && backend.heading ? backend.heading : 0.0;
-                        }
-                        return 0.0;
-                    }
-                    
-                    // Waypoints from mission manager
-                    waypointList: {
-                        if ((protocolConnectionManager && protocolConnectionManager.isConnected) || (mavlinkV2Backend && mavlinkV2Backend.connected)) {
-                            let backend = protocolConnectionManager.mavlinkV2Backend;
-                            if (backend && backend.mission_manager && backend.mission_manager.mission_items) {
-                                return backend.mission_manager.mission_items.map(function(item) {
-                                    return {
-                                        latitude: item.x,
-                                        longitude: item.y,
-                                        altitude: item.z
-                                    };
-                                });
+                        
+                        console.log("D: Using altitude:", alt);
+                        
+                        // Waypoint über missionViewModel hinzufügen
+                        if (typeof missionViewModel !== "undefined" && missionViewModel) {
+                            console.log("D: Adding waypoint via missionViewModel.addWaypointToBackend");
+                            missionViewModel.addWaypointToBackend(latitude, longitude, alt);
+                            
+                            if (typeof messageManager !== 'undefined' && messageManager) {
+                                messageManager.addMessage(`Waypoint added: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`, 4);
+                            }
+                        } else {
+                            console.log("D: No missionViewModel available for waypoint addition!");
+                            if (typeof messageManager !== 'undefined' && messageManager) {
+                                messageManager.addMessage("No mission manager available for waypoint addition", 3);
                             }
                         }
-                        return [];
                     }
                     
-                    // Map style selector
-                    mapStyle: "satellite"  // Can be "satellite", "terrain", "night"
-                    zoomLevel: 1.0
-                    showCompass: true
-                    onMapClicked: {
-                        var alt = mavlinkV2Backend.altitude !== undefined ? mavlinkV2Backend.altitude : 50.0;
-                        var waypoint = {
-                            x: latitude,
-                            y: longitude,
-                            z: alt,
-                            command: 16, // MAV_CMD_NAV_WAYPOINT
-                            frame: 0,    // MAV_FRAME_GLOBAL
-                            autocontinue: 1
-                        };
-                        if (mavlinkV2Backend && mavlinkV2Backend.mission_manager) {
-                            mavlinkV2Backend.mission_manager.add_waypoint(waypoint);
+                    // DEBUG: Zeige aktuelle Waypoint-Liste aus missionViewModel
+                    Component.onCompleted: {
+                        if (typeof missionViewModel !== 'undefined' && missionViewModel) {
+                            console.log("[QML] missionViewModel.waypointList:", JSON.stringify(missionViewModel.waypointList));
+                        } else {
+                            console.log("[QML] missionViewModel nicht verfügbar");
+                        }
+                    }
+                    
+                    // Entferne den eigenen Marker-Repeater (Notfall-Variante)
+                }
+                
+                // Mission Planning Controls
+                Rectangle {
+                    id: missionControls
+                    anchors.bottom: parent.bottom
+                    anchors.right: parent.right
+                    anchors.margins: 10
+                    width: 220
+                    height: 130
+                    color: Qt.rgba(0, 0, 0, 0.8)
+                    radius: 8
+                    border.color: "#444444"
+                    border.width: 1
+                    
+                    property string setMode: "none" // "none", "home", "target"
+                    property bool showPath: false
+                    
+                    Column {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 6
+                        
+                        Text {
+                            text: "Mission Planning"
+                            color: "white"
+                            font.bold: true
+                            font.pixelSize: 12
+                        }
+                        
+                        Row {
+                            spacing: 6
+                            Button {
+                                id: btnSetHome
+                                text: "Set Home"
+                                width: 60
+                                height: 26
+                                font.pixelSize: 10
+                                checkable: true
+                                checked: missionControls.setMode === "home"
+                                onClicked: missionControls.setMode = checked ? "home" : "none"
+                            }
+                            Button {
+                                id: btnSetTarget
+                                text: "Set Target"
+                                width: 70
+                                height: 26
+                                font.pixelSize: 10
+                                checkable: true
+                                checked: missionControls.setMode === "target"
+                                onClicked: missionControls.setMode = checked ? "target" : "none"
+                            }
+                            Button {
+                                id: btnDrawPath
+                                text: missionControls.showPath ? "Hide Path" : "Draw Path"
+                                width: 70
+                                height: 26
+                                font.pixelSize: 10
+                                checkable: true
+                                checked: missionControls.showPath
+                                onClicked: missionControls.showPath = !missionControls.showPath
+                            }
+                        }
+                        
+                        Text {
+                            text: missionControls.setMode === "home" ? "Klicke auf die Karte, um Home zu setzen" : (missionControls.setMode === "target" ? "Klicke auf die Karte, um Ziel zu setzen" : "")
+                            color: "#cccccc"
+                            font.pixelSize: 10
+                        }
+                        Text {
+                            text: "Right-click waypoints for options"
+                            color: "#cccccc"
+                            font.pixelSize: 9
                         }
                     }
                 }

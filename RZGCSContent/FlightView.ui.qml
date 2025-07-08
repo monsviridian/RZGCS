@@ -138,10 +138,10 @@ Rectangle {
                 anchors.fill: parent
                 
                 // Binde die Drohnendaten an die Karte
-                droneLatitude: flightViewModel ? flightViewModel._current_latitude : 0
-                droneLongitude: flightViewModel ? flightViewModel._current_longitude : 0
-                droneAltitude: flightViewModel ? flightViewModel._current_altitude : 0
-                droneHeading: flightViewModel ? flightViewModel._current_heading : 0
+                droneLatitude: flightViewModel && flightViewModel._current_latitude ? flightViewModel._current_latitude : 0
+                droneLongitude: flightViewModel && flightViewModel._current_longitude ? flightViewModel._current_longitude : 0
+                droneAltitude: flightViewModel && flightViewModel._current_altitude ? flightViewModel._current_altitude : 0
+                droneHeading: flightViewModel && flightViewModel._current_heading ? flightViewModel._current_heading : 0
                 
                 // Verbinde Signale
                 onMapClicked: function(lat, lon) {

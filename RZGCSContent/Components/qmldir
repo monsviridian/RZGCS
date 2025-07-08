@@ -1,3 +1,7 @@
 module Components
-singleton BusyIndicatorManager 1.0 BusyIndicatorManager.qml
-BusyIndicator 1.0 BusyIndicator.qml
+TelemetryChart 1.0 TelemetryChart.qml
+DroneButton 1.0 DroneButton.qml
+StatusPanel 1.0 StatusPanel.qml
+ConnectionAlert 1.0 ConnectionAlert.qml
+ModernMessageList 1.0 ModernMessageList.qml
+ModernTabBar 1.0 ModernTabBar.qml

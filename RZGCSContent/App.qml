@@ -19,6 +19,6 @@ Window {
     Loader {
         id: mainLoader
         anchors.fill: parent
-        source: "Screen01.ui.qml"
+        source: "Screen01_modern_test.qml"
     }
 }

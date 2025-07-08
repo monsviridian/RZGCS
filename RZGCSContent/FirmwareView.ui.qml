@@ -348,8 +348,8 @@ Rectangle {
                     }
                     ListView {
                         Layout.fillWidth: true
-                        height: Math.min(200, (firmwareViewModel && firmwareViewModel.selected_ports ? firmwareViewModel.selected_ports.length * 36 : 0))
-                        model: firmwareViewModel ? firmwareViewModel.selected_ports : []
+                        height: Math.min(200, (firmwareViewModel && firmwareViewModel.selected_ports && firmwareViewModel.selected_ports.length ? firmwareViewModel.selected_ports.length * 36 : 0))
+                        model: firmwareViewModel && firmwareViewModel.selected_ports ? firmwareViewModel.selected_ports : []
                         delegate: RowLayout {
                             spacing: 8
                             Text { text: modelData; color: "#00bcd4"; font.pixelSize: 14 }

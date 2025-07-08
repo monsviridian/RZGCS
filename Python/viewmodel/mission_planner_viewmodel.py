@@ -71,11 +71,19 @@ class MissionPlannerViewModel(QObject):
         self._drone_alt = 100.0
         self._drone_heading = 0.0
         
+        # Home- und Ziel-Positionen
+        self._home_lat = 50.110924
+        self._home_lon = 8.682127
+        self._home_alt = 0.0
+        self._target_lat = 50.111000
+        self._target_lon = 8.683000
+        self._target_alt = 50.0
+        
         # Testdaten für Waypoints (werden beim Start angezeigt)
         self._waypoints = [
-            {'lat': 50.110924, 'lon': 8.682127, 'alt': 100},
-            {'lat': 50.111, 'lon': 8.683, 'alt': 110},
-            {'lat': 50.112, 'lon': 8.684, 'alt': 120}
+            {'lat': 50.110924, 'lon': 8.682127, 'alt': 100, 'type': 'waypoint', 'index': 0},
+            {'lat': 50.111, 'lon': 8.683, 'alt': 110, 'type': 'waypoint', 'index': 1},
+            {'lat': 50.112, 'lon': 8.684, 'alt': 120, 'type': 'waypoint', 'index': 2}
         ]
         
         # Verbinden der SerialConnector-Signals
@@ -156,14 +164,76 @@ class MissionPlannerViewModel(QObject):
         """Gibt die aktuelle Ausrichtung der Drohne zurück"""
         return self._drone_heading
     
+    # --- Home- und Ziel-Positionen ---
+    
+    @Property(float)
+    def homeLatitude(self):
+        """Gibt die Home-Breite zurück"""
+        return self._home_lat
+    
+    @Property(float)
+    def homeLongitude(self):
+        """Gibt die Home-Länge zurück"""
+        return self._home_lon
+    
+    @Property(float)
+    def homeAltitude(self):
+        """Gibt die Home-Höhe zurück"""
+        return self._home_alt
+    
+    @Property(float)
+    def targetLatitude(self):
+        """Gibt die Ziel-Breite zurück"""
+        return self._target_lat
+    
+    @Property(float)
+    def targetLongitude(self):
+        """Gibt die Ziel-Länge zurück"""
+        return self._target_lon
+    
+    @Property(float)
+    def targetAltitude(self):
+        """Gibt die Ziel-Höhe zurück"""
+        return self._target_alt
+    
     @Property('QVariantList', notify=waypointListChanged)
     def waypointList(self):
         """Gibt die aktuelle Liste der Wegpunkte für QML zurück"""
-        # Rückgabe als Liste von Dicts mit lat/lon/alt
-        return [
-            {'latitude': wp['lat'], 'longitude': wp['lon'], 'altitude': wp['alt']}
-            for wp in self._waypoints
-        ]
+        # Erstelle erweiterte Liste mit Home, Waypoints und Ziel
+        result = []
+        
+        # Home-Position hinzufügen
+        result.append({
+            'latitude': self._home_lat,
+            'longitude': self._home_lon,
+            'altitude': self._home_alt,
+            'type': 'home',
+            'index': -1,
+            'label': 'HOME'
+        })
+        
+        # Waypoints hinzufügen
+        for i, wp in enumerate(self._waypoints):
+            result.append({
+                'latitude': wp['lat'],
+                'longitude': wp['lon'],
+                'altitude': wp['alt'],
+                'type': wp.get('type', 'waypoint'),
+                'index': wp.get('index', i),
+                'label': f'WP{i+1}'
+            })
+        
+        # Ziel-Position hinzufügen
+        result.append({
+            'latitude': self._target_lat,
+            'longitude': self._target_lon,
+            'altitude': self._target_alt,
+            'type': 'target',
+            'index': len(self._waypoints),
+            'label': 'TARGET'
+        })
+        
+        return result
     
     # --- Mission Management ---
     
@@ -353,6 +423,73 @@ class MissionPlannerViewModel(QObject):
                 print(f"[MISSION] Error sending MAVLink waypoint: {e}")
         
         return result
+    
+    # --- Erweiterte Mission Planning Funktionen ---
+    
+    @Slot(float, float, float)
+    def setHomePosition(self, lat, lon, alt):
+        """Setzt die Home-Position"""
+        self._home_lat = lat
+        self._home_lon = lon
+        self._home_alt = alt
+        self.missionLog.emit(f"Home-Position gesetzt: {lat:.6f}, {lon:.6f}, {alt}m")
+        self.waypointListChanged.emit()
+        print(f"[MISSION] Home-Position gesetzt: {lat}, {lon}, {alt}")
+    
+    @Slot(float, float, float)
+    def setTargetPosition(self, lat, lon, alt):
+        """Setzt die Ziel-Position"""
+        self._target_lat = lat
+        self._target_lon = lon
+        self._target_alt = alt
+        self.missionLog.emit(f"Ziel-Position gesetzt: {lat:.6f}, {lon:.6f}, {alt}m")
+        self.waypointListChanged.emit()
+        print(f"[MISSION] Ziel-Position gesetzt: {lat}, {lon}, {alt}")
+    
+    @Slot()
+    def setCurrentPositionAsHome(self):
+        """Setzt die aktuelle Drohnenposition als Home"""
+        self.setHomePosition(self._drone_lat, self._drone_lon, self._drone_alt)
+    
+    @Slot()
+    def generateRoute(self):
+        """Generiert automatisch eine Route zwischen Home und Ziel"""
+        if len(self._waypoints) == 0:
+            # Einfache Route: Home -> Ziel
+            mid_lat = (self._home_lat + self._target_lat) / 2
+            mid_lon = (self._home_lon + self._target_lon) / 2
+            mid_alt = (self._home_alt + self._target_alt) / 2
+            
+            # Wegpunkt in der Mitte hinzufügen
+            self.addWaypoint(mid_lat, mid_lon, mid_alt)
+            self.missionLog.emit("Automatische Route generiert: Home -> Wegpunkt -> Ziel")
+        else:
+            self.missionLog.emit("Route bereits vorhanden - keine automatische Generierung")
+    
+    @Slot(int, float, float, float)
+    def updateWaypointPosition(self, index, lat, lon, alt):
+        """Aktualisiert die Position eines bestehenden Wegpunkts"""
+        if 0 <= index < len(self._waypoints):
+            self._waypoints[index]['lat'] = lat
+            self._waypoints[index]['lon'] = lon
+            self._waypoints[index]['alt'] = alt
+            self.missionLog.emit(f"Wegpunkt {index+1} aktualisiert: {lat:.6f}, {lon:.6f}, {alt}m")
+            self.waypointListChanged.emit()
+            print(f"[MISSION] Wegpunkt {index} aktualisiert: {lat}, {lon}, {alt}")
+        else:
+            self.missionError.emit(f"Ungültiger Wegpunkt-Index: {index}")
+    
+    @Slot(int)
+    def removeWaypoint(self, index):
+        """Entfernt einen Wegpunkt"""
+        if 0 <= index < len(self._waypoints):
+            removed = self._waypoints.pop(index)
+            self._total_waypoints = len(self._waypoints)
+            self.missionLog.emit(f"Wegpunkt {index+1} entfernt")
+            self.waypointListChanged.emit()
+            print(f"[MISSION] Wegpunkt {index} entfernt: {removed}")
+        else:
+            self.missionError.emit(f"Ungültiger Wegpunkt-Index: {index}")
     
     @Slot()
     def clearWaypoints(self):
