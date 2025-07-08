@@ -26,7 +26,7 @@ def main():
         print(f"Working Directory: {os.getcwd()}")
         print(f"Python Path: {sys.executable}")
         print("=====================")
-        
+    
         # Starte die Hauptanwendung
         dronekit_main_function()
         

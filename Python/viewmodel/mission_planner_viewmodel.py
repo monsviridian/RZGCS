@@ -46,6 +46,7 @@ class MissionPlannerViewModel(QObject):
     missionLog = Signal(str)
     dronePositionChanged = Signal(float, float, float)  # lat, lon, alt
     droneHeadingChanged = Signal(float)  # heading in Grad
+    waypointListChanged = Signal()  # <-- NEU: Signal für QML
 
     def __init__(self, serialConnector, parent=None):
         """
@@ -69,6 +70,13 @@ class MissionPlannerViewModel(QObject):
         self._drone_lon = 8.682127
         self._drone_alt = 100.0
         self._drone_heading = 0.0
+        
+        # Testdaten für Waypoints (werden beim Start angezeigt)
+        self._waypoints = [
+            {'lat': 50.110924, 'lon': 8.682127, 'alt': 100},
+            {'lat': 50.111, 'lon': 8.683, 'alt': 110},
+            {'lat': 50.112, 'lon': 8.684, 'alt': 120}
+        ]
         
         # Verbinden der SerialConnector-Signals
         if self._serialConnector:
@@ -147,6 +155,15 @@ class MissionPlannerViewModel(QObject):
     def droneHeading(self):
         """Gibt die aktuelle Ausrichtung der Drohne zurück"""
         return self._drone_heading
+    
+    @Property('QVariantList', notify=waypointListChanged)
+    def waypointList(self):
+        """Gibt die aktuelle Liste der Wegpunkte für QML zurück"""
+        # Rückgabe als Liste von Dicts mit lat/lon/alt
+        return [
+            {'latitude': wp['lat'], 'longitude': wp['lon'], 'altitude': wp['alt']}
+            for wp in self._waypoints
+        ]
     
     # --- Mission Management ---
     
@@ -252,16 +269,90 @@ class MissionPlannerViewModel(QObject):
     
     @Slot(float, float, float)
     def addWaypoint(self, lat, lon, alt):
-        """Fügt einen Wegpunkt zur aktuellen Mission hinzu"""
+        """
+        Fügt einen Wegpunkt zur Mission hinzu
+        
+        Args:
+            lat: Breitengrad
+            lon: Längengrad  
+            alt: Höhe in Metern
+        """
+        print(f"[MISSION] addWaypoint called: {lat}, {lon}, {alt}")
+        
+        # Wegpunkt zur lokalen Liste hinzufügen
         waypoint = {
             'lat': lat,
-            'lon': lon, 
+            'lon': lon,
             'alt': alt,
-            'command': 16  # MAV_CMD_NAV_WAYPOINT
+            'command': 16,  # MAV_CMD_NAV_WAYPOINT
+            'frame': 0,     # MAV_FRAME_GLOBAL
+            'autocontinue': 1
         }
+        
         self._waypoints.append(waypoint)
-        self.missionLog.emit(f"Wegpunkt hinzugefügt: {lat}, {lon}, {alt}")
-        return len(self._waypoints) - 1  # Index des neuen Wegpunkts
+        self._total_waypoints = len(self._waypoints)
+        
+        print(f"[MISSION] Waypoint added. Total waypoints: {self._total_waypoints}")
+        print(f"[MISSION] Aktuelle Waypoints: {self._waypoints}")
+        
+        # Mission Handler benachrichtigen, falls verfügbar
+        if self._mission_handler:
+            try:
+                self._mission_handler.add_waypoint(waypoint)
+                print(f"[MISSION] Waypoint sent to mission handler")
+            except Exception as e:
+                print(f"[MISSION] Error sending waypoint to mission handler: {e}")
+        
+        # Signal für QML senden
+        self.missionLog.emit(f"Wegpunkt hinzugefügt: {lat:.6f}, {lon:.6f}, {alt}m")
+        print("[DEBUG] Sende waypointListChanged.emit() nach addWaypoint")
+        self.waypointListChanged.emit()  # <-- NEU: QML benachrichtigen
+        
+        return True
+    
+    @Slot(float, float, float)
+    def addWaypointToBackend(self, lat, lon, alt):
+        """
+        Fügt einen Wegpunkt über verschiedene Backends hinzu (für MAVLink2Tab)
+        
+        Args:
+            lat: Breitengrad
+            lon: Längengrad  
+            alt: Höhe in Metern
+        """
+        print(f"[MISSION] addWaypointToBackend called: {lat}, {lon}, {alt}")
+        
+        # Standard addWaypoint aufrufen
+        result = self.addWaypoint(lat, lon, alt)
+        
+        print(f"[MISSION] Nach addWaypointToBackend: Aktuelle Waypoints: {self._waypoints}")
+        print("[DEBUG] Sende waypointListChanged.emit() nach addWaypointToBackend (zur Sicherheit)")
+        self.waypointListChanged.emit()  # Doppelt zur Sicherheit
+        
+        # Zusätzlich: Über SerialConnector senden, falls verfügbar
+        if self._serialConnector and hasattr(self._serialConnector, 'mavlink_connector'):
+            try:
+                # MAVLink-Nachricht senden
+                if hasattr(self._serialConnector.mavlink_connector, 'connection'):
+                    connection = self._serialConnector.mavlink_connector.connection
+                    if connection:
+                        # MAVLink waypoint message senden
+                        from pymavlink import mavutil
+                        connection.mav.mission_item_send(
+                            connection.target_system,
+                            connection.target_component,
+                            len(self._waypoints) - 1,  # Index
+                            0,  # Frame
+                            16,  # MAV_CMD_NAV_WAYPOINT
+                            0, 0,  # Current, autocontinue
+                            0, 0, 0, 0,  # Params 1-4
+                            lat, lon, alt  # Params 5-7
+                        )
+                        print(f"[MISSION] MAVLink waypoint message sent")
+            except Exception as e:
+                print(f"[MISSION] Error sending MAVLink waypoint: {e}")
+        
+        return result
     
     @Slot()
     def clearWaypoints(self):
@@ -276,6 +367,7 @@ class MissionPlannerViewModel(QObject):
                 self._waypoints = []
                 self._total_waypoints = 0
                 self.missionLog.emit("Alle Wegpunkte gelöscht")
+                self.waypointListChanged.emit()  # <-- NEU: QML benachrichtigen
             except Exception as e:
                 self.missionError.emit(f"Fehler beim Löschen der Wegpunkte: {str(e)}")
     

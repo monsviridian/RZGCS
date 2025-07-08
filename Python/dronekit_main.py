@@ -662,7 +662,19 @@ def main():
     engine.rootContext().setContextProperty("messageManager", message_manager)
     engine.rootContext().setContextProperty("logger", logger)
     engine.rootContext().setContextProperty("firmwareViewModel", firmware_viewmodel)
+    engine.rootContext().setContextProperty("firmware_vm", firmware_viewmodel)  # Alternative name for compatibility
     engine.rootContext().setContextProperty("flightNavigationViewModel", flight_navigation_viewmodel)
+    engine.rootContext().setContextProperty("missionViewModel", mission_planner_viewmodel)  # Add missing missionViewModel
+    engine.rootContext().setContextProperty("flightViewModel", flight_navigation_viewmodel)  # Alias for compatibility
+    
+    # Debug: Test missionViewModel
+    test_mission = engine.rootContext().contextProperty("missionViewModel")
+    if test_mission:
+        print(f"[OK] missionViewModel erfolgreich gesetzt: {test_mission}")
+        message_manager.addMessage("missionViewModel Context Property erfolgreich", 4)
+    else:
+        print("[ERROR] missionViewModel konnte nicht gesetzt werden")
+        message_manager.addMessage("missionViewModel Context Property fehlgeschlagen", 3)
     
     # Test-Messages für Context Properties
     message_manager.addMessage("Context Properties für QML gesetzt", 1)
@@ -685,6 +697,23 @@ def main():
     protocol_connection_manager.setMavlinkV1Connector(serial_connector)
     protocol_connection_manager.setMessageManager(message_manager)  # Connect message manager
     engine.rootContext().setContextProperty("protocolConnectionManager", protocol_connection_manager)
+    
+    # Debug: Test Context Properties
+    test_mavlink = engine.rootContext().contextProperty("mavlinkV2Backend")
+    test_protocol = engine.rootContext().contextProperty("protocolConnectionManager")
+    if test_mavlink:
+        print(f"[OK] mavlinkV2Backend erfolgreich gesetzt: {test_mavlink}")
+        message_manager.addMessage("mavlinkV2Backend Context Property erfolgreich", 4)
+    else:
+        print("[ERROR] mavlinkV2Backend konnte nicht gesetzt werden")
+        message_manager.addMessage("mavlinkV2Backend Context Property fehlgeschlagen", 3)
+        
+    if test_protocol:
+        print(f"[OK] protocolConnectionManager erfolgreich gesetzt: {test_protocol}")
+        message_manager.addMessage("protocolConnectionManager Context Property erfolgreich", 4)
+    else:
+        print("[ERROR] protocolConnectionManager konnte nicht gesetzt werden")
+        message_manager.addMessage("protocolConnectionManager Context Property fehlgeschlagen", 3)
     
     # CalibrationController erstellen und für QML verfügbar machen
     calibration_controller = CalibrationController()
@@ -720,6 +749,15 @@ def main():
     # MessageManager-Verbindung für FirmwareViewModel
     firmware_viewmodel.set_message_manager(message_manager)
     
+    # Debug: Test FirmwareViewModel
+    test_firmware = engine.rootContext().contextProperty("firmwareViewModel")
+    if test_firmware:
+        print(f"[OK] firmwareViewModel erfolgreich gesetzt: {test_firmware}")
+        message_manager.addMessage("firmwareViewModel Context Property erfolgreich", 4)
+    else:
+        print("[ERROR] firmwareViewModel konnte nicht gesetzt werden")
+        message_manager.addMessage("firmwareViewModel Context Property fehlgeschlagen", 3)
+    
     # Test-Message für Protocol Connection Manager
     message_manager.addMessage("ProtocolConnectionManager erstellt und für QML verfügbar gemacht", 1)
     message_manager.addMessage("MAVLink v1/v2 Protokoll-Umschaltung implementiert", 4)
@@ -754,6 +792,8 @@ def main():
     
     # QML-Import-Pfade konfigurieren
     engine.addImportPath(str(qml_base_path))
+    engine.addImportPath(str(qml_base_path / "Utils"))
+    engine.addImportPath(str(qml_base_path / "Components"))
     QDir.addSearchPath("icon", str(qml_base_path / "icon"))
     QDir.addSearchPath("qmlimport", str(qml_base_path / "qmlimport"))
     QDir.addSearchPath("assets", str(qml_base_path / "assets"))
